@@ -1561,7 +1561,8 @@
           { t: "Walk the pipeline end to end, naming which stages are code and which are the model",
             d: "Control definition, then a test plan with the attributes to check, then the population pulled by a query, then a sample, then evidence retrieved for each sampled item, then attribute testing, then citation verification, then exceptions, then a drafted conclusion, then the reviewer queue. Only attribute testing and the drafted narrative are the model. Everything that decides a fact is code. Say that split out loud; it is the whole design in one sentence." },
           { t: "Design sample selection as seeded code",
-            d: "Random sampling with a stored seed, or judgmental sampling where a human records the reason. The seed, the population query and its row count all go into the workpaper, so anyone can rerun the selection and get the same items. Sample size comes from the firm's methodology table, not from a prompt." },
+            d: "Random sampling with a stored seed, or judgmental sampling where a human records the reason. The seed, the population query and its row count all go into the workpaper, so anyone can rerun the selection and get the same items. Sample size comes from the firm's methodology table, not from a prompt. The general argument underneath is that a deterministic, side-effect-free step can simply be re-run, which is why it belongs in code and not in a model call.",
+            links: [bk("DDIA chapter 10, fault tolerance in the MapReduce section")] },
           { t: "Design citation as constrained selection, not generation",
             d: "Evidence is chunked with its coordinates: document, page, bounding box, character span. The model sees chunks labelled E1 to En and must cite handles. It never writes a document name or page number. Code resolves each handle to coordinates and renders the red box. Then a verifier checks that the cited span actually contains the extracted value, by exact match for amounts, dates and IDs, and fails closed if it does not. That is the same structure as the opaque handles in your memory system, and you should say so." },
           { t: "Make attribute results three-valued, with insufficient as a first-class answer",
@@ -1569,7 +1570,8 @@
           { t: "Compute exceptions and constrain the conclusion",
             d: "Exceptions are derived by code from attribute results. The conclusion's verdict comes from a rule over the exception count and severity; the model drafts the narrative around a verdict it cannot change. So the model can never write that a control is operating effectively when code has recorded an exception." },
           { t: "Design the reviewer loop and the audit log",
-            d: "Every model call is logged with the handles it saw, its output, model version and prompt version. Every reviewer decision is logged too, including overrides. Overrides are the most valuable data the company has: they are labelled examples of exactly where the system is wrong, and they feed evaluation directly." },
+            d: "Every model call is logged with the handles it saw, its output, model version and prompt version. Every reviewer decision is logged too, including overrides. Overrides are the most valuable data the company has: they are labelled examples of exactly where the system is wrong, and they feed evaluation directly. The systems name for this is event sourcing: an append-only log of immutable facts, with the workpaper as a derived view that can be rebuilt from it. Say that sentence and the audit log stops sounding like logging.",
+            links: [bk("DDIA chapter 11, the Event Sourcing and State, Streams and Immutability sections")] },
           { t: "Answer the evaluation question before she asks it",
             d: "Build a gold set from past signed workpapers. Track attribute-level agreement with reviewers, not just end verdicts. Citation precision is fully deterministic — does the cited span contain the value — so it can gate releases. Watch the insufficient rate: rising means evidence retrieval got worse, falling suddenly may mean the model started guessing. Replay the gold set on every model or prompt change, which is your eval harness." },
           { t: "Say the whole design out loud in eight minutes, then write its three weakest points",
@@ -1939,6 +1941,10 @@
         say: "Pages per engagement, bytes per page, OCR cost per page, to one significant figure, out loud. And which constraint does not matter here: batch latency.",
         res: [R.latency],
         do: [
+          { a: "Read the percentiles pages, then say which constraint you are dismissing and why", m: 5,
+            where: "DDIA (Kleppmann), Chapter 1, the 'Describing Performance' section, through to Tail Latency Amplification",
+            out: "one sentence: this is a batch pipeline, so p99 response time is not the constraint, throughput per engagement and cost per page are",
+            skip: "the rest of chapter 1. Reliability and maintainability are not being asked about here." },
           { a: "Read off four numbers: disk sequential read, disk seek, same-datacenter round trip, cross-region round trip", m: 3,
             where: "Latency numbers, interactive, the current year column",
             url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html",
@@ -2102,36 +2108,153 @@
     wc3: [
       { t: "Layout analysis and reading order",
         say: "Before OCR text is useful you need to know what is a heading, a paragraph, a table, a footer, and in what order a human would read them. Docling does this with a layout model and then assembles reading order.",
-        res: [R.doclingPaper] },
+        res: [R.doclingPaper],
+        do: [
+          { a: "Read the Layout Analysis Model paragraph", m: 3,
+            where: "Docling paper, Section 4.1, 'Layout Analysis Model'",
+            url: "https://arxiv.org/html/2501.17887v1#S4.SS1.SSSx1",
+            out: "one sentence: it predicts bounding boxes and classes for page elements, then intersects them with the PDF text tokens to form paragraphs, headings and tables" },
+          { a: "Read the Assembly paragraph, skipping what sits between", m: 2,
+            where: "same page, Section 4.1, 'Assembly'",
+            url: "https://arxiv.org/html/2501.17887v1#S4.SS1.SSSx4",
+            skip: "Table Structure Recognition and OCR in between — separate items own those",
+            out: "one sentence: reading order is corrected once all pages are assembled, not decided page by page" },
+          { a: "Say the page-to-ordered-text path out loud, four steps, no notes", m: 2,
+            out: "layout model finds and classes elements, elements merge with PDF text tokens, per-page results aggregate, assembly fixes reading order — spoken clean" }
+        ] },
       { t: "Table structure recognition",
         say: "Tables are recovered as structured grids of cells, not flattened text, so a value can be cited to an exact cell. Docling uses TableFormer for this.",
-        res: [R.doclingPaper, R.doclingDoc] },
+        res: [R.doclingPaper, R.doclingDoc],
+        do: [
+          { a: "Read the Table Structure Recognition paragraph", m: 3,
+            where: "Docling paper, Section 4.1, 'Table Structure Recognition'",
+            url: "https://arxiv.org/html/2501.17887v1#S4.SS1.SSSx2",
+            skip: "the OCR and Assembly paragraphs either side of it",
+            out: "one sentence naming what TableFormer predicts: row and column structure, and which cells are header versus body" },
+          { a: "Check the cell fields in Docling's own type reference", m: 2,
+            where: "Docling document reference, the TableCell class — bbox, row and column span, header flags",
+            url: "https://docling-project.github.io/docling/reference/docling_document/#docling_core.types.doc.TableCell",
+            out: "confirm a cell carries its own bounding box, not just its text" },
+          { a: "Say why flattening a table to text breaks citation, out loud", m: 3,
+            out: "one sentence: flattening drops the column header a value was read against, so keeping the grid is what lets an amount cite to one exact cell" }
+        ] },
       { t: "The provenance data model",
         say: "Every item carries its source page, bounding box and character span. Walk through Docling's document model and map it onto what Oxus needs for red boxes.",
-        res: [R.doclingDoc] },
+        res: [R.doclingDoc],
+        do: [
+          { a: "Read the ProvenanceItem class in Docling's reference", m: 3,
+            where: "Docling document reference, ProvenanceItem — page_no, bbox and charspan fields",
+            url: "https://docling-project.github.io/docling/reference/docling_document/#docling_core.types.doc.ProvenanceItem",
+            skip: "the surrounding TextItem and DocItem classes — provenance is the one that matters tonight",
+            out: "the three fields named correctly: page number, bounding box, character span" },
+          { a: "Map each field to what a red box needs, out loud", m: 3,
+            out: "one clause per field: page_no picks the image, bbox draws the rectangle, charspan ties it back to the exact characters extracted" },
+          { a: "Write the one-line consequence into the Answer field", m: 2,
+            out: "one sentence: drop any of the three at parse time and that span can never be cited again, no matter what runs downstream" }
+        ] },
       { t: "OCR confidence and human review",
         say: "Low-confidence regions are flagged, carried forward, and can force an insufficient result or a human check. Know the honest line about your own gap here.",
-        res: [R.doclingPaper] },
+        res: [R.doclingPaper],
+        do: [
+          { a: "Read the OCR paragraph", m: 3,
+            where: "Docling paper, Section 4.1, 'OCR'",
+            url: "https://arxiv.org/html/2501.17887v1#S4.SS1.SSSx3",
+            skip: "the benchmark numbers in Section 5 — cost, not confidence, is the point of this read",
+            out: "which two engines Docling integrates, and which one the paper flags as the biggest compute cost" },
+          { a: "Write the honest gap down", m: 2,
+            out: "one written line: the paper documents engine choice and speed, not a published per-region confidence score — the confidence-gating idea is a design layered on top, not something the paper hands you" },
+          { a: "Say the honest line about your own gap out loud, once", m: 2,
+            out: "spoken clean: you have not run OCR in production, you have designed the layers on both sides of it, and you would expect to be slow on OCR specifics and fast on everything around them" }
+        ] },
       { t: "Hybrid retrieval: lexical plus dense, and rank fusion",
         say: "BM25 for exact identifiers, amounts and dates; dense embeddings for meaning; combine the rankings, commonly with reciprocal rank fusion. Your MetaRAG finding on metadata prefixes applies on the dense side.",
-        res: [R.sbert] },
+        res: [R.sbert],
+        do: [
+          { a: "Skim the Cross-Encoder vs Bi-Encoder section", m: 2,
+            where: "Sentence-Transformers docs, 'Cross-Encoder vs. Bi-Encoder'",
+            url: "https://www.sbert.net/examples/cross_encoder/applications/README.html#cross-encoder-vs-bi-encoder",
+            skip: "the pretrained-model tables and code below it",
+            out: "one line: bi-encoders embed separately for fast indexed search, cross-encoders score a pair jointly and only run over a short list" },
+          { a: "Skim the reciprocal rank fusion paragraph", m: 2,
+            where: "Sentence-Transformers docs, hybrid search page, 'Hybrid Search using Reciprocal Rank Fusion' under Comprehensive Evaluation",
+            url: "https://www.sbert.net/examples/sparse_encoder/applications/retrieve_rerank/README.html#comprehensive-evaluation-hybrid-search-pipeline",
+            skip: "the evaluator code and the results table" },
+          { a: "Reread why prefix-fusion beats TF-IDF weighting, in your own paper", m: 2,
+            where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 2.2, the paragraph on why prefix-fusion beats TF-IDF weighting" },
+          { a: "Say where that finding sits in Oxus's design, out loud", m: 3,
+            out: "one sentence: BM25 stays untouched for exact identifiers, and the MetaRAG finding says the dense side should get metadata prefixed into the text before encoding, not blended in afterward as a separately weighted vector" }
+        ] },
       { t: "Multi-tenant isolation",
         say: "Silo — separate storage and index per tenant — against pool with row-level isolation. Per-tenant encryption keys. No shared cache. Your Postgres row-level-security story from alfred_ is real evidence here.",
-        res: [bk("DDIA chapter 6, partitioning")] },
+        res: [bk("DDIA chapter 6, partitioning")],
+        do: [
+          { a: "Read 'Partitioning by Hash of Key'", m: 5,
+            where: "DDIA (Kleppmann), Chapter 6 'Partitioning', the section 'Partitioning by Hash of Key' — a few pages",
+            skip: "'Partitioning by Key Range', earlier in the same chapter — hashing is the relevant scheme for a tenant key" },
+          { a: "Read 'Skewed Workloads and Relieving Hot Spots'", m: 4,
+            where: "same chapter, the section immediately after — a couple of pages" },
+          { a: "Say silo against pool out loud, anchored to your own RLS experience", m: 3,
+            out: "one sentence: which of the two Oxus should use for a VPC-deployed audit tool, and why isolation and blast radius decide it rather than raw scale" }
+        ] },
       { t: "Zero data retention with model providers",
         say: "What it means for a provider not to retain inputs, why VPC customers demand it, and how it limits which models and features you can use.",
-        res: [] }
+        res: [],
+        do: [
+          { a: "Read what ZDR covers and does not cover", m: 4,
+            where: "Claude Platform docs, 'API and data retention', the 'What ZDR covers' and 'What ZDR does not cover' sections",
+            url: "https://platform.claude.com/docs/en/manage-claude/api-and-data-retention#zero-data-retention-zdr-scope",
+            skip: "the HIPAA-readiness section further down — not tonight's question",
+            out: "one sentence: which API features ride on ZDR, and which stateful features sit outside it regardless" },
+          { a: "Write down one stateful feature that stays outside ZDR", m: 2,
+            out: "one line naming a feature such as the Files API or code execution, and why its own storage need is what excludes it" },
+          { a: "Say the VPC consequence out loud", m: 2,
+            out: "one sentence: a VPC customer demanding ZDR rules out any feature that necessarily stores prompts or responses, which is a real constraint on model and feature choice, not a formality" }
+        ] }
     ],
     wc4: [
       { t: "Process narratives, flowcharts and the RCM",
         say: "Auditors document each process as a narrative and a flowchart, and map risks to controls in a risk and control matrix. Oxus generates the first two from walkthroughs and builds the matrix.",
-        res: [R.skill, R.auditboard] },
+        res: [R.skill, R.auditboard],
+        do: [
+          { a: "Read 'What Is a Flowchart?' and 'What Is a Process Narrative?'", m: 5,
+            where: "AuditBoard blog, 'SOX Process Narrative vs. Flowcharts: Which Is Better?', both named sections",
+            url: "https://auditboard.com/blog/sox-process-narrative-vs-flowcharts",
+            skip: "the author bio and the calls to action top and bottom",
+            out: "one line per format: a flowchart makes risks and controls easy to spot end to end, a narrative removes ambiguity but costs more to maintain — which is why Oxus generates both from one walkthrough" },
+          { a: "Read the risk and control matrix section", m: 3,
+            where: "Fieldguide, 'SOX Risk Assessment: What Auditors Need to Know', the section 'How to Use a Risk Control Matrix for SOX Compliance'",
+            url: "https://www.fieldguide.io/resource-articles/sox-risk-assessment-guide",
+            skip: "everything on the page before that section — inspection findings and the risk-based approach belong to wc2",
+            out: "one sentence: the RCM is the row-per-control table linking each control back to the risk and assertion it addresses and forward to how it is tested" },
+          { a: "Say the three-artifact pipeline out loud", m: 4,
+            out: "walkthrough recording in, narrative and flowchart out as two views of the same steps, RCM out as the row-per-control table — spoken clean, no notes" }
+        ] },
       { t: "Financial statement assertions",
         say: "Existence or occurrence, completeness, valuation or accuracy, rights and obligations, presentation and disclosure. Each control addresses one or more. Knowing the list lets you talk about risk mapping in their language.",
-        res: [R.skill] },
+        res: [R.skill],
+        do: [
+          { a: "Read the Financial Statement Assertions paragraph", m: 4,
+            where: "PCAOB AS 1105, Audit Evidence, '.11 Financial Statement Assertions'",
+            url: "https://pcaobus.org/oversight/standards/auditing-standards/details/AS1105#assertations",
+            skip: "everything else on the page — evidence sufficiency and specialists are not tonight's question",
+            out: "all five named correctly: existence or occurrence, completeness, valuation or allocation, rights and obligations, presentation and disclosure" },
+          { a: "Write which assertion a red-boxed invoice amount tests, in the Answer field", m: 2,
+            out: "one line naming both: existence or occurrence for the transaction, valuation or allocation for the amount" },
+          { a: "Say all five from memory, cold, twice", m: 4,
+            out: "five assertions, no notes, said twice without dropping one" }
+        ] },
       { t: "Roll-forward of prior-year work",
         say: "Each year, prior documentation is carried forward and updated rather than rebuilt. That is exactly what Oxus's knowledge base automates, and the diff between years is where the value is.",
-        res: [R.auditboard] }
+        res: [R.auditboard],
+        do: [
+          { a: "Reread your own step on versioning and diffing the graph", m: 3,
+            where: "this session, the step 'Version the graph and diff it year over year'",
+            out: "one line: the diff, not the graph itself, is the sellable output" },
+          { a: "Invent one concrete diff and say it out loud", m: 5,
+            out: "one worked example, spoken: a named control whose owner changed between two years, and what that change should surface to the auditor first" },
+          { a: "Write the update-not-rebuild line into the Answer field, in your own words", m: 4,
+            out: "one sentence distinguishing 'carried forward and updated' from 'rebuilt from scratch', in language you would use in the room" }
+        ] }
     ],
     wc5: [
       { t: "NDCG at ten, derived",
@@ -5329,11 +5452,24 @@
         var study = cards.filter(function (c) { return c.kind === "Study"; });
         var practice = cards.filter(function (c) { return c.kind !== "Study"; });
         study.forEach(function (c) {
-          lines.push("- [ ] **" + c.front + "**");
+          lines.push("- [ ] **" + c.front + "**" +
+            (c.src && doMinutes(c.src) ? "  (" + mins(doMinutes(c.src)) + ")" : ""));
           lines.push("  " + c.back);
           (c.res || []).forEach(function (r) {
             lines.push(r.book ? "  - " + r.book : "  - [" + r.label + "](" + r.url + ")");
           });
+          if (c.src && c.src.do && c.src.do.length) {
+            c.src.do.forEach(function (d) {
+              lines.push("  - [ ] " + d.a + (d.m ? "  _(" + mins(d.m) + ")_" : ""));
+              if (d.where) {
+                lines.push("    " + (d.url ? "[" + d.where + "](" + d.url + ")" : d.where));
+              } else if (d.url) {
+                lines.push("    " + d.url);
+              }
+              if (d.out) { lines.push("    Done when: " + d.out); }
+              if (d.skip) { lines.push("    Skip: " + d.skip); }
+            });
+          }
         });
         if (practice.length) {
           lines.push("Practice:");
