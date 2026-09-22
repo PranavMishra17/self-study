@@ -73,3 +73,38 @@ The Oxus design-frame session was pure sequencing with no figure. `DIA.oxusFrame
 draws the thirty-five minutes to scale, which makes the point the prose only states:
 twelve of the thirty-five go on one deep dive, and requirements come first because
 they decide which one.
+
+**2026-09-22 — Repo initialised. Twenty-one improvements, built in parallel.**
+The README had assumed a git repository since the seventeenth and there was not
+one, so `progress/` snapshots had nowhere to be committed to and no change had an
+undo. Initialised, and pushed private.
+
+`IMPROVEMENTS.md` records the twenty-one items and why each exists. Five of them
+were rules in `PROTOCOL.md` with no mechanism in the code, which is the failure this
+repo was built to detect and had quietly accumulated in itself: week state was
+derived rather than declared, and derived wrongly — Red meant any one session rather
+than the mathematics, so a week that touched only Alaap reported that the one track
+Red exists to protect had been protected. The re-entry ramp could not fire because
+nothing counted consecutive Reds. The requeue could not be answered or added to. The
+streak did not exist. The ten-minute floor had no prompt.
+
+Also: every answer ever written now has a page rather than being write-only; quiz
+attempts are kept rather than overwritten, so decay between week one and week five
+is recordable; the quiz explanations join the drill deck rather than vanishing on a
+pass; time is measured rather than assumed from the plan; search covers everything
+including your own writing.
+
+Nine agents worked in parallel and none of them wrote to `index.html`. Each returned
+a patch script against verified anchors, applied one at a time with a syntax check
+and a browser pass between each. Seven anchors broke during integration and were
+repaired by hand; two patches were dropped as superseded. The file went from 3,201
+lines to roughly 5,000.
+
+**2026-09-22 — The landing page gains a map of all the work ahead.**
+`DIA.arc` drew milestone 1 as five boxes over five boxes and stopped there. It is
+replaced by eighty-five topic nodes across four milestones with a hundred and
+nineteen prerequisite edges, thirty-three of which cross a milestone boundary.
+Hovering a node lights everything it needs and everything that needs it. Detail
+decays with distance, so the further-out columns render faint and milestone 3 has
+five nodes because `ROADMAP-AHEAD.md` names five things. This is a presentation of
+the existing plan and not a change to it; nothing in `CHARTER.md` is contradicted.
