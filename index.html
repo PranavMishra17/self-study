@@ -427,7 +427,23 @@
   @media print { .mapwrap, .maplg { display: none !important; } }  .clockbox { border: 1px solid var(--hair); background: var(--sheet); padding: 10px 14px;
     margin: 14px 0 0; font-size: 13px; display: flex; align-items: center; gap: 10px;
     flex-wrap: wrap; }
-  .clockbox b { font-variant-numeric: tabular-nums; }
+  .clockbox b { font-variant-numeric: tabular-nums; }  .dolist { margin: 9px 0 2px; }
+  .doitem { display: grid; grid-template-columns: 15px 1fr; gap: 9px; align-items: start;
+    padding: 5px 0 5px; border-top: 1px dotted var(--hair); }
+  .doitem:first-child { border-top: 1px solid var(--hair); }
+  .doitem.off .dbody { opacity: 0.45; }
+  .dbx { width: 11px; height: 11px; border: 1.25px solid var(--dim); background: none;
+    margin-top: 4px; padding: 0; cursor: pointer; }
+  .dbx.on { background: var(--dim); border-color: var(--dim); }
+  .dhead { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+  .da { font-size: 13px; color: var(--ink); line-height: 1.4; }
+  .dm { font-size: 11px; color: var(--mark); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dw { font-size: 11.5px; color: var(--dim); margin-top: 2px; }
+  .dw a { font-size: 11.5px; color: var(--sys); margin-left: 7px; }
+  .dout { font-size: 11.5px; color: var(--math); margin-top: 2px; }
+  .dskip { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
+  .sheetdo { margin-top: 3px; padding-left: 9px; border-left: 1px solid var(--hair); }
+  .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -1971,27 +1987,90 @@
     wc5: [
       { t: "NDCG at ten, derived",
         say: "Discounted cumulative gain sums relevance with a logarithmic discount by rank, then normalises by the ideal ordering. Be able to write it and explain why rank position is discounted.",
-        res: [R.dcg] },
+        res: [R.dcg],
+        do: [
+          { a: "Write DCG_p and NDCG_p from memory, on paper", m: 3,
+            out: "both formulas on paper, unaided" },
+          { a: "Check against Wikipedia, then say aloud why the discount is logarithmic", m: 3,
+            where: "Wikipedia, 'Discounted cumulative gain', the Discounted Cumulative Gain and Normalized DCG sections",
+            url: "https://en.wikipedia.org/wiki/Discounted_cumulative_gain",
+            out: "one sentence: a relevant result ranked lower is penalised, and the penalty shrinks logarithmically rather than linearly",
+            skip: "the history subsection and everything below Normalized DCG" }
+        ] },
       { t: "Bi-encoders against cross-encoders",
         say: "A bi-encoder embeds query and document separately, which is fast and indexable. A cross-encoder reads them together, which is slower and more accurate. That is why a cross-encoder made a stronger judge for your silver standard.",
-        res: [R.sbert] },
+        res: [R.sbert],
+        do: [
+          { a: "Reread the cross-encoder paragraph in your own MetaRAG notes", m: 2,
+            where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 3.1, the paragraph starting 'Why a cross-encoder rather than the bi-encoder used for retrieval'" },
+          { a: "Skim the sbert.net tradeoff paragraph, then say in one breath why a cross-encoder made the stronger judge", m: 3,
+            where: "Sentence-Transformers docs, 'Cross-Encoder vs. Bi-Encoder', the opening paragraph",
+            url: "https://www.sbert.net/examples/cross_encoder/applications/README.html",
+            out: "one breath: joint attention over query and chunk catches interaction a dot product misses, too slow for the whole corpus, fine for fifty candidates",
+            skip: "the clustering and reranking code examples further down the page" }
+        ] },
       { t: "Calibrating an LLM judge against humans",
         say: "Label a sample by hand, measure agreement, iterate the rubric, and re-check as the product changes. This is how your scanner's judge reached roughly three in four flags being genuine.",
-        res: [R.hamelJudge, R.yanJudge] },
+        res: [R.hamelJudge, R.yanJudge],
+        do: [
+          { a: "Read Hamel Husain's FAQ answer on validating a judge against human labels, nothing else on the page", m: 2,
+            where: "hamel.dev, LLM-as-a-judge post, FAQ: 'How do you validate an LLM judge against human labels?'",
+            url: "https://hamel.dev/blog/posts/llm-judge/",
+            skip: "Steps 1 through 7 — those build a judge from scratch, not calibrate one you already have" },
+          { a: "Read Eugene Yan's metrics passage, nothing else on the page", m: 2,
+            where: "eugeneyan.com, evaluating LLM evaluators, section 'Key considerations before adopting an LLM-evaluator', the passage on Cohen's kappa, Kendall's tau and Spearman's rho",
+            url: "https://eugeneyan.com/writing/llm-evaluators/",
+            skip: "the rest of the post — it runs to about fifty minutes; the use-case, prompting and fine-tuning sections are not tonight's question" },
+          { a: "Say your own calibration loop out loud, ending on the number", m: 2,
+            out: "label by hand, measure agreement, iterate the rubric, re-check as the product changes — ending on roughly three in four flags genuine" }
+        ] },
       { t: "Evals when there is no ground truth",
         say: "Error analysis on real outputs first, then targeted checks. Your two versions of this — silver standard in MetaRAG, replay bench in production — are the answer.",
-        res: [R.hamelEvals] },
+        res: [R.hamelEvals],
+        do: [
+          { a: "Read only the 'Looking At Your Traces' section", m: 2,
+            where: "hamel.dev, 'Your AI Product Needs Evals', section 'Looking At Your Traces'",
+            url: "https://hamel.dev/blog/posts/evals/",
+            skip: "the rest of the post — the levels framework, RAG and fine-tuning sections are not tonight's question" },
+          { a: "Say your own two versions of this out loud", m: 3,
+            out: "both named in one breath: the silver standard in MetaRAG, the replay bench in production, and what ground truth each one is missing" }
+        ] },
       { t: "Your own MetaRAG paper, methods and limitations",
         say: "Re-read the method and limitations sections tonight. An AI-degree interviewer will ask about the parts you wrote least recently.",
-        res: [bk("MetaRAG, IEEE CAI 2026 — your own paper")] }
+        res: [bk("MetaRAG, IEEE CAI 2026 — your own paper")],
+        do: [
+          { a: "Reread the system and its three pipelines", m: 2,
+            where: "E:/_Resume-Curator/job_search/profile/METARAG.md, sections 1.5 and 1.6 — the part of your own paper you describe least often" },
+          { a: "Reread what the paper does not claim", m: 3,
+            where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 2.4, all five bullets" },
+          { a: "Say the three stated contributions and the retrieval-pool-bias limitation out loud, cold", m: 3,
+            out: "three contributions plus one limitation, spoken without the file open" }
+        ] }
     ],
     wc6: [
       { t: "What Oxus actually shows publicly",
         say: "The product's two halves, the traceability claims, and how they describe their customers. Watch before the call so your design uses their words.",
-        res: [R.oxusVideo, R.oxusSite] },
+        res: [R.oxusVideo, R.oxusSite],
+        do: [
+          { a: "Watch the launch video once, in full", m: 2,
+            where: "Oxus launch video — about two minutes",
+            url: "https://youtu.be/gmgO_Pa-vZk" },
+          { a: "Skim the site's two product pages, no notes", m: 3,
+            where: "oxus-ai.com — the control-testing and flowchart-generation pages",
+            url: "https://www.oxus-ai.com",
+            skip: "pricing, about, and anything past the two product pages" }
+        ] },
       { t: "Your prep file, sections F to H",
         say: "Anticipated questions, your questions, and the weak points table. Skim, do not re-study.",
-        res: [bk("prep_oxus_founding_engineer — your file")] }
+        res: [bk("prep_oxus_founding_engineer — your file")],
+        do: [
+          { a: "Skim sections F and G, no rewriting", m: 4,
+            where: "your own copy of prep_oxus_founding_engineer — section F, anticipated questions; section G, your own questions",
+            skip: "everything before section F" },
+          { a: "Skim section H, the weak points table, once", m: 3,
+            where: "your own copy of prep_oxus_founding_engineer — section H",
+            out: "nothing new to fix tonight — this is a last look, not a revision pass" }
+        ] }
     ],
     wc7: [
       { t: "Kitaru's core objects",
@@ -2649,7 +2728,7 @@
     if (s.study) {
       s.study.forEach(function (it, i) {
         out.push({ k: s.id + ":s" + i, front: it.t, back: it.say, res: it.res,
-          kind: "Study", name: s.name, sid: s.id });
+          kind: "Study", name: s.name, sid: s.id, src: it });
       });
     }
     if (s.steps) {
@@ -2766,6 +2845,81 @@
     });
     box.appendChild(ul);
     return box;
+  }
+
+  /* ------------------------------------------- study items: what to do
+
+     A study item says what to know. `do` says what to do about it: an ordered
+     list of actions, each with honest minutes, the smallest place in the
+     resource that does the job, and what is true when it is finished. Without
+     it, "read the system design primer" costs ten minutes of deciding where to
+     start before any studying happens. */
+
+  function doKey(sid, i, j) { return sid + ":s" + i + ":d" + j; }
+  function doMinutes(it) {
+    if (!it.do || !it.do.length) { return 0; }
+    var m = 0;
+    it.do.forEach(function (d) { m += (d.m || 0); });
+    return m;
+  }
+  function doDone(sid, i, it) {
+    if (!it.do || !it.do.length) { return 0; }
+    var n = 0, j;
+    for (j = 0; j < it.do.length; j++) { if (state.steps[doKey(sid, i, j)]) { n += 1; } }
+    return n;
+  }
+  function studyMinutes(s) {
+    if (!s.study) { return 0; }
+    var m = 0;
+    s.study.forEach(function (it) { m += doMinutes(it); });
+    return m;
+  }
+  function mins(n) {
+    if (n < 60) { return n + "m"; }
+    var h = Math.floor(n / 60), r = n % 60;
+    return r ? h + "h " + r + "m" : h + "h";
+  }
+
+  function doList(s, it, i) {
+    if (!it.do || !it.do.length) { return null; }
+    var ol = el("div", "dolist");
+    it.do.forEach(function (d, j) {
+      var key = doKey(s.id, i, j);
+      var li = el("div", "doitem" + (state.steps[key] ? " off" : ""));
+
+      var bx = el("button", "dbx" + (state.steps[key] ? " on" : ""));
+      bx.setAttribute("aria-label", "Mark this action done");
+      bx.addEventListener("click", function () {
+        if (state.steps[key]) { delete state.steps[key]; delete state.steps[key + ":at"]; }
+        else { state.steps[key] = true; state.steps[key + ":at"] = stampNow(); }
+        save(); draw();
+      });
+      li.appendChild(bx);
+
+      var body = el("div", "dbody");
+      var head = el("div", "dhead");
+      head.appendChild(el("span", "da", d.a));
+      if (d.m) { head.appendChild(el("span", "dm", mins(d.m))); }
+      body.appendChild(head);
+
+      if (d.where || d.url) {
+        var w = el("div", "dw");
+        if (d.where) { w.appendChild(document.createTextNode(d.where)); }
+        if (d.url) {
+          var a = document.createElement("a");
+          a.href = d.url; a.target = "_blank"; a.rel = "noreferrer noopener";
+          a.textContent = d.where ? "open" : d.url;
+          a.addEventListener("click", function () { logVisit(s.id, d.where || d.url, d.url); });
+          w.appendChild(a);
+        }
+        body.appendChild(w);
+      }
+      if (d.out) { body.appendChild(el("div", "dout", "Done when: " + d.out)); }
+      if (d.skip) { body.appendChild(el("div", "dskip", "Skip: " + d.skip)); }
+      li.appendChild(body);
+      ol.appendChild(li);
+    });
+    return ol;
   }
 
   function tone(track) { return TRACK[track] || "flat"; }
@@ -3375,8 +3529,10 @@
     }
 
     if (s.study && s.study.length) {
-      v.appendChild(rubric("Study first", studyDone(s) + " of " + s.study.length + " owned"));
-      v.appendChild(el("p", "sm dim", "Each item is something you should be able to say out loud without notes. Tick it only when you can."));
+      var stMin = studyMinutes(s);
+      v.appendChild(rubric("Study first", studyDone(s) + " of " + s.study.length + " owned" +
+        (stMin ? "   \u00b7   " + mins(stMin) + " of actions" : "")));
+      v.appendChild(el("p", "sm dim", "Each item is something you should be able to say out loud without notes. Tick it only when you can. The numbered actions under an item are what to actually do, and tick separately."));
       s.study.forEach(function (it, i) {
         var key = s.id + ":s" + i;
         var wrap = el("div", "step");
@@ -3407,6 +3563,8 @@
           });
           tx.appendChild(res);
         }
+        var acts = doList(s, it, i);
+        if (acts) { tx.appendChild(acts); }
         row.appendChild(tx);
         row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
         row.appendChild(el("span", "", ""));
@@ -4366,6 +4524,15 @@
         b.textContent = c.front;
         it.appendChild(b);
         it.appendChild(el("span", "", c.back));
+        if (c.src && c.src.do && c.src.do.length) {
+          var ul = el("div", "sheetdo");
+          c.src.do.forEach(function (d) {
+            var line = d.a + (d.m ? " (" + mins(d.m) + ")" : "");
+            if (d.where) { line += " \u2014 " + d.where; }
+            ul.appendChild(el("div", "", line));
+          });
+          it.appendChild(ul);
+        }
         cols.appendChild(it);
       });
       blk.appendChild(cols);
