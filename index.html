@@ -2025,7 +2025,7 @@
 
   /* ----------------------------------------------------------------- state */
 
-  var state = { steps: {}, done: {}, quiz: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {}, recall: {} };
+  var state = { steps: {}, done: {}, quiz: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {}, recall: {}, requeue: { read: null, answered: {}, added: [] } };
   var view = { page: "home", week: 0, session: 0, scope: null };
   var drill = { scope: null, order: null, i: 0, flip: false };
   var open = {};
@@ -2047,6 +2047,7 @@
           state.answers = p.answers || {};
           state.folded = p.folded || {};
           state.recall = p.recall || {};
+          state.requeue = p.requeue || { read: null, answered: {}, added: [] };
         }
       }
     } catch (err) {
@@ -2534,13 +2535,9 @@
     var taken = quizzes.filter(function (q) { return q.r; });
     var correct = taken.reduce(function (a, q) { return a + q.r.score; }, 0);
     var qmax = taken.reduce(function (a, q) { return a + q.n; }, 0);
-    var reqOpen = REQUEUE.filter(function (q) { return q.when !== "M2"; }).length;
-    var reqClear = 0;
-    REQUEUE.forEach(function (q) {
-      if (q.when === "M2") { return; }
-      var wi = parseInt(String(q.when).replace("Wk ", ""), 10) - 1;
-      if (!isNaN(wi) && PLAN[wi] && weekState(wi) === "green") { reqClear += 1; }
-    });
+    var reqAll = REQUEUE.concat(state.requeue.added);
+    var reqOpen = reqAll.filter(function (q) { return q.when !== "M2"; }).length;
+    var reqClear = reqAll.filter(function (q) { return q.when !== "M2" && state.requeue.answered[q.id]; }).length;
     var visitCount = 0;
     Object.keys(state.visits).forEach(function (k) { visitCount += state.visits[k].length; });
 
@@ -2560,6 +2557,19 @@
     fig(String(reqOpen - reqClear), "of " + reqOpen, "requeue items still open");
     fig(String(visitCount), "", "resources opened and logged");
     v.appendChild(figs);
+
+    var reqReadAt = state.requeue.read;
+    if (!reqReadAt || (Date.now() - reqReadAt) >= 7 * 864e5) {
+      var look = el("div", "credit");
+      var rd = reqReadAt ? new Date(reqReadAt) : null;
+      look.appendChild(el("span", "", rd
+        ? "The requeue has not been read since " + rd.getDate() + " " + MON[rd.getMonth()] + "."
+        : "The requeue has not been read yet."));
+      var lookBtn = el("button", "sec", "Read it");
+      lookBtn.addEventListener("click", function () { go("requeue"); });
+      look.appendChild(lookBtn);
+      v.appendChild(look);
+    }
 
     if (wildClosed() > 0 || foldsUsed() > 0) {
       var cr = el("div", "credit");
@@ -2957,6 +2967,26 @@
 
     if (s.quiz) { v.appendChild(quizPanel(s)); }
 
+    v.appendChild(rubric("Set this aside", "goes to the requeue, not lost"));
+    v.appendChild(el("p", "sm dim", "Something you are not resolving now. It stays open until you answer it, whenever that is."));
+    var rqform = el("div", "linkform");
+    var rqt = document.createElement("input");
+    rqt.type = "text"; rqt.placeholder = "What to come back to";
+    var rqw = document.createElement("input");
+    rqw.type = "text"; rqw.placeholder = "Why it matters (optional)";
+    var rqadd = el("button", "sec", "Add to requeue");
+    rqadd.addEventListener("click", function () {
+      var rqtext = rqt.value.trim();
+      if (!rqtext) { rqt.placeholder = "Say what it is first"; return; }
+      state.requeue.added.push({ id: "U" + Date.now(), t: rqtext, w: rqw.value.trim(), session: s.id, at: stampNow() });
+      save();
+      draw();
+    });
+    rqform.appendChild(rqt);
+    rqform.appendChild(rqw);
+    rqform.appendChild(rqadd);
+    v.appendChild(rqform);
+
     if (!wild && (isFolded(s) || (foldsFree() > 0 && !sessionDone(s)))) {
       var cr = el("div", "credit");
       if (isFolded(s)) {
@@ -3145,21 +3175,67 @@
   /* ------------------------------------------------------------- other pages */
 
   function viewRequeue() {
+    state.requeue.read = Date.now();
+    save();
     var v = document.getElementById("view");
     v.appendChild(el("h1", "", "Requeue"));
-    v.appendChild(el("p", "lede", "Open items, drawn from the September calibration. Nothing here gets deleted, only answered. Stopping defers; it does not erase."));
-    v.appendChild(rubric("Seventeen items", "twelve clear inside this milestone"));
-    var ul = el("ul", "list");
-    REQUEUE.forEach(function (q) {
+    v.appendChild(el("p", "lede", "Open items, drawn from the September calibration plus anything set aside since. Nothing here gets deleted, only answered. Stopping defers; it does not erase."));
+
+    var reqAll = REQUEUE.concat(state.requeue.added);
+    var reqOpenItems = reqAll.filter(function (q) { return !state.requeue.answered[q.id]; });
+    var reqClosedItems = reqAll.filter(function (q) { return state.requeue.answered[q.id]; });
+
+    v.appendChild(rubric(reqOpenItems.length + " open", reqClosedItems.length + " answered"));
+
+    function reqRow(q, list) {
       var li = document.createElement("li");
-      li.appendChild(el("span", "wh" + (q.when === "M2" ? " m2" : ""), q.when));
+      li.appendChild(el("span", "wh" + (q.when === "M2" ? " m2" : ""), q.when || "Added"));
       var d = el("div");
-      d.appendChild(el("div", "", q.t));
-      d.appendChild(el("div", "sm dim", q.w));
+      var ans = state.requeue.answered[q.id];
+      var title = el("div", "", q.t);
+      if (ans) { title.style.textDecoration = "line-through"; title.style.color = "var(--dim)"; }
+      d.appendChild(title);
+      var src = q.session ? "Set aside from " + (sessionById(q.session) ? sessionById(q.session).name : q.session) : "";
+      d.appendChild(el("div", "sm dim", q.w || src));
+      if (ans) {
+        d.appendChild(el("div", "sm dim", "Answered " + ans.date + (ans.note ? " \u2014 " + ans.note : "")));
+        var reopen = el("button", "xp", "Reopen");
+        reopen.addEventListener("click", function () { delete state.requeue.answered[q.id]; save(); draw(); });
+        d.appendChild(reopen);
+      } else if (open["rq:" + q.id]) {
+        var ta = document.createElement("textarea");
+        ta.placeholder = "What the answer is";
+        var mark = el("button", "sec", "Mark answered");
+        mark.addEventListener("click", function () {
+          state.requeue.answered[q.id] = { date: stampNow(), note: ta.value.trim() };
+          delete open["rq:" + q.id];
+          save(); draw();
+        });
+        var cancel = el("button", "xp", "Cancel");
+        cancel.addEventListener("click", function () { delete open["rq:" + q.id]; draw(); });
+        d.appendChild(ta);
+        d.appendChild(mark);
+        d.appendChild(cancel);
+      } else {
+        var ansBtn = el("button", "xp", "Answer, with a date");
+        ansBtn.addEventListener("click", function () { open["rq:" + q.id] = true; draw(); });
+        d.appendChild(ansBtn);
+      }
       li.appendChild(d);
-      ul.appendChild(li);
-    });
+      list.appendChild(li);
+    }
+
+    var ul = el("ul", "list");
+    reqOpenItems.forEach(function (q) { reqRow(q, ul); });
     v.appendChild(ul);
+
+    if (reqClosedItems.length) {
+      v.appendChild(rubric("Answered", "kept, not deleted"));
+      var cul = el("ul", "list");
+      reqClosedItems.forEach(function (q) { reqRow(q, cul); });
+      v.appendChild(cul);
+    }
+
     v.appendChild(el("p", "sm dim", "Read this once a week. Not to clear it, just to keep it in view."));
   }
 
@@ -3273,6 +3349,7 @@
           state.life = p.life || {}; state.notes = p.notes || {}; state.visits = p.visits || {};
           state.answers = p.answers || {}; state.folded = p.folded || {};
           state.recall = p.recall || {};
+          state.requeue = p.requeue || { read: null, answered: {}, added: [] };
           save(); draw();
         } catch (err) { console.error("Import failed", err); imp.textContent = "Could not read that file"; }
       };
@@ -3288,7 +3365,7 @@
     var armed = false;
     reset.addEventListener("click", function () {
       if (!armed) { armed = true; reset.textContent = "Click again to wipe all progress"; return; }
-      state = { steps: {}, done: {}, quiz: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {} };
+      state = { steps: {}, done: {}, quiz: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {}, requeue: { read: null, answered: {}, added: [] } };
       picks = {};
       save(); draw();
     });
