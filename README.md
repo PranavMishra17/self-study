@@ -59,7 +59,9 @@ everything else.
 
 Progress lives in the browser under the storage key `selfstudy.m1.planner`. Export it
 from the Data page into `progress/`, dated, and commit it. That is the only durable
-copy. Changing the storage key in the code starts from empty, so export first.
+copy. Changing the storage key in the code starts from empty, so export first. The
+storage is also scoped to the origin, port included, so serving this on 8000 one day
+and 8777 the next reads as two separate stores with no warning either.
 
 ## Working on this in Claude Code
 
@@ -88,8 +90,9 @@ without re-explaining anything.
    touching when content changes.
 
 To add wildcard sessions for a new loop: append to `WILDCARD.sessions`, add a `STUDY`
-entry and a `SHORT` label, set `WILDCARD.note`, then regenerate `STUDY-LIST.md` and add
-a `CHANGELOG.md` entry. `WILDCARD.md` has the session shape.
+entry and a `SHORT` label, set `WILDCARD.note`, then open the wildcard sheet and copy it
+as markdown into `STUDY-LIST.md` — that control generates it now, rather than typing it
+by hand — and add a `CHANGELOG.md` entry. `WILDCARD.md` has the session shape.
 
 Conventions for any change: no emojis anywhere; every browser API call wrapped in
 try and catch with a logged error and a graceful fallback; content stays in data

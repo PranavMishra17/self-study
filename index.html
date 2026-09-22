@@ -361,6 +361,29 @@
     .lede { font-size: 11px; }
   }
   .card .diasvg svg { width: 100%; height: auto; display: block; margin: 4px 0 6px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 2px 16px 34px; align-items: start; }
+  .compare .half { min-width: 0; }
+  .compare .answer, .compare .expand { padding: 0; max-width: none; }
+  @media (max-width: 860px) {
+    .compare { grid-template-columns: 1fr; padding-left: 2px; gap: 16px; }
+  }
+  /* w3-floor-time: session clock and ten-minute floor */
+  .clockbox, .floorbox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .floorbox { flex-direction: column; align-items: stretch; }
+  .floorbox textarea { min-height: 64px; margin-bottom: 8px; }
+  .clockcorr { width: 68px; border: 1px solid var(--line); background: var(--sheet);
+    padding: 8px 9px; font: inherit; font-size: 13.5px; color: inherit; }
+  .floor { margin-top: 14px; }
+  .fig-wild { border-left: 2px solid var(--iv); }
+  .quiz .rate { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .quiz .rate button { font-size: 13.5px; padding: 9px 18px; border: 1px solid var(--line);
+    background: var(--sheet); cursor: pointer; color: var(--ink); }
+  .quiz .rate button:hover { border-color: var(--ink); }
+  .quiz .rate button.g { box-shadow: inset 3px 0 0 var(--math); }
+  .quiz .rate button.s { box-shadow: inset 3px 0 0 var(--req); }
+  .quiz .rate button.n { box-shadow: inset 3px 0 0 var(--mark); }
+  .quiz .was { font-size: 11.5px; color: var(--faint); margin-top: 8px; }
+  .quiz .qhist { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--hair); }
 </style>
 </head>
 <body>
@@ -2003,6 +2026,74 @@
     if (STUDY[s.id]) { s.study = STUDY[s.id]; }
   });
 
+  var RELATED = {
+    w1a: [
+      { id: "w4a", why: "Overload from the client side: retries and backoff." },
+      { id: "wc8", why: "The same overload shape, inside an agent's tool calls." }
+    ],
+    w4a: [
+      { id: "w1a", why: "The vocabulary this assumes: queues, latency, backpressure." },
+      { id: "wc8", why: "Covers the same ground \u2014 an honest fold candidate." }
+    ],
+    wc8: [
+      { id: "w1a", why: "The vocabulary this assumes: queues, latency, backpressure." },
+      { id: "w4a", why: "This session folds directly into that one." }
+    ],
+    w2a: [
+      { id: "wc3", why: "Partitioning by tenant rather than by key, under real constraints." }
+    ],
+    wc3: [
+      { id: "w2a", why: "The partitioning vocabulary this applies: hot keys, skew." }
+    ]
+  };
+
+  /* One free-recall question per quiz: a prompt with no options, revealed
+     against a model answer and self-rated the way the drill is. Multiple
+     choice can be passed by elimination; this cannot. Does not count toward
+     the pass score, which stays two of three on the multiple choice above. */
+  var QUIZ_FREE = {
+    w1a: { q: "Explain, without naming a vendor or a product, why an unbounded queue in front of overloaded workers is dangerous even though nothing is failing.",
+      a: "Nothing rejects, so nothing errors, and the throughput graph looks fine. The queue absorbs the excess and returns it as steadily worse latency, growing until memory runs out or a user gives up. Backpressure is what stops this \u2014 it pushes the limit back to the producer instead of letting the consumer accumulate work it can never finish." },
+    w1b: { q: "In your own words, why is a model trained by minimising negative log-likelihood rather than by maximising likelihood directly?",
+      a: "Likelihood is a product of many small probabilities, which underflows to zero in floating point long before it is useful. The log turns that product into a sum, which is numerically stable and differentiates term by term. The sign flip is only there because optimisers are built to descend, not to climb." },
+    w2a: { q: "You must choose a partition key for the eval harness. Explain why a key that looks uniform in the abstract can still produce a hot partition in production.",
+      a: "Hashing spreads keys evenly across partitions, but it does not spread traffic. Real usage follows a power law, so one key can carry far more load than the others even though the hash function is doing its job perfectly. The fix is choosing a key whose real-world distribution is actually flat, not one that merely looks flat on paper." },
+    w2b: { q: "Explain what the chain rule lets you compute that nothing else does, and why that is exactly what a neural network needs.",
+      a: "A network is a composition of functions, layer feeding into layer, and the chain rule is the only way to get the derivative of a composition from the derivatives of its parts. Backpropagation is that rule applied mechanically down the layers, multiplying local derivatives as it walks back from the loss." },
+    w3a: { q: "A colleague suggests keeping everything in the transactional database because it is simpler. Make the case for moving append-only, bulk-read data to object storage instead.",
+      a: "Traces written once, never updated and queried in bulk are exactly the shape object storage is cheap at. The database buys query flexibility this data never uses, at a cost \u2014 indexing, replication, backup \u2014 paid on every row, forever. Simplicity today is not the same as cheap forever." },
+    w3b: { q: "Derive, in words, why cosine similarity is the dot product of normalised vectors.",
+      a: "The dot product of two vectors equals the product of their magnitudes times the cosine of the angle between them. Divide each vector by its own length first and the magnitudes cancel, leaving only the cosine \u2014 which is why normalising before the dot product gives pure direction, ignoring length." },
+    w4a: { q: "Explain why naive retries can finish off a struggling service, and what the standard fix changes about that.",
+      a: "A struggling service is already short on capacity, and immediate retries add load exactly then, which can push it from slow into fully down. Exponential backoff buys it time to recover, and jitter stops every client waiting the identical interval and returning in one synchronised wave that recreates the same spike." },
+    w4b: { q: "Write the gradient descent update rule from memory, then explain in one sentence each what the minus sign and the learning rate are for.",
+      a: "Parameter minus learning rate times the gradient of the loss with respect to that parameter. The minus sign exists because the gradient points toward steeper loss, so descent means stepping the opposite way. The learning rate is only a step size on that direction, nothing more." },
+    w5a: { q: "A user adds a new memory and their cached search results are not invalidated. Explain exactly what breaks and why.",
+      a: "The assistant keeps answering from a cached world that does not contain the new memory, so it looks like it forgot something it was just told, which breaks the product's one promise. Invalidation has to be scoped to that user's cache entry on every write path that touches memory, not left to a TTL to eventually catch up." },
+    w5b: { q: "A test is 99 percent sensitive with a 5 percent false-positive rate, for a disease with 0.1 percent prevalence. Explain, without the arithmetic, why a positive result is still more likely wrong than right.",
+      a: "Almost everyone tested is actually healthy, because the disease is rare, so even a small false-positive rate applied to that huge healthy group produces far more false positives than the tiny number of true cases the test correctly catches. The base rate, not the test's accuracy, dominates the answer." },
+    wc1: { q: "Explain why sample selection in an audit system should be deterministic code rather than a model choice, in terms a non-technical reviewer would accept.",
+      a: "A workpaper has to be defensible: someone else has to be able to rerun the selection and get the same items. A seeded, recorded selection can be rerun exactly; a model's choice cannot be reproduced or justified after the fact, however reasonable it looked at the time." },
+    wc2: { q: "Explain why the model should select citation handles rather than write document names and page numbers directly.",
+      a: "If the model writes the reference itself, it can invent one that reads perfectly but points nowhere real. Restricting it to handles that code already resolved to real coordinates makes a fabricated citation structurally impossible rather than merely unlikely, and a verifier can still check the cited span actually contains the value." },
+    wc3: { q: "Explain why dropping page and bounding-box coordinates at parse time is the single most damaging mistake an ingestion pipeline can make, even if everything else is done well.",
+      a: "Every citation downstream depends on pointing back to an exact document, page and location. Once that link is discarded at parse time, no amount of cleverness later \u2014 better retrieval, better prompts \u2014 can reconstruct it, because the information no longer exists anywhere in the system." },
+    wc4: { q: "Explain why the flowchart should be rendered by code from a graph rather than drawn directly by the model.",
+      a: "A model asked to draw a chart can include a step nobody actually described, because nothing forces its output to trace back to evidence. A graph built only from nodes that carry a cited timestamp cannot contain a step that was never said, which is what makes the chart trustworthy rather than merely plausible." },
+    wc5: { q: "In the memory system's decision layer, explain why a false silent is treated as worse than a false confirm, and what that does to the thresholds.",
+      a: "A false silent means the agent took an action the user never approved, an unapproved side effect that already happened. A false confirm only costs a moment of friction. Because the two failures are not equally bad, the thresholds are tuned asymmetrically, erring toward asking rather than acting when the signal is unclear." },
+    wc7: { q: "State the two-minute bench story headline first, then explain why leading with mechanism rather than the numbers matters in this room.",
+      a: "We run the real agent against a frozen snapshot of the user's world, swapping only the outbound provider call. Leading with mechanism shows judgement about what makes a replay trustworthy; leading with the case count invites a mechanism question you have not answered yet, in front of the people deciding whether to trust it." },
+    wc8: { q: "Explain why a forked replay that issues a refund the recording never saw should not simply pass through to the live payment provider by default.",
+      a: "A silent live call is a real side effect dressed up as a replay result, and it hides that fact from the reader. Routing it to a dry-run adapter or failing loudly keeps the divergence visible, which matters more than keeping the replay running smoothly through a case it was never designed to handle." },
+    wc9: { q: "Explain why the simulated user must be calibrated against the unchanged baseline before it is trusted on a changed agent.",
+      a: "A simulator that cannot reproduce what real users actually did on the old, known agent has no demonstrated relationship to real behaviour, so its verdict on a new agent carries no evidence either. Calibration against the baseline is what turns the simulator from a guess into a controlled instrument." },
+    wc10: { q: "Explain, in one sentence, the difference between Kitaru and reading traces in Langfuse, for a developer who already trusts their trace store.",
+      a: "Langfuse tells you what happened; Kitaru re-executes your real agent with the recorded tool results standing in for the live ones, so it tells you what your change would have done. The trace store stays the system of record \u2014 Kitaru just makes those traces runnable." },
+    wc11: { q: "Explain the throughline from ZenML's pipeline heritage to Kitaru's replay-based evals, the way its co-founder would recognise as his own thesis.",
+      a: "Both rest on the same instinct: reproducible execution, applied first to pipelines and now to agent runs, so that rerunning something faithfully \u2014 not just reading about what it did \u2014 is how you find out whether a change actually helped." }
+  };
+
   var FOLD_CAP = 4;
 
   var REQUEUE = [
@@ -2027,12 +2118,14 @@
 
   /* ----------------------------------------------------------------- state */
 
-  var state = { steps: {}, done: {}, quiz: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {}, recall: {}, requeue: { read: null, answered: {}, added: [] } };
+  var state = { steps: {}, done: {}, quiz: {}, quizHistory: {}, life: {}, notes: {}, visits: {}, answers: {}, folded: {}, recall: {}, requeue: { read: null, answered: {}, added: [] }, clock: {}, floor: {}, declared: {} };
+  state.exports = state.exports || {};
   var view = { page: "home", week: 0, session: 0, scope: null };
   var drill = { scope: null, order: null, i: 0, flip: false };
   var open = {};
   var picks = {};
   var storageOk = true;
+  var search = { q: "", sel: 0 };
 
   function load() {
     try {
@@ -2040,6 +2133,7 @@
       if (raw) {
         var p = JSON.parse(raw);
         if (p && typeof p === "object") {
+          state.exports = p.exports || {};
           state.steps = p.steps || {};
           state.done = p.done || {};
           state.quiz = p.quiz || {};
@@ -2049,7 +2143,14 @@
           state.answers = p.answers || {};
           state.folded = p.folded || {};
           state.recall = p.recall || {};
+          state.declared = p.declared || {};
           state.requeue = p.requeue || { read: null, answered: {}, added: [] };
+          state.clock = p.clock || {};
+          state.floor = p.floor || {};
+          state.quizHistory = p.quizHistory || {};
+          Object.keys(state.quiz).forEach(function (qid) {
+            if (!state.quizHistory[qid] && state.quiz[qid]) { state.quizHistory[qid] = [state.quiz[qid]]; }
+          });
         }
       }
     } catch (err) {
@@ -2148,11 +2249,13 @@
     var a = sessionClosed(ss[0]), b = sessionClosed(ss[1]), c = sessionClosed(ss[2]);
     if (a && b && c) { return "green"; }
     if (a && b) { return "amber"; }
-    if (a || b || c) { return "red"; }
-    return null;
+    if (b && !a && !c) { return "red"; }
+    if (!a && !b && !c) { return null; }
+    return "gap";
   }
   function stateWord(st) {
-    return st === "green" ? "Green" : st === "amber" ? "Amber" : st === "red" ? "Red" : "Not started";
+    return st === "green" ? "Green" : st === "amber" ? "Amber" : st === "red" ? "Red" :
+      st === "gap" ? "Off-plan" : "Not started";
   }
   function eachSession(fn) {
     PLAN.forEach(function (w, wi) { w.sessions.forEach(function (s, si) { fn(s, wi, si); }); });
@@ -2188,6 +2291,16 @@
         out.push({ k: sKey(s.id, i), front: st.t, back: st.d, res: st.links,
           kind: s.study ? "Practice" : "The work", name: s.name, sid: s.id });
       });
+    }
+    if (s.quiz) {
+      s.quiz.forEach(function (q, i) {
+        out.push({ k: s.id + ":q" + i, front: q.q, back: q.o[q.a] + " \u2014 " + q.why,
+          kind: "Quiz", name: s.name, sid: s.id });
+      });
+    }
+    if (QUIZ_FREE[s.id]) {
+      out.push({ k: s.id + ":qf", front: QUIZ_FREE[s.id].q, back: QUIZ_FREE[s.id].a,
+        kind: "Recall", name: s.name, sid: s.id });
     }
     return out;
   }
@@ -2344,7 +2457,7 @@
         return { page: "dia", week: view.week, session: n(p[2]), scope: p[1] };
       }
       if (p[0] === "w" && WILDCARD.sessions[n(p[1])]) { return { page: "session", week: "wc", session: n(p[1]) }; }
-      if (["requeue", "protocol", "charter", "ahead", "data"].indexOf(p[0]) >= 0) {
+      if (["requeue", "protocol", "charter", "written", "ahead", "data", "resources", "search"].indexOf(p[0]) >= 0) {
         return { page: p[0], week: view.week, session: 0 };
       }
     } catch (err) { console.error("Could not read the address", err); }
@@ -2448,7 +2561,8 @@
 
     var foot = el("div", "foot");
     [["requeue", "Requeue"], ["protocol", "Protocol"], ["charter", "Charter"],
-     ["ahead", "What comes after"], ["data", "Data and export"]].forEach(function (t) {
+     ["written", "Written work"], ["ahead", "What comes after"], ["data", "Data and export"],
+     ["resources", "Resources"], ["search", "Search"]].forEach(function (t) {
       var b = el("button", view.page === t[0] ? "on" : "", t[1]);
       b.addEventListener("click", function () { go(t[0]); closeRail(); });
       foot.appendChild(b);
@@ -2494,6 +2608,7 @@
     v.appendChild(rubric("Five weeks", nx
       ? "Next: " + nx.s.name.toLowerCase() + ", week " + (nx.wi + 1)
       : "Every session closed. The gate is next."));
+    v.appendChild(el("p", "sm dim", exportStaleNote()));
 
     var grid = el("div", "planner");
     PLAN.forEach(function (w, wi) {
@@ -2501,6 +2616,13 @@
       c.appendChild(el("div", "wn", String(wi + 1)));
       c.appendChild(el("div", "wd", range(wi)));
       c.appendChild(el("div", "wt", w.title));
+      var declHome = declaredFor(wi);
+      if (declHome) {
+        var actualHome = weekState(wi);
+        var declLine = "Declared " + stateWord(declHome.state);
+        if (actualHome !== declHome.state) { declLine += ", actual " + stateWord(actualHome) + " so far"; }
+        c.appendChild(el("div", "sm dim", declLine));
+      }
       w.sessions.forEach(function (s) {
         var shut = sessionDone(s);
         var m = el("span", "mk " + tone(s.track) + (shut ? " shut" : ""));
@@ -2587,10 +2709,15 @@
     var visitCount = 0;
     Object.keys(state.visits).forEach(function (k) { visitCount += state.visits[k].length; });
 
+    var planElapsed = 0, wildElapsed = 0;
+    eachSession(function (s) { planElapsed += clockBanked(s.id); });
+    eachWild(function (s) { wildElapsed += clockBanked(s.id); });
+    var weekMin = weekMinutesFor(currentWeek());
+
     v.appendChild(rubric("Where it stands", "week " + weeksElapsed() + " of 5"));
     var figs = el("div", "figs");
-    function fig(n, small, k) {
-      var f = el("div", "fig");
+    function fig(n, small, k, cls) {
+      var f = el("div", "fig" + (cls ? " " + cls : ""));
       var nn = el("div", "n", n);
       if (small) { nn.appendChild(el("small", "", " " + small)); }
       f.appendChild(nn);
@@ -2598,11 +2725,17 @@
       figs.appendChild(f);
     }
     fig(String(closed), "of 5", "weeks closed green");
-    fig(Math.round(estDone / 60) + "h", "of " + Math.round(estTotal / 60) + "h", "time posted against planned");
+    fig(Math.round(planElapsed / 60) + "h", "of " + Math.round(estTotal / 60) + "h", "elapsed against planned, plan track");
     fig(String(taken.length), "of " + quizzes.length, qmax ? correct + " of " + qmax + " answers correct" : "quizzes taken");
     fig(String(reqOpen - reqClear), "of " + reqOpen, "requeue items still open");
     fig(String(visitCount), "", "resources opened and logged");
+    fig(String(currentStreak()), "", "unbroken weeks, a Red week still counts");
+    fig(Math.round(wildElapsed / 60) + "h", "", "wildcard hours, not counted in the plan figure", "fig-wild");
+    fig((Math.round(weekMin / 6) / 10) + "h", "of 4\u20136h", "this week against the charter floor");
     v.appendChild(figs);
+
+    var rpHome = rampPanel();
+    if (rpHome) { v.appendChild(rpHome); }
 
     var reqReadAt = state.requeue.read;
     if (!reqReadAt || (Date.now() - reqReadAt) >= 7 * 864e5) {
@@ -2723,6 +2856,26 @@
     v.appendChild(el("p", "lede", w.focus));
     v.appendChild(el("p", "sm dim", range(view.week) + "   \u2014   " + stateWord(weekState(view.week)) + " so far"));
 
+    var declWeek = declaredFor(view.week);
+    var declPanel = el("div", "panel");
+    declPanel.appendChild(el("p", "sm dim", declWeek
+      ? "Declared " + stateWord(declWeek.state) + " at the start of the week, " + declWeek.at + "."
+      : "Not declared yet. Choose what this week looks like before it starts, and correct it later if reality disagreed."));
+    var declRow = el("div", "row-act");
+    ["green", "amber", "red"].forEach(function (st) {
+      var declBtn = el("button", (declWeek && declWeek.state === st) ? "act" : "sec", stateWord(st));
+      declBtn.addEventListener("click", function () { declareWeek(view.week, st); });
+      declRow.appendChild(declBtn);
+    });
+    declPanel.appendChild(declRow);
+    var actualWeek = weekState(view.week);
+    if (declWeek && actualWeek !== declWeek.state) {
+      declPanel.appendChild(el("p", "sm", "Actual so far is " + stateWord(actualWeek) + ". Declared and actual are allowed to differ; the gap is what is worth noticing, not an error."));
+    }
+    v.appendChild(declPanel);
+    var rpWeek = rampPanel();
+    if (rpWeek) { v.appendChild(rpWeek); }
+
     v.appendChild(rubric("Sessions"));
     var t = el("table", "t");
     var hr = el("tr");
@@ -2822,6 +2975,21 @@
     head.appendChild(el("h1", "", s.name));
     if (s.intro) { head.appendChild(el("p", "lede", s.intro)); }
     v.appendChild(head);
+    v.appendChild(sessionClock(s));
+
+    if (RELATED[s.id] && RELATED[s.id].length) {
+      v.appendChild(el("p", "sm dim", "This idea also appears in"));
+      var relRow = el("div", "row-act");
+      RELATED[s.id].forEach(function (r) {
+        var target = sessionById(r.id);
+        if (!target) { return; }
+        var rb = el("button", "sec", SHORT[target.id] || target.name);
+        rb.title = r.why;
+        rb.addEventListener("click", function () { goSession(target); });
+        relRow.appendChild(rb);
+      });
+      v.appendChild(relRow);
+    }
 
     var myCards = cardsOf(s);
     if (myCards.length) {
@@ -2914,9 +3082,15 @@
       row.appendChild(bx);
       row.appendChild(el("div", "tx" + (state.steps[key] ? " off" : ""), st.t));
       row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
+      var compareMode = !!(s.study && (st.d || st.links));
       if (st.d || st.links) {
         var xp = el("button", "xp", open[key] ? "Hide" : (s.study ? "Model answer" : "Detail"));
-        xp.addEventListener("click", function () { open[key] = !open[key]; draw(); });
+        xp.addEventListener("click", function () {
+          var willOpen = !open[key];
+          open[key] = willOpen;
+          if (compareMode) { open[akey] = willOpen; }
+          draw();
+        });
         row.appendChild(xp);
       } else {
         row.appendChild(el("span", "", ""));
@@ -2925,41 +3099,56 @@
       var akey = key + ":ans";
       var ab = el("button", "xp" + (ans && ans.text ? " has" : ""),
         open[akey] ? "Close" : (ans && ans.text ? "Answer kept" : "Answer"));
-      ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
+      ab.addEventListener("click", function () {
+        var willOpen = !open[akey];
+        open[akey] = willOpen;
+        if (compareMode) { open[key] = willOpen; }
+        draw();
+      });
       row.appendChild(ab);
       wrap.appendChild(row);
+      var exNode = null;
       if (open[key] && (st.d || st.links)) {
-        var ex = el("div", "expand");
-        if (st.d) { ex.appendChild(el("p", "", st.d)); }
-        if (st.links) {
-          var res = el("div", "res");
-          st.links.forEach(function (r) {
-            if (r.book) { res.appendChild(el("span", "bk", r.book)); return; }
-            var a = document.createElement("a");
-            a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-            a.textContent = r.label;
-            a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
-            res.appendChild(a);
-          });
-          ex.appendChild(res);
+        exNode = el("div", "expand");
+        var revealed = !compareMode || (ans && ans.text && ans.text.trim()) || open[key + ":reveal"];
+        if (!revealed) {
+          exNode.appendChild(el("p", "sm dim", "Kept closed until you write an answer, or ask for it outright."));
+          var rv = el("button", "sec", "Show the model answer anyway");
+          rv.addEventListener("click", function () { open[key + ":reveal"] = true; draw(); });
+          exNode.appendChild(rv);
+        } else {
+          if (st.d) { exNode.appendChild(el("p", "", st.d)); }
+          if (st.links) {
+            var res = el("div", "res");
+            st.links.forEach(function (r) {
+              if (r.book) { res.appendChild(el("span", "bk", r.book)); return; }
+              var a = document.createElement("a");
+              a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener";
+              a.textContent = r.label;
+              a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
+              res.appendChild(a);
+            });
+            exNode.appendChild(res);
+          }
         }
-        wrap.appendChild(ex);
       }
+      var apNode = null;
       if (open[akey]) {
-        var ap = el("div", "answer");
+        apNode = el("div", "answer");
         var ta2 = document.createElement("textarea");
         ta2.value = (ans && ans.text) || "";
         ta2.placeholder = "Type it, or dictate it. This is where the work goes.";
         var meta = el("div", "meta");
         var wc = el("span", "", "");
-        var when = el("span", "", ans && ans.at ? "last written " + ans.at : "");
+        var when = el("span", "", ans && ans.at ? "last written " + ans.at +
+          (ans.via === "spoken" ? "   \u2014   spoken" : "") : "");
         function counts() {
           var t2 = ta2.value.trim();
           wc.textContent = (t2 ? t2.split(/\s+/).length : 0) + " words";
         }
         counts();
         ta2.addEventListener("input", function () {
-          state.answers[key] = { text: ta2.value, at: stampNow() };
+          state.answers[key] = { text: ta2.value, at: stampNow(), via: "typed" };
           if (!ta2.value.trim()) { delete state.answers[key]; }
           counts();
           when.textContent = ta2.value.trim() ? "last written " + stampNow() : "";
@@ -2967,9 +3156,72 @@
         });
         meta.appendChild(wc);
         meta.appendChild(when);
-        ap.appendChild(ta2);
-        ap.appendChild(meta);
-        wrap.appendChild(ap);
+        apNode.appendChild(ta2);
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SR) {
+          var mic = el("button", "xp", "Dictate");
+          mic.setAttribute("aria-label", "Dictate this answer");
+          var rec = null;
+          var listening = false;
+          var base = ta2.value;
+          mic.addEventListener("click", function () {
+            try {
+              if (listening) { if (rec) { rec.stop(); } return; }
+              rec = new SR();
+              rec.lang = "en-US";
+              rec.interimResults = true;
+              rec.continuous = true;
+              base = ta2.value;
+              listening = true;
+              mic.textContent = "Stop";
+              rec.onresult = function (ev) {
+                var finalText = "", interim = "";
+                for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+                  var chunk = ev.results[ri][0].transcript;
+                  if (ev.results[ri].isFinal) { finalText += chunk; } else { interim += chunk; }
+                }
+                if (finalText) {
+                  base = (base && !/\s$/.test(base) ? base + " " : base) + finalText.trim() + " ";
+                  state.answers[key] = { text: base, at: stampNow(), via: "spoken" };
+                  save();
+                }
+                ta2.value = base + interim;
+                counts();
+              };
+              rec.onerror = function (err) {
+                console.error("Dictation failed", err);
+                listening = false;
+                mic.textContent = "Dictate";
+              };
+              rec.onend = function () {
+                listening = false;
+                draw();
+              };
+              rec.start();
+            } catch (err) {
+              console.error("Dictation could not start", err);
+              listening = false;
+              mic.textContent = "Dictate";
+            }
+          });
+          meta.appendChild(mic);
+        }
+        apNode.appendChild(meta);
+      }
+      if (compareMode && exNode && apNode) {
+        var cmp = el("div", "compare");
+        var leftCol = el("div", "half");
+        leftCol.appendChild(el("div", "sm dim", "Your answer"));
+        leftCol.appendChild(apNode);
+        var rightCol = el("div", "half");
+        rightCol.appendChild(el("div", "sm dim", "Model answer"));
+        rightCol.appendChild(exNode);
+        cmp.appendChild(leftCol);
+        cmp.appendChild(rightCol);
+        wrap.appendChild(cmp);
+      } else {
+        if (exNode) { wrap.appendChild(exNode); }
+        if (apNode) { wrap.appendChild(apNode); }
       }
       v.appendChild(wrap);
     });
@@ -3097,7 +3349,7 @@
 
     if (rec && rec.passed && !submitted) {
       box.appendChild(el("div", "score ok", "Passed, " + rec.score + " of " + s.quiz.length));
-      if (rec.at) { box.appendChild(el("p", "sm dim", "Taken " + rec.at + ". Taking it again replaces the score.")); }
+      if (rec.at) { box.appendChild(el("p", "sm dim", "Taken " + rec.at + ". Taking it again adds to the history below.")); }
       var again = el("button", "sec", "Take it again");
       again.addEventListener("click", function () {
         picks[s.id] = {};
@@ -3106,6 +3358,8 @@
         save(); draw();
       });
       box.appendChild(again);
+      var hist1 = renderQuizHistory(s);
+      if (hist1) { box.appendChild(hist1); }
       return box;
     }
 
@@ -3129,19 +3383,51 @@
         opts.appendChild(b);
       });
       wrap.appendChild(opts);
+      if (!submitted) { wrap.appendChild(floorPanel(s.id + ":q" + qi)); }
       if (submitted) { wrap.appendChild(el("div", "why", q.why)); }
       box.appendChild(wrap);
     });
+
+    var free = QUIZ_FREE[s.id];
+    if (free) {
+      var fk = s.id + ":qf";
+      var fwrap = el("div", "qq");
+      fwrap.appendChild(el("div", "qt", (s.quiz.length + 1) + ". " + free.q));
+      if (!open[fk]) {
+        fwrap.appendChild(el("p", "sm dim", "Say or write it out loud first. Open question, self-rated, and it does not count toward the pass score."));
+        var reveal = el("button", "sec", "Reveal the model answer");
+        reveal.addEventListener("click", function () { open[fk] = true; draw(); });
+        fwrap.appendChild(reveal);
+      } else {
+        fwrap.appendChild(el("div", "why", free.a));
+        var frate = el("div", "rate");
+        [["got", "g", "Said it clean"], ["shaky", "s", "Roughly, with gaps"], ["no", "n", "Could not say it"]]
+          .forEach(function (r) {
+            var b = el("button", r[1], r[2]);
+            b.addEventListener("click", function () { rateCard(fk, r[0]); draw(); });
+            frate.appendChild(b);
+          });
+        fwrap.appendChild(frate);
+        var fwas = state.recall[fk];
+        fwrap.appendChild(el("div", "was", fwas
+          ? "Last rated " + fwas.r + " on " + fwas.at + ", seen " + fwas.n + (fwas.n === 1 ? " time." : " times.")
+          : "First time through this one."));
+      }
+      box.appendChild(fwrap);
+    }
 
     var acts = el("div", "row-act");
     if (!submitted) {
       var sub = el("button", "act", "Submit");
       sub.addEventListener("click", function () {
         var score = 0;
-        s.quiz.forEach(function (q, qi) { if (mine[qi] === q.a) { score += 1; } });
+        var missed = [];
+        s.quiz.forEach(function (q, qi) { if (mine[qi] === q.a) { score += 1; } else { missed.push(qi); } });
         mine.__submitted = true;
         picks[s.id] = mine;
-        state.quiz[s.id] = { score: score, passed: score >= Math.ceil(s.quiz.length * 2 / 3), at: stampNow() };
+        var qrec = { score: score, passed: score >= Math.ceil(s.quiz.length * 2 / 3), at: stampNow(), missed: missed };
+        state.quiz[s.id] = qrec;
+        state.quizHistory[s.id] = (state.quizHistory[s.id] || []).concat([qrec]);
         markSession(s);
         save(); draw();
       });
@@ -3156,6 +3442,8 @@
       acts.appendChild(retry);
     }
     box.appendChild(acts);
+    var hist2 = renderQuizHistory(s);
+    if (hist2) { box.appendChild(hist2); }
     return box;
   }
 
@@ -3386,6 +3674,7 @@
         a.href = url; a.download = "progress.json";
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        try { markExported(); save(); } catch (err2) { console.error("Could not record the export time", err2); }
       } catch (err) { console.error("Export failed", err); ex.textContent = "Export blocked by the browser"; }
     });
     acts.appendChild(ex);
@@ -3393,6 +3682,7 @@
     var imp = el("button", "sec", "Import progress");
     var file = document.createElement("input");
     file.type = "file"; file.accept = "application/json"; file.className = "hide";
+    var importBox = el("div", "sm");
     file.addEventListener("change", function () {
       var f = file.files && file.files[0];
       if (!f) { return; }
@@ -3401,19 +3691,30 @@
         try {
           var p = JSON.parse(String(reader.result));
           if (!p || typeof p !== "object") { throw new Error("not an object"); }
-          state.steps = p.steps || {}; state.done = p.done || {}; state.quiz = p.quiz || {};
-          state.life = p.life || {}; state.notes = p.notes || {}; state.visits = p.visits || {};
-          state.answers = p.answers || {}; state.folded = p.folded || {};
-          state.recall = p.recall || {};
-          state.requeue = p.requeue || { read: null, answered: {}, added: [] };
-          save(); draw();
-        } catch (err) { console.error("Import failed", err); imp.textContent = "Could not read that file"; }
+          importBox.innerHTML = "";
+          importBox.appendChild(el("p", "",
+            "Replace wipes everything currently on this device and uses only the file. " +
+            "Merge keeps both sides; where the same item is recorded on both, the file's version wins."));
+          var cacts = el("div", "row-act");
+          var doReplace = el("button", "sec", "Replace with file");
+          doReplace.addEventListener("click", function () {
+            importReplace(p); save(); draw();
+          });
+          var doMerge = el("button", "sec", "Merge with file");
+          doMerge.addEventListener("click", function () {
+            importMerge(p); save(); draw();
+          });
+          var doCancel = el("button", "sec", "Cancel");
+          doCancel.addEventListener("click", function () { importBox.innerHTML = ""; });
+          cacts.appendChild(doReplace); cacts.appendChild(doMerge); cacts.appendChild(doCancel);
+          importBox.appendChild(cacts);
+        } catch (err) { console.error("Import failed", err); importBox.textContent = "Could not read that file"; }
       };
-      reader.onerror = function () { console.error("Read failed"); imp.textContent = "Could not read that file"; };
+      reader.onerror = function () { console.error("Read failed"); importBox.textContent = "Could not read that file"; };
       try { reader.readAsText(f); }
-      catch (err) { console.error("Import failed", err); imp.textContent = "Could not read that file"; }
+      catch (err) { console.error("Import failed", err); importBox.textContent = "Could not read that file"; }
     });
-    imp.addEventListener("click", function () { file.click(); });
+    imp.addEventListener("click", function () { importBox.innerHTML = ""; file.click(); });
     acts.appendChild(imp);
     acts.appendChild(file);
 
@@ -3427,6 +3728,7 @@
     });
     acts.appendChild(reset);
     v.appendChild(acts);
+    v.appendChild(importBox);
 
     var written = [];
     eachSession(function (s, wi) {
@@ -3648,6 +3950,30 @@
     var bk = el("button", "sec", "Back");
     bk.addEventListener("click", function () { backToScope(scope); });
     acts.appendChild(bk);
+    var md = el("button", "sec", "Copy as markdown");
+    md.addEventListener("click", function () {
+      var text = sheetMarkdownFor(scope);
+      var old = document.getElementById("mdcopy");
+      if (old) { old.parentNode.removeChild(old); }
+      function showFallback() {
+        try {
+          var box = el("textarea", "noprint");
+          box.id = "mdcopy";
+          box.value = text;
+          box.readOnly = true;
+          v.appendChild(box);
+          box.focus(); box.select();
+          md.textContent = "Copy blocked, select the text below";
+        } catch (err2) { console.error("Markdown fallback failed", err2); md.textContent = "Copy failed"; }
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { md.textContent = "Copied as markdown"; })
+            ["catch"](function (err) { console.error("Clipboard rejected", err); showFallback(); });
+        } else { showFallback(); }
+      } catch (err) { console.error("Copy failed", err); showFallback(); }
+    });
+    acts.appendChild(md);
     v.appendChild(acts);
 
     if (!sessions.length) { v.appendChild(el("p", "sm dim", "Nothing here yet.")); return; }
@@ -3758,6 +4084,646 @@
     v.appendChild(diaNav(scope));
   }
 
+  function groupedWritten() {
+    var groups = [];
+    function bucket(label) {
+      var g = null;
+      groups.forEach(function (gg) { if (gg.label === label) { g = gg; } });
+      if (!g) { g = { label: label, sessions: [] }; groups.push(g); }
+      return g;
+    }
+    function pushSession(s, label) {
+      var entries = [];
+      s.steps.forEach(function (st, i) {
+        var a = state.answers[sKey(s.id, i)];
+        if (a && a.text && a.text.trim()) { entries.push({ st: st, a: a }); }
+      });
+      if (entries.length) { bucket(label).sessions.push({ s: s, entries: entries }); }
+    }
+    eachSession(function (s, wi) { pushSession(s, "Week " + (wi + 1)); });
+    eachWild(function (s) { pushSession(s, "Wildcard"); });
+    return groups;
+  }
+  function writtenMarkdown(groups) {
+    var lines = ["# Written work", "", "Exported " + stampNow() + "."];
+    groups.forEach(function (g) {
+      lines.push("", "## " + g.label);
+      g.sessions.forEach(function (gs) {
+        lines.push("", "### " + gs.s.name);
+        gs.entries.forEach(function (e) {
+          var words = e.a.text.trim().split(/\s+/).length;
+          lines.push("", "**" + e.st.t + "**", "", e.a.text.trim(), "",
+            "_" + words + " words, written " + e.a.at + (e.a.via === "spoken" ? ", spoken" : "") + "_");
+        });
+      });
+    });
+    return lines.join("\n");
+  }
+  function viewWritten() {
+    var v = document.getElementById("view");
+    v.appendChild(el("h1", "", "Written work"));
+    v.appendChild(el("p", "lede",
+      "Every answer kept so far, in the order the plan reaches it. The prompt sits above each one so it stands on its own."));
+    var groups = groupedWritten();
+    var total = 0, words = 0, last = "";
+    groups.forEach(function (g) {
+      g.sessions.forEach(function (gs) {
+        gs.entries.forEach(function (e) {
+          total += 1;
+          words += e.a.text.trim().split(/\s+/).length;
+          if (e.a.at && e.a.at > last) { last = e.a.at; }
+        });
+      });
+    });
+
+    var acts = el("div", "row-act");
+    var dl = el("button", "act", "Download as markdown");
+    dl.addEventListener("click", function () {
+      try {
+        var blob = new Blob([writtenMarkdown(groups)], { type: "text/markdown" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "written-work.md";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      } catch (err) { console.error("Markdown export failed", err); dl.textContent = "Export blocked by the browser"; }
+    });
+    acts.appendChild(dl);
+    v.appendChild(acts);
+
+    if (!total) {
+      v.appendChild(el("p", "sm dim", "Nothing written yet. Answers appear here as soon as one is saved."));
+      return;
+    }
+    v.appendChild(rubric(total + (total === 1 ? " answer" : " answers"),
+      words + " words   \u2014   most recent " + last));
+
+    groups.forEach(function (g) {
+      v.appendChild(rubric(g.label));
+      g.sessions.forEach(function (gs) {
+        var panel = el("div", "panel");
+        panel.appendChild(el("h3", "", gs.s.name));
+        gs.entries.forEach(function (e) {
+          var block = el("div", "step");
+          block.style.padding = "14px 0";
+          block.appendChild(el("div", "sm dim", e.st.t));
+          block.appendChild(el("div", "", e.a.text));
+          var w2 = e.a.text.trim().split(/\s+/).length;
+          block.appendChild(el("div", "sm dim",
+            w2 + " words   \u2014   written " + e.a.at + (e.a.via === "spoken" ? "   \u2014   spoken" : "")));
+          panel.appendChild(block);
+        });
+        v.appendChild(panel);
+      });
+    });
+  }
+
+  /* ------------------------------------------------------- resource index */
+
+  function forEachResource(fn) {
+    function scan(s) {
+      if (s.steps) {
+        s.steps.forEach(function (st) { if (st.links) { st.links.forEach(function (r) { fn(r, s); }); } });
+      }
+      if (s.study) {
+        s.study.forEach(function (it) { if (it.res) { it.res.forEach(function (r) { fn(r, s); }); } });
+      }
+    }
+    eachSession(function (s) { scan(s); });
+    eachWild(function (s) { scan(s); });
+  }
+  function resourceIndex() {
+    var entries = [], byRef = [], books = {};
+    function reg(tbl) {
+      Object.keys(tbl).forEach(function (k) {
+        var o = tbl[k];
+        var e = { label: o.label, url: o.url, sessions: {} };
+        entries.push(e);
+        byRef.push({ obj: o, e: e });
+      });
+    }
+    reg(L);
+    reg(R);
+    forEachResource(function (r, s) {
+      if (r.book) {
+        if (!books[r.book]) { books[r.book] = {}; }
+        books[r.book][s.id] = s.name;
+        return;
+      }
+      var i;
+      for (i = 0; i < byRef.length; i++) {
+        if (byRef[i].obj === r) { byRef[i].e.sessions[s.id] = s.name; return; }
+      }
+    });
+    return { entries: entries, books: books };
+  }
+  function dedupeByUrl(entries) {
+    var map = {}, out = [];
+    entries.forEach(function (e) {
+      if (map[e.url]) {
+        Object.keys(e.sessions).forEach(function (sid) { map[e.url].sessions[sid] = e.sessions[sid]; });
+      } else {
+        map[e.url] = { label: e.label, url: e.url, sessions: e.sessions };
+        out.push(map[e.url]);
+      }
+    });
+    return out;
+  }
+  function visitsFor(url) {
+    var hits = [];
+    Object.keys(state.visits).forEach(function (sid) {
+      (state.visits[sid] || []).forEach(function (v) { if (v.url === url) { hits.push(v); } });
+    });
+    return hits;
+  }
+  function parseStamp(s) {
+    var m = /^(\d{1,2}) (\w{3}) (\d{2}):(\d{2})$/.exec(s || "");
+    if (!m) { return 0; }
+    var mi = MON.indexOf(m[2]);
+    return Date.UTC(START.getFullYear(), mi < 0 ? 0 : mi, parseInt(m[1], 10), parseInt(m[3], 10), parseInt(m[4], 10));
+  }
+  function lastVisit(hits) {
+    var best = "", bestKey = -1;
+    hits.forEach(function (h) {
+      var k = parseStamp(h.at);
+      if (k >= bestKey) { bestKey = k; best = h.at; }
+    });
+    return best;
+  }
+  function viewResources() {
+    var v = document.getElementById("view");
+    v.appendChild(el("h1", "", "Resources"));
+    v.appendChild(el("p", "lede", "Every link the plan points at, which sessions use it, and what you have opened."));
+
+    var idx = resourceIndex();
+    var web = dedupeByUrl(idx.entries);
+    v.appendChild(rubric("Links", web.length + " tracked"));
+    if (web.length) {
+      var ul = el("ul", "visits");
+      web.forEach(function (e) {
+        var li = document.createElement("li");
+        var left = el("div");
+        var a = document.createElement("a");
+        a.href = e.url; a.target = "_blank"; a.rel = "noreferrer noopener";
+        a.textContent = e.label;
+        var sids = Object.keys(e.sessions);
+        a.addEventListener("click", function () { logVisit(sids[0] || "resources", e.label, e.url); });
+        left.appendChild(a);
+        left.appendChild(el("div", "sm dim", sids.map(function (sid) { return SHORT[sid] || e.sessions[sid]; }).join(", ")));
+        li.appendChild(left);
+        var hits = visitsFor(e.url);
+        li.appendChild(el("span", "w", hits.length ? ("opened " + hits.length + "x, last " + lastVisit(hits)) : "not opened"));
+        ul.appendChild(li);
+      });
+      v.appendChild(ul);
+    } else {
+      v.appendChild(el("p", "sm dim", "None yet."));
+    }
+
+    var bkeys = Object.keys(idx.books);
+    v.appendChild(rubric("Books", bkeys.length + " referenced"));
+    v.appendChild(el("p", "sm dim", "Not clickable. Listed so a gap in the plan is visible."));
+    if (bkeys.length) {
+      var bul = el("ul", "visits");
+      bkeys.forEach(function (t) {
+        var li = document.createElement("li");
+        var left = el("div");
+        left.appendChild(el("div", "", t));
+        var sids = Object.keys(idx.books[t]);
+        left.appendChild(el("div", "sm dim", sids.map(function (sid) { return SHORT[sid] || idx.books[t][sid]; }).join(", ")));
+        li.appendChild(left);
+        bul.appendChild(li);
+      });
+      v.appendChild(bul);
+    } else {
+      v.appendChild(el("p", "sm dim", "None yet."));
+    }
+  }
+
+  /* ---------------------------------------------------------------- search */
+
+  function searchHits(qraw) {
+    var q = (qraw || "").trim().toLowerCase();
+    if (!q) { return []; }
+    var hits = [];
+    function snip(text) {
+      var low = text.toLowerCase();
+      var i = low.indexOf(q);
+      if (i < 0) { return null; }
+      var a = Math.max(0, i - 40), b = Math.min(text.length, i + q.length + 40);
+      return (a > 0 ? "\u2026" : "") + text.slice(a, b) + (b < text.length ? "\u2026" : "");
+    }
+    function add(group, label, text, action) {
+      var sn = snip(text);
+      if (sn === null) { return; }
+      hits.push({ group: group, label: label, snippet: sn, go: action });
+    }
+    function scan(s) {
+      var lbl = SHORT[s.id] || s.name;
+      var go1 = function () { goSession(s); };
+      var top = [s.intro, s.blurb, s.name], i;
+      for (i = 0; i < top.length; i++) {
+        if (top[i] && top[i].toLowerCase().indexOf(q) >= 0) { add("Sessions", lbl, top[i], go1); break; }
+      }
+      if (s.study) {
+        s.study.forEach(function (it) { add("Study", lbl, it.t + " \u2014 " + it.say, go1); });
+      }
+      if (s.steps) {
+        s.steps.forEach(function (st) { add("Steps", lbl, st.t + (st.d ? " \u2014 " + st.d : ""), go1); });
+      }
+      if (s.quiz) {
+        s.quiz.forEach(function (qq) { add("Quiz", lbl, qq.q + (qq.why ? " \u2014 " + qq.why : ""), go1); });
+      }
+    }
+    eachSession(function (s) { scan(s); });
+    eachWild(function (s) { scan(s); });
+    REQUEUE.forEach(function (r) {
+      add("Requeue", r.id, r.t + (r.w ? " \u2014 " + r.w : ""), function () { go("requeue"); });
+    });
+    Object.keys(state.answers).forEach(function (key) {
+      var rec = state.answers[key];
+      if (!rec || !rec.text) { return; }
+      var sid = key.slice(0, key.lastIndexOf(":"));
+      var s = sessionById(sid);
+      if (!s) { return; }
+      add("Your answers", SHORT[s.id] || s.name, rec.text, function () { goSession(s); });
+    });
+    return hits;
+  }
+  function viewSearch() {
+    var v = document.getElementById("view");
+    v.appendChild(el("h1", "", "Search"));
+    v.appendChild(el("p", "lede", "Sessions, study terms, steps, quiz, the requeue and your own answers. Plain text, no ranking."));
+
+    var input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "backpressure, idempotency, eigenvector...";
+    input.value = search.q;
+    input.style.width = "100%";
+    v.appendChild(input);
+
+    var results = el("div", "");
+    v.appendChild(results);
+
+    var flat = [];
+    var order = ["Sessions", "Study", "Steps", "Quiz", "Requeue", "Your answers"];
+    function renderResults() {
+      results.innerHTML = "";
+      flat = [];
+      var hits = searchHits(search.q);
+      order.forEach(function (g) {
+        var inGroup = hits.filter(function (h) { return h.group === g; });
+        if (!inGroup.length) { return; }
+        var head = el("div", "sm dim", g);
+        head.style.margin = "18px 0 6px";
+        results.appendChild(head);
+        var box = el("div", "opts");
+        inGroup.forEach(function (h) {
+          var sel = flat.length === search.sel;
+          var row = htm("button", "opt" + (sel ? " sel" : ""),
+            "<b>" + esc(h.label) + "</b><br>" + esc(h.snippet));
+          row.addEventListener("click", function () { h.go(); });
+          box.appendChild(row);
+          flat.push(h);
+        });
+        results.appendChild(box);
+      });
+      if (search.q.trim() && !flat.length) { results.appendChild(el("p", "sm dim", "No matches.")); }
+    }
+    renderResults();
+
+    input.addEventListener("input", function () {
+      search.q = input.value;
+      search.sel = 0;
+      renderResults();
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { e.preventDefault(); search.sel = Math.min(flat.length - 1, search.sel + 1); renderResults(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); search.sel = Math.max(0, search.sel - 1); renderResults(); }
+      else if (e.key === "Enter") { e.preventDefault(); if (flat[search.sel]) { flat[search.sel].go(); } }
+      else if (e.key === "Escape") { e.preventDefault(); go("home"); }
+    });
+    try { input.focus(); } catch (err) { console.error("Could not focus the search field", err); }
+  }
+
+  /* --------------------------------------------- w3-floor-time: session clock */
+
+  /* A stretch longer than this cannot be honest work in one sitting -- it means
+     the clock was left running (a closed laptop, an overnight tab). sweepClocks
+     bags it at the ceiling and flags it rather than banking the whole gap. */
+  var CLOCK_CEILING_MIN = 360;
+
+  function clockRec(id) {
+    if (!state.clock[id]) {
+      state.clock[id] = { minutes: 0, running: false, startedAt: null, lastAt: null, capped: false };
+    }
+    return state.clock[id];
+  }
+  function clockBanked(id) {
+    var c = state.clock[id];
+    return c ? c.minutes : 0;
+  }
+  function clockLiveMinutes(id) {
+    var c = state.clock[id];
+    if (!c || !c.running || !c.startedAt) { return 0; }
+    return Math.max(0, Math.round((Date.now() - c.startedAt) / 60000));
+  }
+  function startClock(id) {
+    var c = clockRec(id);
+    if (c.running) { return; }
+    c.running = true;
+    c.startedAt = Date.now();
+    c.capped = false;
+    save();
+  }
+  function stopClock(id) {
+    var c = state.clock[id];
+    if (!c || !c.running) { return; }
+    var mins = Math.max(0, Math.round((Date.now() - c.startedAt) / 60000));
+    c.minutes += Math.min(mins, CLOCK_CEILING_MIN);
+    c.running = false;
+    c.startedAt = null;
+    c.lastAt = iso(new Date());
+    save();
+  }
+  function setClockMinutes(id, mins) {
+    var c = clockRec(id);
+    c.minutes = Math.max(0, Math.round(mins) || 0);
+    c.capped = false;
+    save();
+  }
+  function sweepClocks() {
+    try {
+      Object.keys(state.clock).forEach(function (id) {
+        var c = state.clock[id];
+        if (!c || !c.running || !c.startedAt) { return; }
+        var mins = Math.round((Date.now() - c.startedAt) / 60000);
+        if (mins > CLOCK_CEILING_MIN) {
+          c.minutes += CLOCK_CEILING_MIN;
+          c.running = false;
+          c.startedAt = null;
+          c.lastAt = iso(new Date());
+          c.capped = true;
+        }
+      });
+    } catch (err) { console.error("Could not check clocks left running", err); }
+  }
+  function fmtMinutes(m) {
+    var h = Math.floor(m / 60), mm = m % 60;
+    return h ? (h + "h " + mm + "m") : (mm + "m");
+  }
+  function weekMinutesFor(wi) {
+    var a = iso(dayOf(wi, 0)), b = iso(dayOf(wi, 6)), total = 0;
+    Object.keys(state.clock).forEach(function (id) {
+      var c = state.clock[id];
+      if (c && c.lastAt && c.lastAt >= a && c.lastAt <= b) { total += c.minutes; }
+    });
+    return total;
+  }
+  function sessionClock(s) {
+    var c = clockRec(s.id);
+    var live = clockLiveMinutes(s.id);
+    var box = el("div", "credit clockbox");
+    var label = el("span", "", "Clock: ");
+    var num = document.createElement("b");
+    num.id = "clockElapsed_" + s.id;
+    num.textContent = fmtMinutes(c.minutes + live) + (c.running ? " \u2014 running" : " logged");
+    label.appendChild(num);
+    if (c.capped) {
+      label.appendChild(document.createTextNode(" \u2014 auto-stopped after " + fmtMinutes(CLOCK_CEILING_MIN) +
+        ", correct below if that is wrong"));
+    }
+    box.appendChild(label);
+    var btn = el("button", "sec", c.running ? "Stop" : "Start");
+    btn.addEventListener("click", function () {
+      if (c.running) { stopClock(s.id); } else { startClock(s.id); }
+      draw();
+    });
+    box.appendChild(btn);
+    var corr = document.createElement("input");
+    corr.type = "number"; corr.min = "0"; corr.step = "1"; corr.className = "clockcorr";
+    corr.value = String(c.minutes);
+    corr.setAttribute("aria-label", "Correct logged minutes");
+    corr.addEventListener("change", function () {
+      try { setClockMinutes(s.id, parseInt(corr.value, 10)); draw(); }
+      catch (err) { console.error("Could not read the corrected minutes", err); }
+    });
+    box.appendChild(corr);
+    box.appendChild(el("span", "sm dim", "minutes, correct by hand if the clock is wrong"));
+    return box;
+  }
+
+  /* ------------------------------------------- w3-floor-time: ten-minute floor */
+
+  var FLOOR_PROMPTS = [
+    { k: "know", t: "What you know" },
+    { k: "stop", t: "Where it stops" },
+    { k: "missing", t: "What exactly is missing" }
+  ];
+  function floorRec(key) {
+    if (!state.floor[key]) {
+      state.floor[key] = { startedAt: null, minutes: 0, know: "", stop: "", missing: "" };
+    }
+    return state.floor[key];
+  }
+  function floorPanel(key) {
+    var existing = state.floor[key];
+    var written = existing && (existing.know || existing.stop || existing.missing);
+    var wrap = el("div", "floor");
+    var link = el("button", "xp" + (written ? " has" : ""),
+      open["floor:" + key] ? "Hide the ten-minute floor" : (written ? "Ten-minute floor: written" : "Give it ten minutes first"));
+    link.addEventListener("click", function () { open["floor:" + key] = !open["floor:" + key]; draw(); });
+    wrap.appendChild(link);
+    if (open["floor:" + key]) {
+      var r = floorRec(key);
+      var live = r.startedAt ? Math.max(0, Math.round((Date.now() - r.startedAt) / 60000)) : 0;
+      var box = el("div", "credit floorbox");
+      box.appendChild(el("p", "sm dim",
+        "Ten minutes of written attempt before this counts as unknown \u2014 what you know, where it stops, what exactly is missing."));
+      var timeLine = el("span", "", "Time on this: ");
+      var timeNum = document.createElement("b");
+      timeNum.id = "floorElapsed_" + key;
+      timeNum.textContent = fmtMinutes(r.minutes + live) + (r.startedAt ? " \u2014 running" : "");
+      timeLine.appendChild(timeNum);
+      box.appendChild(timeLine);
+      var startBtn = el("button", "sec", r.startedAt ? "Stop" : "Start the ten minutes");
+      startBtn.addEventListener("click", function () {
+        if (r.startedAt) {
+          r.minutes += Math.max(0, Math.round((Date.now() - r.startedAt) / 60000));
+          r.startedAt = null;
+        } else {
+          r.startedAt = Date.now();
+        }
+        save(); draw();
+      });
+      box.appendChild(startBtn);
+      FLOOR_PROMPTS.forEach(function (fp) {
+        box.appendChild(el("div", "sm dim", fp.t));
+        var ta = document.createElement("textarea");
+        ta.value = r[fp.k] || "";
+        ta.placeholder = fp.t + ", in your own words";
+        ta.addEventListener("input", function () { r[fp.k] = ta.value; save(); });
+        box.appendChild(ta);
+      });
+      wrap.appendChild(box);
+    }
+    return wrap;
+  }
+
+  /* --------------------------------------------------------- export tracking */
+
+  function stateSnapshot() {
+    var out = {};
+    Object.keys(state).forEach(function (k) { if (k !== "exports") { out[k] = state[k]; } });
+    return JSON.stringify(out);
+  }
+  function markExported() {
+    state.exports = { at: stampNow(), snap: stateSnapshot() };
+  }
+  function exportStaleNote() {
+    if (!state.exports || !state.exports.at) {
+      return "Last export: never. The Data page holds the only durable copy.";
+    }
+    var changed = state.exports.snap !== stateSnapshot();
+    return "Last export: " + state.exports.at + (changed ? ", with changes since." : ".");
+  }
+
+  /* ------------------------------------------------------------- import merge */
+
+  function importReplace(p) {
+    var keys = {}, k;
+    Object.keys(state).forEach(function (k2) { keys[k2] = true; });
+    Object.keys(p).forEach(function (k2) { keys[k2] = true; });
+    for (k in keys) {
+      if (k === "exports") { continue; }
+      state[k] = Object.prototype.hasOwnProperty.call(p, k) ? p[k] : {};
+    }
+  }
+  function importMerge(p) {
+    Object.keys(p).forEach(function (k) {
+      if (k === "exports") { return; }
+      var sv = p[k];
+      if (sv && typeof sv === "object" && !(sv instanceof Array)) {
+        if (!state[k] || typeof state[k] !== "object" || state[k] instanceof Array) { state[k] = {}; }
+        Object.keys(sv).forEach(function (id) { state[k][id] = sv[id]; });
+      } else {
+        state[k] = sv;
+      }
+    });
+  }
+
+  /* --------------------------------------------------------- sheet to markdown */
+
+  function sheetMarkdownFor(scope) {
+    var sessions = scopeSessions(scope);
+    var groups = [], byGroup = {};
+    sessions.forEach(function (s) {
+      var g = s.forWhat ? s.forWhat.split(",")[0] : "";
+      if (!byGroup[g]) { byGroup[g] = []; groups.push(g); }
+      byGroup[g].push(s);
+    });
+    var title = (groups.length && groups[0]) ? groups.join(" and ") : scopeName(scope);
+    var lines = ["# Study list: " + title, "",
+      "Generated from the tracker on " + stampNow() + ". Tick an item only when you can say it out loud without notes.",
+      ""];
+    if (scope === "wc" && WILDCARD.note) { lines.push(WILDCARD.note); lines.push(""); }
+    groups.forEach(function (g) {
+      lines.push("---"); lines.push("");
+      if (g) { lines.push("## " + g); lines.push(""); }
+      byGroup[g].forEach(function (s) {
+        var cards = cardsOf(s);
+        if (!cards.length) { return; }
+        lines.push("### " + s.name + "  (" + s.len + ")"); lines.push("");
+        var study = cards.filter(function (c) { return c.kind === "Study"; });
+        var practice = cards.filter(function (c) { return c.kind !== "Study"; });
+        study.forEach(function (c) {
+          lines.push("- [ ] **" + c.front + "**");
+          lines.push("  " + c.back);
+          (c.res || []).forEach(function (r) {
+            lines.push(r.book ? "  - " + r.book : "  - [" + r.label + "](" + r.url + ")");
+          });
+        });
+        if (practice.length) {
+          lines.push("Practice:");
+          practice.forEach(function (c) { lines.push("- [ ] " + c.front); });
+        }
+        lines.push("");
+      });
+    });
+    return lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "") + "\n";
+  }
+
+  /* --------------------------------------------------- declared week state */
+
+  function declaredFor(wi) { return state.declared[String(wi)] || null; }
+  function declareWeek(wi, st) {
+    state.declared[String(wi)] = { state: st, at: stampNow() };
+    save(); draw();
+  }
+  function consecutiveRedDeclared() {
+    var n = 0, wi;
+    for (wi = currentWeek(); wi >= 0; wi--) {
+      var d = declaredFor(wi);
+      if (!d || d.state !== "red") { break; }
+      n += 1;
+    }
+    return n;
+  }
+  function currentStreak() {
+    var n = 0, wi;
+    for (wi = currentWeek(); wi >= 0; wi--) {
+      if (weekState(wi) === null) { break; }
+      n += 1;
+    }
+    return n;
+  }
+  function lastSessionACompleted() {
+    var wi;
+    for (wi = currentWeek(); wi >= 0; wi--) {
+      if (sessionDone(PLAN[wi].sessions[0])) { return { wi: wi, s: PLAN[wi].sessions[0] }; }
+    }
+    return null;
+  }
+  function rampPanel() {
+    var n = consecutiveRedDeclared();
+    if (n < 2) { return null; }
+    var last = lastSessionACompleted();
+    var p = el("div", "panel");
+    p.appendChild(el("p", "sm", n + " Red weeks declared in a row. An interview sprint reads exactly like this, not a shortfall."));
+    p.appendChild(el("p", "sm", last
+      ? "Re-entry ramp: the next non-Red week repeats " + last.s.name.toLowerCase() + ", week " + (last.wi + 1) + ", rather than moving to a new session."
+      : "Re-entry ramp: the next non-Red week repeats the last session A completed, but none has closed yet to repeat."));
+    if (n >= 4) {
+      p.appendChild(el("p", "sm", "Four or more now. Retake the last gate quiz before advancing — a fail simply extends the milestone, no shame attaches to it."));
+    }
+    return p;
+  }
+
+  function renderQuizHistory(s) {
+    var hist = state.quizHistory[s.id];
+    if (!hist || !hist.length) { return null; }
+    var box = el("div", "qhist");
+    var head = el("button", "sec", open[s.id + ":qh"] ? "Hide history" : "History (" + hist.length + ")");
+    head.addEventListener("click", function () { open[s.id + ":qh"] = !open[s.id + ":qh"]; draw(); });
+    box.appendChild(head);
+    if (open[s.id + ":qh"]) {
+      var ul = el("ul", "list");
+      hist.slice().reverse().forEach(function (r) {
+        var li = document.createElement("li");
+        li.appendChild(el("span", "wh", stampShort(r.at)));
+        var d = el("div");
+        d.appendChild(el("div", "", r.score + " of " + s.quiz.length + (r.passed ? ", passed" : ", not yet")));
+        if (r.missed && r.missed.length) {
+          d.appendChild(el("div", "sm dim", "Missed " + r.missed.map(function (qi) { return "Q" + (qi + 1); }).join(", ")));
+        }
+        li.appendChild(d);
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    }
+    return box;
+  }
+
   function draw() {
     try {
       drawNav();
@@ -3775,6 +4741,9 @@
       else if (view.page === "protocol") { viewProtocol(); }
       else if (view.page === "charter") { viewCharter(); }
       else if (view.page === "ahead") { viewAhead(); }
+      else if (view.page === "written") { viewWritten(); }
+      else if (view.page === "resources") { viewResources(); }
+      else if (view.page === "search") { viewSearch(); }
       else { viewData(); }
     } catch (err) {
       console.error("Render failed", err);
@@ -3782,11 +4751,34 @@
   }
 
   load();
+  sweepClocks();
   eachSession(function (s) { markSession(s); });
   eachWild(function (s) { markSession(s); });
   view.week = currentWeek();
   view = parseHash();
   draw();
+
+  try {
+    setInterval(function () {
+      try {
+        Object.keys(state.clock).forEach(function (id) {
+          var c = state.clock[id];
+          if (!c.running) { return; }
+          var elText = document.getElementById("clockElapsed_" + id);
+          if (elText) { elText.textContent = fmtMinutes(c.minutes + clockLiveMinutes(id)) + " \u2014 running"; }
+        });
+        Object.keys(state.floor).forEach(function (key) {
+          var r = state.floor[key];
+          if (!r.startedAt) { return; }
+          var elText = document.getElementById("floorElapsed_" + key);
+          if (elText) {
+            var liveMin = Math.max(0, Math.round((Date.now() - r.startedAt) / 60000));
+            elText.textContent = fmtMinutes(r.minutes + liveMin) + " \u2014 running";
+          }
+        });
+      } catch (err) { console.error("Clock tick failed", err); }
+    }, 30000);
+  } catch (err) { console.error("Could not start the clock tick", err); }
 
   window.addEventListener("hashchange", function () {
     view = parseHash();
@@ -3798,6 +4790,7 @@
     try {
       var t = e.target && e.target.tagName;
       if (t === "TEXTAREA" || t === "INPUT" || e.metaKey || e.ctrlKey || e.altKey) { return; }
+      if (e.key === "/" && view.page !== "search") { e.preventDefault(); go("search"); return; }
       if (view.page === "drill") {
         if (e.key === " " || e.key === "Enter") { e.preventDefault(); drill.flip = !drill.flip; draw(); return; }
         if (e.key === "ArrowRight") { e.preventDefault(); drill.i += 1; drill.flip = false; draw(); return; }
