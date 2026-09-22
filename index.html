@@ -191,6 +191,7 @@
   .plate .cap { font-size: 13.5px; color: var(--mid); line-height: 1.55; margin-top: 12px;
     padding-top: 11px; border-top: 1px solid var(--hair); max-width: 76ch; }
   .plate .cap b { font-weight: 600; color: var(--ink); }
+  .plate .diafirst-btn { margin-top: 14px; }
 
   .step { border-bottom: 1px solid var(--hair); }
   .step:first-child { border-top: 1px solid var(--line); }
@@ -359,6 +360,7 @@
     h1 { font-size: 17px; }
     .lede { font-size: 11px; }
   }
+  .card .diasvg svg { width: 100%; height: auto; display: block; margin: 4px 0 6px; }
 </style>
 </head>
 <body>
@@ -2085,6 +2087,17 @@
       String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
   }
   function stampShort(s) { return s ? s.split(" ").slice(0, 2).join(" ") : ""; }
+  function ageDays(stamp) {
+    if (!stamp) { return null; }
+    var parts = stamp.split(" ");
+    var day = parseInt(parts[0], 10);
+    var mi = MON.indexOf(parts[1]);
+    if (isNaN(day) || mi < 0) { return null; }
+    var now = new Date();
+    var d = new Date(now.getFullYear(), mi, day);
+    if (d.getTime() - now.getTime() > 3 * 864e5) { d.setFullYear(d.getFullYear() - 1); }
+    return Math.floor((now.getTime() - d.getTime()) / 864e5);
+  }
   function currentWeek() {
     var d = Math.floor((Date.now() - START.getTime()) / (7 * 864e5));
     return d < 0 ? 0 : (d > PLAN.length - 1 ? PLAN.length - 1 : d);
@@ -2307,6 +2320,7 @@
     if (page === "week") { return "#/week/" + (week + 1); }
     if (page === "wild") { return "#/wild"; }
     if (page === "drill") { return "#/drill/" + week; }
+    if (page === "dia") { return "#/dia/" + week + "/" + (session + 1); }
     if (page === "sheet") { return "#/sheet/" + week; }
     if (page === "session") {
       return week === "wc" ? "#/w/" + (session + 1) : "#/s/" + (week + 1) + "/" + (session + 1);
@@ -2325,6 +2339,9 @@
       if (p[0] === "wild") { return { page: "wild", week: "wc", session: 0 }; }
       if ((p[0] === "drill" || p[0] === "sheet") && p[1]) {
         return { page: p[0], week: view.week, session: 0, scope: p[1] };
+      }
+      if (p[0] === "dia" && p[1]) {
+        return { page: "dia", week: view.week, session: n(p[2]), scope: p[1] };
       }
       if (p[0] === "w" && WILDCARD.sessions[n(p[1])]) { return { page: "session", week: "wc", session: n(p[1]) }; }
       if (["requeue", "protocol", "charter", "ahead", "data"].indexOf(p[0]) >= 0) {
@@ -2523,6 +2540,35 @@
       lg.appendChild(s);
     });
     v.appendChild(lg);
+
+    var spacedCard = pickSpaced();
+    if (spacedCard) {
+      v.appendChild(rubric("From a while back", "rated clean, not seen in a while"));
+      var sc = el("div", "card");
+      var scr = state.recall[spacedCard.k];
+      sc.appendChild(el("div", "src", spacedCard.kind + "  \u00b7  " + spacedCard.name + "  \u00b7  last rated " + scr.at));
+      sc.appendChild(el("div", "front", spacedCard.front));
+      if (!spacedFlip) {
+        sc.appendChild(el("div", "grow", ""));
+        var turnSc = el("button", "turn", "Said it. Turn the card.");
+        turnSc.addEventListener("click", function () { spacedFlip = true; draw(); });
+        sc.appendChild(turnSc);
+      } else {
+        sc.appendChild(el("div", "back", spacedCard.back));
+        sc.appendChild(el("div", "grow", ""));
+        var rateSc = el("div", "rate");
+        [["got", "g", "Said it clean"], ["shaky", "s", "Roughly, with gaps"], ["no", "n", "Could not say it"]]
+          .forEach(function (rr) {
+            var b = el("button", rr[1], rr[2]);
+            b.addEventListener("click", function () {
+              rateCard(spacedCard.k, rr[0]); spacedFlip = false; draw();
+            });
+            rateSc.appendChild(b);
+          });
+        sc.appendChild(rateSc);
+      }
+      v.appendChild(sc);
+    }
 
     /* figures */
     var closed = 0, estTotal = 0, estDone = 0, quizzes = [], i;
@@ -2827,9 +2873,19 @@
     }
 
     if (s.diagrams && s.diagrams.length) {
+      if (s.diagrams.length > 1) {
+        var diaAll = el("button", "sec", "Diagram-first, all " + s.diagrams.length + " figures");
+        diaAll.addEventListener("click", function () { go("dia", s.id, 0); });
+        v.appendChild(diaAll);
+      }
       s.diagrams.forEach(function (k, i) {
         var f = plate(k, i + 1);
-        if (f) { v.appendChild(f); }
+        if (f) {
+          var dfb = el("button", "sec diafirst-btn", "Diagram-first");
+          dfb.addEventListener("click", function () { go("dia", s.id, i); });
+          f.appendChild(dfb);
+          v.appendChild(f);
+        }
       });
     }
 
@@ -3615,6 +3671,93 @@
     });
   }
 
+  var spacedFlip = false;
+  function pickSpaced() {
+    var best = null, bestAge = -1;
+    function consider(s) {
+      if (!sessionClosed(s)) { return; }
+      cardsOf(s).forEach(function (c) {
+        var r = state.recall[c.k];
+        if (!r || r.r !== "got") { return; }
+        var age = ageDays(r.at);
+        if (age === null || age < 14) { return; }
+        if (age > bestAge) { best = c; bestAge = age; }
+      });
+    }
+    eachSession(consider);
+    eachWild(consider);
+    return best;
+  }
+
+  var diaWalk = { scope: null, entry: null, keys: null, i: 0, flip: false };
+  function diaNav(scope) {
+    var acts = el("div", "row-act");
+    var back = el("button", "sec", "Back");
+    back.addEventListener("click", function () { backToScope(scope); });
+    acts.appendChild(back);
+    return acts;
+  }
+  function viewDiaFirst() {
+    var v = document.getElementById("view");
+    var scope = view.scope;
+    var figs = [];
+    scopeSessions(scope).forEach(function (s) {
+      (s.diagrams || []).forEach(function (k) { figs.push({ key: k, sid: s.id }); });
+    });
+
+    v.appendChild(el("h1", "", "Diagram first"));
+    if (!figs.length) {
+      v.appendChild(el("p", "lede", "No figures in " + scopeName(scope) + "."));
+      v.appendChild(diaNav(scope));
+      return;
+    }
+    v.appendChild(el("p", "lede", "Read the drawing before the words. Say out loud what it shows, then reveal the title and the caption."));
+
+    if (diaWalk.scope !== scope || diaWalk.entry !== view.session || !diaWalk.keys) {
+      diaWalk.scope = scope; diaWalk.entry = view.session;
+      diaWalk.keys = figs; diaWalk.i = view.session || 0; diaWalk.flip = false;
+    }
+
+    if (diaWalk.i >= diaWalk.keys.length) {
+      var doneBox = el("div", "card");
+      doneBox.appendChild(el("div", "src", "Pass complete"));
+      doneBox.appendChild(el("div", "front", diaWalk.keys.length + " figure" + (diaWalk.keys.length === 1 ? "" : "s") + " in " + scopeName(scope)));
+      doneBox.appendChild(el("div", "grow", ""));
+      var rw = el("div", "rate");
+      var again = el("button", "", "Start over");
+      again.addEventListener("click", function () { diaWalk.i = 0; diaWalk.flip = false; draw(); });
+      rw.appendChild(again);
+      doneBox.appendChild(rw);
+      v.appendChild(doneBox);
+      v.appendChild(diaNav(scope));
+      return;
+    }
+
+    var cur = diaWalk.keys[diaWalk.i];
+    var d = DIA[cur.key];
+    var box = el("div", "card");
+    box.appendChild(el("div", "src", "Figure " + (diaWalk.i + 1) + " of " + diaWalk.keys.length));
+    if (d) { box.appendChild(htm("div", "diasvg", d.svg())); }
+    if (!diaWalk.flip) {
+      box.appendChild(el("p", "sm dim", "Say what this shows, then turn it over."));
+      box.appendChild(el("div", "grow", ""));
+      var turn = el("button", "turn", "Said it. Reveal.");
+      turn.addEventListener("click", function () { diaWalk.flip = true; draw(); });
+      box.appendChild(turn);
+    } else {
+      if (d) {
+        box.appendChild(el("div", "front", d.title));
+        box.appendChild(htm("div", "back", d.cap));
+      }
+      box.appendChild(el("div", "grow", ""));
+      var nxt = el("button", "turn", diaWalk.i + 1 < diaWalk.keys.length ? "Next figure" : "Finish");
+      nxt.addEventListener("click", function () { diaWalk.i += 1; diaWalk.flip = false; draw(); });
+      box.appendChild(nxt);
+    }
+    v.appendChild(box);
+    v.appendChild(diaNav(scope));
+  }
+
   function draw() {
     try {
       drawNav();
@@ -3627,6 +3770,7 @@
       else if (view.page === "session") { viewSession(); }
       else if (view.page === "drill") { viewDrill(); }
       else if (view.page === "sheet") { viewSheet(); }
+      else if (view.page === "dia") { viewDiaFirst(); }
       else if (view.page === "requeue") { viewRequeue(); }
       else if (view.page === "protocol") { viewProtocol(); }
       else if (view.page === "charter") { viewCharter(); }
