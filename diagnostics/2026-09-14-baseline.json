@@ -1,0 +1,166 @@
+{
+  "takenAt": "2026-09-14T16:26:11.343Z",
+  "totalSeconds": 735,
+  "responses": [
+    {
+      "n": 1,
+      "area": "Machine learning",
+      "type": "text",
+      "question": "Training loss keeps falling. Validation loss starts rising at epoch 3. Name what is happening, then two things you would change and why each one works.",
+      "answer": "overfitting - there are some nuances todo - i dont rememebr by anme but one is l1 or l2 ridge or alsso n some othertechniques.",
+      "seconds": 52
+    },
+    {
+      "n": 2,
+      "area": "Machine learning",
+      "type": "mcq",
+      "question": "Why does batch normalisation help a network train?",
+      "answer": "It regularises, because batch statistics inject noise",
+      "seconds": 2
+    },
+    {
+      "n": 3,
+      "area": "Machine learning",
+      "type": "text",
+      "question": "What is an embedding at the level of weights? Not 'a vector representation of meaning' — where do those numbers physically come from, and what makes them end up meaningful?",
+      "answer": "weights are represenation of a feature set in multi-dimensional space- what makes them meaningful is their closeness to other similar embeddings that makes them relatable ina  sense - giving meaning to an otherwise abstract empty object",
+      "seconds": 77
+    },
+    {
+      "n": 4,
+      "area": "Machine learning",
+      "type": "text",
+      "question": "In attention, what are Q, K and V, and why is the dot product divided by the square root of d_k?",
+      "answer": "query, key and vector - query is the input, key si the key map or keys to all the inputs weights before - whch si represented via V - dont know d__k",
+      "seconds": 60
+    },
+    {
+      "n": 5,
+      "area": "Machine learning",
+      "type": "mcq",
+      "question": "Why is cross-entropy preferred over squared error for classification?",
+      "answer": "Its gradient does not collapse when the output saturates",
+      "seconds": 2
+    },
+    {
+      "n": 6,
+      "area": "Mathematics",
+      "type": "mcq",
+      "question": "A is 4x3. B is 3x5. What shape is the transpose of AB?",
+      "answer": "UNKNOWN",
+      "seconds": 3
+    },
+    {
+      "n": 7,
+      "area": "Mathematics",
+      "type": "text",
+      "question": "Write the derivative of the sigmoid in terms of the sigmoid itself, and show the one line that gets you there.",
+      "answer": "dont know - I knwo sigmoid to be sued as activation function , and I can trace the graphb as well if i see the equation. but dont rememebr",
+      "seconds": 53
+    },
+    {
+      "n": 8,
+      "area": "Mathematics",
+      "type": "mcq",
+      "question": "Geometrically, what is an eigenvector of a matrix?",
+      "answer": "Any vector the matrix maps to zero",
+      "seconds": 1
+    },
+    {
+      "n": 9,
+      "area": "Mathematics",
+      "type": "text",
+      "question": "Disease prevalence is 0.1 percent. A test catches 99 percent of true cases and wrongly flags 5 percent of healthy people. A patient tests positive. Roughly what is the chance they are actually ill? Show your setup even if the arithmetic defeats you.",
+      "answer": "0.1 pct of polulation is affected by a disease\ntest has 5 pct - forgot the equation - but bayes theoram applies here with confusion matrix",
+      "seconds": 102
+    },
+    {
+      "n": 10,
+      "area": "Mathematics",
+      "type": "mcq",
+      "question": "In plain gradient descent, the learning rate is multiplied by what?",
+      "answer": "UNKNOWN",
+      "seconds": 1
+    },
+    {
+      "n": 11,
+      "area": "Mathematics",
+      "type": "text",
+      "question": "Why does the chain rule make backpropagation possible at all? Explain it in two sentences to a strong engineer who has never trained a model.",
+      "answer": "dont remember",
+      "seconds": 18
+    },
+    {
+      "n": 12,
+      "area": "Systems at scale",
+      "type": "text",
+      "question": "Your eval harness replays five thousand scenarios a day. Tomorrow it has to replay a hundred million. Name the first three things that break, in the order they break.",
+      "answer": "The laod function itself will break due to huge scann amount\nThe edge funcion timeouts due to large queue \nCosts will skyrocket",
+      "seconds": 63
+    },
+    {
+      "n": 13,
+      "area": "Systems at scale",
+      "type": "mcq",
+      "question": "You add a read replica to a Postgres primary. Which problem does this not solve?",
+      "answer": "Write throughput",
+      "seconds": 1
+    },
+    {
+      "n": 14,
+      "area": "Systems at scale",
+      "type": "text",
+      "question": "What is backpressure, and what actually happens to a queue-based system that has none?",
+      "answer": "UNKNOWN",
+      "seconds": 1
+    },
+    {
+      "n": 15,
+      "area": "Systems at scale",
+      "type": "mcq",
+      "question": "An idempotency key on a payment endpoint mainly protects against what?",
+      "answer": "A retried request charging the customer twice",
+      "seconds": 1
+    },
+    {
+      "n": 16,
+      "area": "Systems at scale",
+      "type": "text",
+      "question": "Your memory system runs a vector search on every user turn. At a hundred million turns a day, where would you put a cache and what would you key it on? Say what you would give up by doing it.",
+      "answer": "cache the user memory - in some way either on device or immedaitely \nthis cache will be per user while also accounting for MOST FREQUENT serches",
+      "seconds": 58
+    },
+    {
+      "n": 17,
+      "area": "Algorithms",
+      "type": "mcq",
+      "question": "A sorted array, and you need to know whether two entries sum to a target. Which approach fits best?",
+      "answer": "Store seen values in a hash set",
+      "seconds": 1
+    },
+    {
+      "n": 18,
+      "area": "Algorithms",
+      "type": "text",
+      "question": "When you see n log n, what does it usually tell you about the shape of the algorithm? Name the two structures that most often produce it.",
+      "answer": "UNKNOWN",
+      "seconds": 0
+    },
+    {
+      "n": 19,
+      "area": "Algorithms",
+      "type": "code",
+      "question": "Return the first character in a string that never repeats. Any language. If the code will not come, write the approach in words and say what you would need to look up.",
+      "answer": "i will bascially do this with two pointer - keeping track ofunique characters in a o(1) lookup data structure. if character repeats, I drop it \nat end I return pop",
+      "seconds": 83
+    },
+    {
+      "n": 20,
+      "area": "Algorithms",
+      "type": "code",
+      "question": "Return the maximum depth of a binary tree. Write it, or name the traversal you would use and say why that one.",
+      "answer": "UNKNOWN",
+      "seconds": 0
+    }
+  ]
+}

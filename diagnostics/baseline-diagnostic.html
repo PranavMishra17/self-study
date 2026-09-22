@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baseline diagnostic</title>
+<style>
+  :root {
+    --ink: #16202b;
+    --ink-soft: #4d5c6b;
+    --paper: #f7f6f3;
+    --rule: #d8d4cc;
+    --signal: #2f6f6b;
+    --unknown: #8a7a58;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  .bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; background: var(--paper); z-index: 5;
+  }
+  .bar .where { font-size: 13px; color: var(--ink-soft); letter-spacing: 0.01em; }
+  .bar .clock { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-soft); }
+  .bar .clock.over { color: #9a4a32; }
+
+  .rail { display: flex; gap: 3px; margin-top: 10px; }
+  .rail span { height: 3px; flex: 1; background: var(--rule); border-radius: 2px; }
+  .rail span.done { background: var(--signal); }
+  .rail span.here { background: var(--ink); }
+
+  h1 { font-family: Georgia, "Iowan Old Style", serif; font-size: 30px; line-height: 1.2; font-weight: 400; margin: 28px 0 10px; }
+  .lede { color: var(--ink-soft); max-width: 60ch; }
+  .lede p { margin: 12px 0; }
+
+  .prompt {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 21px; line-height: 1.45; margin: 32px 0 6px; max-width: 62ch;
+  }
+  .aside { color: var(--ink-soft); font-size: 13px; margin-bottom: 20px; }
+
+  .opts { display: flex; flex-direction: column; gap: 8px; margin: 0 0 4px; }
+  .opt {
+    display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left;
+    background: var(--white); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 13px 15px; font: inherit; color: inherit; cursor: pointer;
+  }
+  .opt:hover { border-color: var(--ink-soft); }
+  .opt.picked { border-color: var(--signal); box-shadow: inset 3px 0 0 var(--signal); }
+  .opt .key { color: var(--ink-soft); font-size: 13px; padding-top: 2px; min-width: 14px; }
+  .opt.dunno { border-style: dashed; }
+  .opt.dunno.picked { border-color: var(--unknown); box-shadow: inset 3px 0 0 var(--unknown); }
+
+  textarea {
+    width: 100%; min-height: 150px; resize: vertical;
+    background: var(--white); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 13px 15px; font: inherit; color: inherit; line-height: 1.55;
+  }
+  textarea.code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 14px; min-height: 220px; }
+  textarea:focus, .opt:focus-visible, button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  textarea.muted { opacity: 0.45; }
+
+  .nav { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+  button.go {
+    background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+    border-radius: 3px; padding: 11px 22px; font: inherit; cursor: pointer;
+  }
+  button.go:hover { background: #0c1620; }
+  button.ghost { background: none; border: 1px solid var(--rule); color: var(--ink-soft); border-radius: 3px; padding: 11px 16px; font: inherit; cursor: pointer; }
+  button.ghost:hover { border-color: var(--ink-soft); }
+  button.ghost.on { border-color: var(--unknown); color: var(--unknown); background: #f3efe4; }
+  .hidden { display: none; }
+
+  .out { width: 100%; min-height: 260px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+  .tally { border-top: 1px solid var(--rule); margin-top: 24px; padding-top: 16px; }
+  .tally div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .tally div span:last-child { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+  .note { font-size: 13px; color: var(--ink-soft); margin-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="bar">
+    <div class="where" id="where">Baseline diagnostic</div>
+    <div class="clock" id="clock">00:00</div>
+  </div>
+  <div class="rail" id="rail"></div>
+  <div id="stage"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var BANK = [
+    { s: "Machine learning", t: "text", q: "Training loss keeps falling. Validation loss starts rising at epoch 3. Name what is happening, then two things you would change and why each one works.", a: "Three or four sentences is plenty." },
+    { s: "Machine learning", t: "mcq", q: "Why does batch normalisation help a network train?", o: ["It removes internal covariate shift, and that is the whole story", "It smooths the loss surface so larger learning rates stay stable", "It regularises, because batch statistics inject noise", "Both the smoother surface and the noise effect"] },
+    { s: "Machine learning", t: "text", q: "What is an embedding at the level of weights? Not 'a vector representation of meaning' — where do those numbers physically come from, and what makes them end up meaningful?", a: "Answer the mechanism, not the metaphor." },
+    { s: "Machine learning", t: "text", q: "In attention, what are Q, K and V, and why is the dot product divided by the square root of d_k?", a: "The second half matters more than the first." },
+    { s: "Machine learning", t: "mcq", q: "Why is cross-entropy preferred over squared error for classification?", o: ["It is convention, the difference is cosmetic", "Its gradient does not collapse when the output saturates", "Squared error cannot express more than two classes", "It is cheaper to compute at scale"] },
+
+    { s: "Mathematics", t: "mcq", q: "A is 4x3. B is 3x5. What shape is the transpose of AB?", o: ["4 x 5", "5 x 4", "3 x 3", "5 x 3"] },
+    { s: "Mathematics", t: "text", q: "Write the derivative of the sigmoid in terms of the sigmoid itself, and show the one line that gets you there.", a: "If you recall the result but not the derivation, say exactly that." },
+    { s: "Mathematics", t: "mcq", q: "Geometrically, what is an eigenvector of a matrix?", o: ["A vector the matrix scales without rotating", "The direction of steepest descent of the matrix", "Any vector the matrix maps to zero", "The column of the matrix with the largest norm"] },
+    { s: "Mathematics", t: "text", q: "Disease prevalence is 0.1 percent. A test catches 99 percent of true cases and wrongly flags 5 percent of healthy people. A patient tests positive. Roughly what is the chance they are actually ill? Show your setup even if the arithmetic defeats you.", a: "The setup is what is being tested here, not the decimal." },
+    { s: "Mathematics", t: "mcq", q: "In plain gradient descent, the learning rate is multiplied by what?", o: ["The loss value", "The gradient of the loss with respect to the parameters", "The parameters themselves", "The second derivative of the loss"] },
+    { s: "Mathematics", t: "text", q: "Why does the chain rule make backpropagation possible at all? Explain it in two sentences to a strong engineer who has never trained a model.", a: "Compression is the skill being measured." },
+
+    { s: "Systems at scale", t: "text", q: "Your eval harness replays five thousand scenarios a day. Tomorrow it has to replay a hundred million. Name the first three things that break, in the order they break.", a: "Order matters more than completeness. Take your time on this one." },
+    { s: "Systems at scale", t: "mcq", q: "You add a read replica to a Postgres primary. Which problem does this not solve?", o: ["Read throughput", "Write throughput", "Read latency for users in a distant region", "Analytics queries hammering the primary"] },
+    { s: "Systems at scale", t: "text", q: "What is backpressure, and what actually happens to a queue-based system that has none?", a: "Describe the failure, not the definition." },
+    { s: "Systems at scale", t: "mcq", q: "An idempotency key on a payment endpoint mainly protects against what?", o: ["Injection attacks", "A retried request charging the customer twice", "Slow database writes", "A stale cache serving old balances"] },
+    { s: "Systems at scale", t: "text", q: "Your memory system runs a vector search on every user turn. At a hundred million turns a day, where would you put a cache and what would you key it on? Say what you would give up by doing it.", a: "The tradeoff is the answer." },
+
+    { s: "Algorithms", t: "mcq", q: "A sorted array, and you need to know whether two entries sum to a target. Which approach fits best?", o: ["Check every pair", "Store seen values in a hash set", "Walk two pointers inward from both ends", "Binary search for each complement"] },
+    { s: "Algorithms", t: "text", q: "When you see n log n, what does it usually tell you about the shape of the algorithm? Name the two structures that most often produce it.", a: "Two sentences." },
+    { s: "Algorithms", t: "code", q: "Return the first character in a string that never repeats. Any language. If the code will not come, write the approach in words and say what you would need to look up.", a: "Words beat a blank box." },
+    { s: "Algorithms", t: "code", q: "Return the maximum depth of a binary tree. Write it, or name the traversal you would use and say why that one.", a: "Same rule: words beat a blank box." }
+  ];
+
+  var UNKNOWN = "I do not know this one";
+  var LETTERS = "abcdefgh";
+  var answers = BANK.map(function () { return { pick: null, text: "", dunno: false, ms: 0 }; });
+  var idx = 0;
+  var startedAt = null;
+  var enteredAt = null;
+  var finished = false;
+  var stage = document.getElementById("stage");
+  var rail = document.getElementById("rail");
+  var clock = document.getElementById("clock");
+  var where = document.getElementById("where");
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function fmt(ms) {
+    var total = Math.floor(ms / 1000);
+    return pad(Math.floor(total / 60)) + ":" + pad(total % 60);
+  }
+
+  function tick() {
+    try {
+      if (!startedAt || finished) { return; }
+      var elapsed = Date.now() - startedAt;
+      clock.textContent = fmt(elapsed);
+      clock.className = elapsed > 30 * 60 * 1000 ? "clock over" : "clock";
+    } catch (err) {
+      console.error("Clock update failed", err);
+    }
+  }
+  setInterval(tick, 1000);
+
+  function buildRail() {
+    try {
+      rail.innerHTML = "";
+      BANK.forEach(function (_, i) {
+        var s = document.createElement("span");
+        s.className = i < idx ? "done" : (i === idx ? "here" : "");
+        rail.appendChild(s);
+      });
+    } catch (err) {
+      console.error("Progress rail failed", err);
+    }
+  }
+
+  function bank(i) { return BANK[i]; }
+
+  function stamp() {
+    if (enteredAt === null) { return; }
+    answers[idx].ms += Date.now() - enteredAt;
+    enteredAt = null;
+  }
+
+  function intro() {
+    stage.innerHTML = "";
+    rail.innerHTML = "";
+    where.textContent = "Baseline diagnostic";
+    clock.textContent = "00:00";
+
+    var h = document.createElement("h1");
+    h.textContent = "Where you actually are, today";
+    var lede = document.createElement("div");
+    lede.className = "lede";
+    lede.innerHTML =
+      "<p>Twenty questions across machine learning, the underlying mathematics, systems at scale, and algorithms. Aim for thirty minutes. The clock keeps running past that and nothing stops you, but note when you cross it.</p>" +
+      "<p>One rule, and the whole exercise collapses without it: never guess. Every question has a button that says you do not know, and pressing it is worth more than a lucky pick, because a lucky pick tells me to skip teaching you something you cannot do. Partial knowledge is welcome everywhere. Write what you have, say where it stops.</p>" +
+      "<p>Your answers stay in this page until you export them at the end, so do not refresh.</p>";
+
+    var nav = document.createElement("div");
+    nav.className = "nav";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = "Start the clock";
+    go.addEventListener("click", function () {
+      startedAt = Date.now();
+      render();
+    });
+    nav.appendChild(go);
+
+    stage.appendChild(h);
+    stage.appendChild(lede);
+    stage.appendChild(nav);
+  }
+
+  function render() {
+    try {
+      if (idx >= BANK.length) { return finish(); }
+      var q = bank(idx);
+      var a = answers[idx];
+      enteredAt = Date.now();
+      where.textContent = q.s + "  \u2014  " + (idx + 1) + " of " + BANK.length;
+      buildRail();
+      stage.innerHTML = "";
+
+      var p = document.createElement("div");
+      p.className = "prompt";
+      p.textContent = q.q;
+      stage.appendChild(p);
+
+      if (q.a) {
+        var aside = document.createElement("div");
+        aside.className = "aside";
+        aside.textContent = q.a;
+        stage.appendChild(aside);
+      }
+
+      var box = null;
+
+      if (q.t === "mcq") {
+        var wrap = document.createElement("div");
+        wrap.className = "opts";
+        var choices = q.o.concat([UNKNOWN]);
+        choices.forEach(function (text, i) {
+          var b = document.createElement("button");
+          var isUnknown = text === UNKNOWN;
+          b.className = "opt" + (isUnknown ? " dunno" : "") + (a.pick === i ? " picked" : "");
+          var key = document.createElement("span");
+          key.className = "key";
+          key.textContent = isUnknown ? "\u2014" : LETTERS[i] + ".";
+          var label = document.createElement("span");
+          label.textContent = text;
+          b.appendChild(key);
+          b.appendChild(label);
+          b.addEventListener("click", function () {
+            a.pick = i;
+            a.dunno = isUnknown;
+            render();
+          });
+          wrap.appendChild(b);
+        });
+        stage.appendChild(wrap);
+      } else {
+        box = document.createElement("textarea");
+        box.className = q.t === "code" ? "code" : "";
+        box.value = a.text;
+        box.placeholder = q.t === "code" ? "Code, pseudocode, or the approach in plain words." : "What you know, and where it runs out.";
+        if (a.dunno) { box.classList.add("muted"); box.disabled = true; }
+        box.addEventListener("input", function () { a.text = box.value; });
+        stage.appendChild(box);
+      }
+
+      var nav = document.createElement("div");
+      nav.className = "nav";
+
+      var next = document.createElement("button");
+      next.className = "go";
+      next.textContent = idx === BANK.length - 1 ? "Finish" : "Next";
+      next.addEventListener("click", function () {
+        stamp();
+        idx += 1;
+        idx >= BANK.length ? finish() : render();
+      });
+      nav.appendChild(next);
+
+      if (q.t !== "mcq") {
+        var skip = document.createElement("button");
+        skip.className = "ghost" + (a.dunno ? " on" : "");
+        skip.textContent = a.dunno ? "Marked as unknown" : "I do not know this one";
+        skip.addEventListener("click", function () {
+          a.dunno = !a.dunno;
+          render();
+        });
+        nav.appendChild(skip);
+      }
+
+      if (idx > 0) {
+        var back = document.createElement("button");
+        back.className = "ghost";
+        back.textContent = "Back";
+        back.addEventListener("click", function () {
+          stamp();
+          idx -= 1;
+          render();
+        });
+        nav.appendChild(back);
+      }
+
+      stage.appendChild(nav);
+      if (box && !a.dunno) { box.focus(); }
+    } catch (err) {
+      console.error("Could not render question", err);
+      stage.innerHTML = "<p class='lede'>Something went wrong drawing this question. Your earlier answers are intact. Reload only as a last resort.</p>";
+    }
+  }
+
+  function payload() {
+    var total = startedAt ? Date.now() - startedAt : 0;
+    return {
+      takenAt: new Date().toISOString(),
+      totalSeconds: Math.round(total / 1000),
+      responses: BANK.map(function (q, i) {
+        var a = answers[i];
+        var given;
+        if (a.dunno) {
+          given = "UNKNOWN";
+        } else if (q.t === "mcq") {
+          given = a.pick === null ? "BLANK" : q.o[a.pick];
+        } else {
+          given = a.text.trim() === "" ? "BLANK" : a.text.trim();
+        }
+        return { n: i + 1, area: q.s, type: q.t, question: q.q, answer: given, seconds: Math.round(a.ms / 1000) };
+      })
+    };
+  }
+
+  function finish() {
+    try {
+      stamp();
+      finished = true;
+      var data = payload();
+      var text = JSON.stringify(data, null, 2);
+
+      stage.innerHTML = "";
+      rail.innerHTML = "";
+      where.textContent = "Done";
+
+      var h = document.createElement("h1");
+      h.textContent = "That is your starting line";
+      var lede = document.createElement("div");
+      lede.className = "lede";
+      lede.innerHTML = "<p>Copy the block below and paste it back into the chat. Every unknown you marked honestly is a week of the plan pointed somewhere useful.</p>";
+      stage.appendChild(h);
+      stage.appendChild(lede);
+
+      var tally = document.createElement("div");
+      tally.className = "tally";
+      var areas = {};
+      data.responses.forEach(function (r) {
+        if (!areas[r.area]) { areas[r.area] = { n: 0, unknown: 0, blank: 0, secs: 0 }; }
+        areas[r.area].n += 1;
+        areas[r.area].secs += r.seconds;
+        if (r.answer === "UNKNOWN") { areas[r.area].unknown += 1; }
+        if (r.answer === "BLANK") { areas[r.area].blank += 1; }
+      });
+      Object.keys(areas).forEach(function (k) {
+        var row = document.createElement("div");
+        var left = document.createElement("span");
+        left.textContent = k;
+        var right = document.createElement("span");
+        var a = areas[k];
+        right.textContent = (a.n - a.unknown - a.blank) + " of " + a.n + " attempted, " + fmt(a.secs * 1000);
+        row.appendChild(left);
+        row.appendChild(right);
+        tally.appendChild(row);
+      });
+      var totalRow = document.createElement("div");
+      var tl = document.createElement("span");
+      tl.textContent = "Total time";
+      var tr = document.createElement("span");
+      tr.textContent = fmt(data.totalSeconds * 1000);
+      totalRow.appendChild(tl);
+      totalRow.appendChild(tr);
+      tally.appendChild(totalRow);
+      stage.appendChild(tally);
+
+      var out = document.createElement("textarea");
+      out.className = "out";
+      out.value = text;
+      out.readOnly = true;
+      out.style.marginTop = "20px";
+      stage.appendChild(out);
+
+      var nav = document.createElement("div");
+      nav.className = "nav";
+
+      var copy = document.createElement("button");
+      copy.className = "go";
+      copy.textContent = "Copy results";
+      copy.addEventListener("click", function () {
+        function fallback() {
+          try {
+            out.removeAttribute("readonly");
+            out.select();
+            document.execCommand("copy");
+            out.setAttribute("readonly", "true");
+            copy.textContent = "Copied";
+          } catch (err2) {
+            console.error("Copy failed", err2);
+            copy.textContent = "Copy failed, select the text manually";
+          }
+        }
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              copy.textContent = "Copied";
+            })["catch"](function (err) {
+              console.error("Clipboard write rejected", err);
+              fallback();
+            });
+          } else {
+            fallback();
+          }
+        } catch (err) {
+          console.error("Copy failed", err);
+          fallback();
+        }
+      });
+      nav.appendChild(copy);
+
+      var save = document.createElement("button");
+      save.className = "ghost";
+      save.textContent = "Download as file";
+      save.addEventListener("click", function () {
+        try {
+          var blob = new Blob([text], { type: "application/json" });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "baseline-diagnostic.json";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        } catch (err) {
+          console.error("Download failed", err);
+          save.textContent = "Download blocked, copy instead";
+        }
+      });
+      nav.appendChild(save);
+
+      stage.appendChild(nav);
+
+      var note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "Nothing here is sent anywhere. It lives in this tab until you copy it out.";
+      stage.appendChild(note);
+    } catch (err) {
+      console.error("Could not assemble results", err);
+      stage.innerHTML = "<p class='lede'>The summary failed to build. Open the browser console, run copy(window.__diag()), and paste that instead.</p>";
+    }
+  }
+
+  window.__diag = payload;
+
+  window.addEventListener("beforeunload", function (e) {
+    if (startedAt && !finished) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  intro();
+})();
+</script>
+</body>
+</html>
