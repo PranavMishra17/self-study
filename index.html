@@ -947,6 +947,44 @@
     }
   };
 
+  DIA.passk = {
+    title: "One good run is not evidence. Eight are.",
+    cap: "<b>pass@k asks whether the agent ever succeeds. pass^k asks whether it always does.</b> On tau-retail the paper reports its own result as bounds, and those bounds are the argument: under half the tasks pass a single trial, and under a quarter pass all eight. Nothing about the agent changed between the two bars. The only thing that changed is how many times it was asked, and that is the difference between a demo and a product. This is also the case for a replay bench: a recorded trajectory that passes once has told you almost nothing.",
+    svg: function () {
+      var b = "";
+      b += S.tag(0, 14, "gpt-4o on tau-retail, as the paper states it");
+      b += S.axes(52, 30, 300, 150, "", "tasks passed");
+
+      /* the bounds the paper gives, drawn as bounds */
+      var y50 = 30 + 150 * 0.5, y25 = 30 + 150 * 0.75;
+      b += '<line x1="52" y1="' + y50 + '" x2="352" y2="' + y50 +
+        '" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
+      b += '<line x1="52" y1="' + y25 + '" x2="352" y2="' + y25 +
+        '" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
+      b += S.text(48, y50 + 4, "50%", "d-t-x", "end");
+      b += S.text(48, y25 + 4, "25%", "d-t-x", "end");
+
+      b += S.bar({ x: 96, y: y50 + 4, w: 74, h: 180 - y50 - 4, tone: "iv" });
+      b += S.text(133, y50 - 6, "under 50%", "d-t-b", "middle");
+      b += S.text(133, 196, "pass^1", "d-t-s", "middle");
+
+      b += S.bar({ x: 234, y: y25 + 4, w: 74, h: 180 - y25 - 4, tone: "mark" });
+      b += S.text(271, y25 - 6, "under 25%", "d-t-b", "middle");
+      b += S.text(271, 196, "pass^8", "d-t-s", "middle");
+
+      b += S.arrow(180, y50 + 12, 226, y25 - 2, { curve: 16 });
+
+      b += S.text(380, 46, "Same agent.", "d-t-b");
+      b += S.text(380, 62, "Same tasks.", "d-t-s");
+      b += S.text(380, 78, "Asked eight times", "d-t-s");
+      b += S.text(380, 94, "instead of once.", "d-t-s");
+      b += S.text(380, 122, "The gap is the", "d-t-s");
+      b += S.text(380, 138, "reliability nobody", "d-t-s");
+      b += S.text(380, 154, "measures.", "d-t-b");
+      return S.frame(560, 210, b);
+    }
+  };
+
   DIA.oxusFrame = {
     title: "Thirty-five minutes, and where the twelve that matter go",
     cap: "<b>The hard part takes a third of the clock, and you choose it.</b> Requirements come before boxes precisely because they decide which deep dive earns those twelve minutes; for Oxus it is grounding, which is how the system knows a cited value really sits on that page. The last two minutes are not a summary. They are what you would build first, which is the thing a founding-engineer interview is actually measuring. <b>If she cuts in, follow her.</b> The shape is for when she does not.",
@@ -1778,7 +1816,7 @@
         name: "Design: multi-turn replay when the conversation changes",
         blurb: "The hardest open problem in replay evals, and a live one for them.",
         intro: "Conversational replay and adaptive multi-turn evaluation are on Kitaru's public roadmap right now. Your bench handles multi-turn because the world is stateful within a case. Turn that into a design you could defend to the people working on it. Ask about it as a genuine question; do not cite their issues or commits to them.",
-        diagrams: ["multiturn"],
+        diagrams: ["passk", "multiturn"],
         steps: [
           { t: "State the problem in one sentence",
             d: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer make sense, so replaying the recording verbatim stops being a test of the agent." },
@@ -2489,32 +2527,133 @@
     wc9: [
       { t: "tau-bench's design",
         say: "An agent converses with an LLM-simulated user who has a goal and reveals information gradually, while the agent calls tools that write to a shared database. Success is judged by comparing the final database state with an annotated goal state.",
-        res: [R.tau, R.tauExplain] },
+        res: [R.tau, R.tauExplain],
+        do: [
+          { a: "Read the abstract and the opening of Section 3", m: 5,
+            where: "arXiv 2406.12045, abstract and the opening of Section 3, \"tau-bench: A Benchmark for Tool-Agent-User Interaction\"",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "one sentence: a simulated user with a goal talks to an agent that calls tools against a shared database \u2014 authors Yao, Shinn, Razavi and Narasimhan, ICLR 2025" },
+          { a: "Read the repo's top description and its two domains", m: 5,
+            where: "sierra-research/tau-bench README, the top description and the airline and retail domains",
+            url: "https://github.com/sierra-research/tau-bench/blob/main/README.md",
+            skip: "the installation and CLI-flag sections \u2014 that is setup, not design",
+            out: "can name both domains and say the agent's tool calls write to a real database, not a mock" },
+          { a: "Say the one-sentence setup out loud, cold", m: 3,
+            out: "the sentence spoken correctly without checking the page" }
+        ] },
       { t: "Goal-state evaluation",
         say: "Checking the world at the end, rather than the transcript, is exactly what your frozen-world bench does, and it is what makes multi-turn evaluation robust to a different path. This is your strongest link between your work and theirs.",
-        res: [R.tau] },
+        res: [R.tau],
+        do: [
+          { a: "Read the reward definition in Section 3", m: 5,
+            where: "arXiv 2406.12045, Section 3, the paragraph defining the episode reward from the final database state",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "the reward is checked against the final database matching a unique ground-truth outcome database, not by grading the conversation" },
+          { a: "Write two sentences naming what plays the role of \"final database\" and \"annotated goal state\" in your own frozen-world bench", m: 8,
+            out: "two sentences in the Answer field naming your bench's equivalent objects" },
+          { a: "Say out loud why checking the end state survives the agent taking a different path to the same goal", m: 5,
+            out: "one spoken sentence: path independence \u2014 the same argument behind your own goal-state check" }
+        ] },
       { t: "pass^k against pass@k",
         say: "pass@k asks whether at least one of k attempts succeeds. pass^k asks whether all k succeed, which is the right measure for an agent that gets one chance per customer, and which falls off sharply as k grows.",
-        res: [R.tauExplain] },
+        res: [R.tauExplain],
+        do: [
+          { a: "Read the pass^k paragraph twice and copy the formula out by hand", m: 6,
+            where: "arXiv 2406.12045, Section 3, the paragraph defining pass^k with the expectation-and-binomial-coefficient formula",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "written correctly from memory: pass^k = E_task[ C(c,k) / C(n,k) ], the chance that all k of n independent trials succeed, averaged over tasks",
+            skip: "the pass@k line \u2014 that is the next action" },
+          { a: "Read the pass@k line immediately after it and hold the two side by side", m: 4,
+            where: "arXiv 2406.12045, Section 3, the pass@k definition directly below pass^k",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "the contrast stated correctly: pass@k is the chance at least one of k succeeds, pass^k is the chance all k succeed" },
+          { a: "Read the retail headline number in the results section", m: 4,
+            where: "arXiv 2406.12045, Section 5.1, the gpt-4o result on tau-retail",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "the paper states it as bounds, so state it that way: under 50 percent at pass^1 on tau-retail, under 25 percent at pass^8. Repetition finds the unreliability a single run hides" },
+          { a: "Say the formula and the one-sentence reliability argument out loud, no notes", m: 4,
+            out: "formula spoken correctly, then: pass@k asks if you can solve it once, pass^k asks if you can solve it every time" }
+        ] },
       { t: "Simulated user failure modes",
         say: "Too cooperative, leaking the goal, drifting from the persona, and costing money every turn. Know how tau-bench structures its simulator, including the stop signal when the goal is met.",
-        res: [R.tauExplain] }
+        res: [R.tauExplain],
+        do: [
+          { a: "Read the User simulation subsection in Section 3", m: 6,
+            where: "arXiv 2406.12045, Section 3, the \"User simulation\" subsection",
+            url: "https://arxiv.org/abs/2406.12045",
+            out: "the user is gpt-4-0613 driven only by a system prompt plus the running conversation history, and it ends the episode by emitting the literal string ###STOP###" },
+          { a: "Open tau_bench/envs/user.py and skim the four strategy names, then read the README's plain-language description of each", m: 6,
+            where: "sierra-research/tau-bench, tau_bench/envs/user.py, and the README's user-strategy section",
+            url: "https://github.com/sierra-research/tau-bench/blob/main/tau_bench/envs/user.py",
+            skip: "the airline and retail environment files in the same directory \u2014 different concern",
+            out: "four strategies named: llm (plain), react (reasons before replying), verify (checks its own reply), reflection (redoes an unsatisfactory reply)" },
+          { a: "Say the two failure modes that matter most for a support agent, and which strategy each argues for guarding against", m: 5,
+            out: "two sentences spoken: react and verify exist because a plain llm-strategy user can be too compliant or over-reveal the goal early" }
+        ] }
     ],
     wc10: [
       { t: "How Alex writes and what he writes about",
         say: "Read two or three of his recent posts, including the analysis of production LLM deployments and the one on rebuilding the site with Claude Code. Notice how he explains things; that is the bar he will hold you to.",
-        res: [R.alexBlog, R.alexSite] },
+        res: [R.alexBlog, R.alexSite],
+        do: [
+          { a: "Read \"How I Rebuilt zenml.io in a Week with Claude Code\" end to end", m: 10,
+            where: "ZenML blog, \"How I Rebuilt zenml.io in a Week with Claude Code\", all six sections",
+            url: "https://www.zenml.io/blog/how-i-rebuilt-zenml-io-in-a-week-with-claude-code",
+            out: "one specific claim you can cite: he tried git worktrees for parallel Claude Code sessions and dropped them because merge conflicts across many changed files made it slower than working sequentially" },
+          { a: "Read \"The Experimentation Phase Is Over\", skimming past the intro to the six numbered findings", m: 8,
+            where: "ZenML blog, \"The Experimentation Phase Is Over: Key Findings from 1,200 Production Deployments\", the six findings",
+            url: "https://www.zenml.io/blog/the-experimentation-phase-is-over-key-findings-from-1-200-production-deployments",
+            skip: "the LLMOps Database methodology \u2014 the findings matter, not the corpus size",
+            out: "can name two of the six without looking: engineering fundamentals over frontier models, and infrastructure-based guardrails over prompt-based ones" },
+          { a: "Say, in one sentence each, what these two pieces show about how Alex explains things", m: 5,
+            out: "two spoken sentences naming the worktree reversal and one of the six findings \u2014 concrete numbers and a named decision, not general praise" }
+        ] },
       { t: "Kitaru's onboarding path",
         say: "Clone, open the example in a coding agent, run the guided tour skill. Know every step because you did it.",
-        res: [R.kitaruGH, R.kitaruSkills] }
+        res: [R.kitaruGH, R.kitaruSkills],
+        do: [
+          { a: "Read the Installation section, then the PydanticAI example path", m: 8,
+            where: "github.com/zenml-io/kitaru README, Installation, then examples/python/pydantic_ai_ticket_resolver",
+            url: "https://github.com/zenml-io/kitaru",
+            skip: "the TypeScript adapter docs and the other example projects",
+            out: "the install command memorised: curl -fsSL https://kitaru.ai/install | bash, which also registers the MCP server and coding-agent skills" },
+          { a: "In a coding agent, paste the README's guided-tour prompt and run kitaru-guided-tour against the PydanticAI ticket-resolver example", m: 10,
+            where: "the README's guided-tour paragraph, and the kitaru-guided-tour skill",
+            url: "https://github.com/zenml-io/kitaru-skills",
+            skip: "letting the tour touch anything paid or live \u2014 it should ask first, and the answer is no",
+            out: "the four stages named from having watched them run: a prepared session review, a human verdict on one finding, that finding turned into a deterministic evaluator, one approved bounded experiment" },
+          { a: "Say the four stages in order, out loud, and name the point where the tour paused to ask before continuing", m: 5,
+            out: "four stages spoken in order, and the pause point named" }
+        ] }
     ],
     wc11: [
       { t: "ZenML's core abstractions",
         say: "Pipelines and steps, stacks that bind them to infrastructure, orchestrators, artifact stores and lineage. Enough to hold a conversation, not to pass an exam.",
-        res: [R.zenDocs] },
+        res: [R.zenDocs],
+        do: [
+          { a: "Read the Core Concepts page's five main entries", m: 6,
+            where: "docs.zenml.io, Getting Started, Core Concepts \u2014 Steps, Pipelines, Stacks, Orchestrator, Artifact Store",
+            url: "https://docs.zenml.io/getting-started/core-concepts",
+            skip: "Materializers, Models, Parameters and Settings \u2014 good to know exist, not needed for this call",
+            out: "five one-line definitions in your own words: a step is a decorated function, a pipeline is steps in order, a stack is a bound set of infrastructure components, the orchestrator decides what runs and when, the artifact store holds and versions every input and output" },
+          { a: "Say the five terms out loud in one sentence each, no notes", m: 4,
+            out: "five sentences spoken correctly, in order: steps, pipelines, stacks, orchestrator, artifact store" }
+        ] },
       { t: "Kitaru's positioning",
         say: "It sits beside trace stores rather than competing with them: they keep the traces, Kitaru makes them runnable. It also frames itself as adding a durable runtime around agent harnesses.",
-        res: [R.kitaruCompare, R.kitaruCat] }
+        res: [R.kitaruCompare, R.kitaruCat],
+        do: [
+          { a: "Read the Kitaru docs home page's opening description", m: 5,
+            where: "docs.zenml.io/kitaru, the introduction paragraph",
+            url: "https://docs.zenml.io/kitaru",
+            out: "the line close to verbatim: beside your observability, not instead of it \u2014 they remain where you watch production, Kitaru is where you re-run it" },
+          { a: "Read the comparison page for the one sentence on where Kitaru sits relative to the other two tools", m: 5,
+            where: "ZenML blog, \"Braintrust vs Langfuse vs Kitaru\", the section on where Kitaru sits",
+            url: "https://www.zenml.io/blog/braintrust-vs-langfuse",
+            out: "one sentence: Kitaru treats Langfuse and Braintrust as import sources, not replacements, and tests a candidate change against the same recorded tool history" },
+          { a: "Form your own one-line answer to whether replay is the wedge or the whole product, and say it out loud", m: 7,
+            out: "one spoken sentence that takes a position, not a summary of the docs" }
+        ] }
     ],
     wc12: []
   };
