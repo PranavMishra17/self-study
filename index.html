@@ -463,7 +463,8 @@
   .stepdo .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
     cursor: pointer; padding: 3px 0 0; display: block; }
   .stepdo .xp:hover { color: var(--ink); }
-  .stepdo .xp.has { color: var(--mark); }
+  .stepdo .xp.has { color: var(--mark); }  .abox .amodel ul { margin: 0; padding-left: 17px; }
+  .abox .amodel li { font-size: 13px; line-height: 1.5; color: var(--ink); padding: 1px 0; }
 </style>
 </head>
 <body>
@@ -3863,7 +3864,17 @@
       if (open[mkey] || written) {
         var mb = el("div", "amodel");
         mb.appendChild(el("div", "alab", "The answer"));
-        mb.appendChild(el("p", "", model));
+        if (Object.prototype.toString.call(model) === "[object Array]") {
+          var ul = document.createElement("ul");
+          model.forEach(function (line) {
+            var li = document.createElement("li");
+            li.textContent = line;
+            ul.appendChild(li);
+          });
+          mb.appendChild(ul);
+        } else {
+          mb.appendChild(el("p", "", model));
+        }
         wrap.appendChild(mb);
       } else {
         var sh = el("button", "sec", "Show the answer");
