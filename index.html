@@ -443,7 +443,9 @@
   .dout { font-size: 11.5px; color: var(--math); margin-top: 2px; }
   .dskip { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
   .sheetdo { margin-top: 3px; padding-left: 9px; border-left: 1px solid var(--hair); }
-  .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }
+  .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }  .stepdo { margin-top: 3px; }
+  .dnlm { font-size: 11.5px; color: var(--alaap); margin-top: 2px; }
+  .srow .tx .dhead { gap: 14px; }
 </style>
 </head>
 <body>
@@ -3152,6 +3154,37 @@
     return r ? h + "h " + r + "m" : h + "h";
   }
 
+  /* A planned step is already an action, so it carries its instructions inline
+     rather than nesting a do array: how long, exactly where, what is true when it
+     is finished, and what to skip. These sit above the fold on purpose. Knowing
+     what to do should never be behind a toggle; only the model answer is. */
+  function stepDo(s, st) {
+    if (!st.where && !st.url && !st.out && !st.skip && !st.nlm) { return null; }
+    var box = el("div", "stepdo");
+    if (st.where || st.url) {
+      var w = el("div", "dw");
+      if (st.where) { w.appendChild(document.createTextNode(st.where)); }
+      if (st.url) {
+        var a = document.createElement("a");
+        a.href = st.url; a.target = "_blank"; a.rel = "noreferrer noopener";
+        a.textContent = st.where ? "open" : st.url;
+        a.addEventListener("click", function () { logVisit(s.id, st.where || st.url, st.url); });
+        w.appendChild(a);
+      }
+      box.appendChild(w);
+    }
+    if (st.out) { box.appendChild(el("div", "dout", "Done when: " + st.out)); }
+    if (st.skip) { box.appendChild(el("div", "dskip", "Skip: " + st.skip)); }
+    if (st.nlm) { box.appendChild(el("div", "dnlm", "Ask NotebookLM: " + st.nlm)); }
+    return box;
+  }
+  function stepMinutes(s) {
+    if (!s.steps) { return 0; }
+    var m = 0;
+    s.steps.forEach(function (st) { m += (st.m || 0); });
+    return m;
+  }
+
   function doList(s, it, i) {
     if (!it.do || !it.do.length) { return null; }
     var ol = el("div", "dolist");
@@ -3863,7 +3896,10 @@
       });
     }
 
-    v.appendChild(rubric(s.study ? "Practice" : "The work", stepsDone(s) + " of " + s.steps.length + " done"));
+    var stpMin = stepMinutes(s);
+    v.appendChild(rubric(s.study ? "Practice" : "The work",
+      stepsDone(s) + " of " + s.steps.length + " done" +
+      (stpMin ? "   ·   " + mins(stpMin) + " of work" : "")));
     if (s.study) {
       v.appendChild(el("p", "sm dim", "Do each one yourself first, in the Answer field. Then open the model answer and compare."));
     }
@@ -3886,7 +3922,14 @@
         draw();
       });
       row.appendChild(bx);
-      row.appendChild(el("div", "tx" + (state.steps[key] ? " off" : ""), st.t));
+      var tcell = el("div", "tx" + (state.steps[key] ? " off" : ""));
+      var thead = el("div", "dhead");
+      thead.appendChild(el("span", "", st.t));
+      if (st.m) { thead.appendChild(el("span", "dm", mins(st.m))); }
+      tcell.appendChild(thead);
+      var sdo = stepDo(s, st);
+      if (sdo) { tcell.appendChild(sdo); }
+      row.appendChild(tcell);
       row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
       var compareMode = !!(s.study && (st.d || st.links));
       if (st.d || st.links) {
