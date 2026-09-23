@@ -1626,11 +1626,13 @@
               d: "Say explicitly what happens to a scenario that fails deterministically every time, against one that fails on a coin flip. Conflating them is the common mistake: dead-letter the first, retry the second.",
               m: 45,
               where: "No resource — design exercise, written",
-              out: "a retry policy, a deduplication key, and an explicit split: dead-letter the deterministic failure, retry the coin-flip one" },
+              out: "a retry policy, a deduplication key, and an explicit split: dead-letter the deterministic failure, retry the coin-flip one",
+              ans: "I split the three percent by failure signature rather than treating it as one bucket. Anything that fails the same way on every attempt — a malformed payload, a scenario the harness cannot construct — goes straight to a dead-letter queue, because retrying it just burns capacity on a guaranteed failure. Anything that fails on a coin flip — a timeout, a transient lock — gets retried with exponential backoff and jitter, capped at a small number of attempts. The deduplication key is the replay's scenario id plus its attempt number, so a retried replay overwrites its own prior partial result instead of appending a second one, which is what keeps the operation idempotent under at-least-once delivery." },
             { t: "Answer the check: why do retries sometimes finish off a struggling service",
               m: 15,
               where: "No resource — the check question above",
-              out: "why retries can finish off a struggling service, and the standard fix, named" }
+              out: "why retries can finish off a struggling service, and the standard fix, named",
+              ans: "A struggling service is already at or past capacity, so every retry adds load at exactly the moment there is least of it to spare — the retries queue behind the same congestion that caused the timeouts, and because clients keep re-arriving faster than the service can drain, it never gets the recovery window a brief lull would have given it. That is the retry storm. The standard fix is exponential backoff with jitter: backoff spaces out when each client comes back, and jitter stops every client's backoff landing on the same schedule and reassembling the spike each time." }
           ],
           quiz: [
             { q: "A service is overloaded and slow. Clients time out and retry immediately. What happens?",
@@ -1669,17 +1671,20 @@
               d: "Parameter minus learning rate times the gradient of the loss with respect to that parameter. The learning rate is a step size on the direction the gradient gives you, and the minus sign is the entire reason it is descent.",
               m: 6,
               where: "No resource — from memory, per chapter 2 above",
-              out: "theta <- theta - eta * gradient(L), written cold, plus one sentence on what eta multiplies" },
+              out: "theta <- theta - eta * gradient(L), written cold, plus one sentence on what eta multiplies",
+              ans: "theta <- theta - eta * gradient(L), where theta is the parameter, eta is the learning rate, and gradient(L) is the gradient of the loss with respect to that parameter. Eta multiplies the gradient and nothing else — not the loss, not the parameter itself — it is purely a step size scaling the direction the gradient gives you." },
             { t: "Requeued Q11 — backpropagate a tiny composed function by hand, on paper",
               d: "Two or three layers, scalar, no matrices. Forward pass, record the intermediates, walk backward multiplying local derivatives. Once. Tedious, and the single most clarifying hour in this milestone.",
               m: 25,
               where: "No resource — paper, a two- or three-layer scalar composed function",
-              out: "a completed forward-then-backward pass on paper, kept" },
+              out: "a completed forward-then-backward pass on paper, kept",
+              ans: "Take two layers, scalar: h = w1 times x, a = sigmoid(h), z = w2 times a, and loss L = (z minus y) squared. With x = 2, w1 = 0.5, w2 = 1.5, y = 1, the forward pass gives h = 1.0, a = sigmoid(1.0) which is about 0.731, z = 1.5 times 0.731 which is about 1.097, and L = (1.097 minus 1) squared, about 0.0093. The backward pass starts from dL/dz = 2 times (z minus y), about 0.193. dL/dw2 is dL/dz times dz/dw2, and dz/dw2 is just a, so dL/dw2 is about 0.193 times 0.731, roughly 0.141. To reach w1 I go one layer further back: dL/da is dL/dz times dz/da, and dz/da is w2, so dL/da is about 0.193 times 1.5, roughly 0.290; da/dh is the sigmoid derivative in its self-referential form, a times (1 minus a), about 0.197; and dh/dw1 is just x, 2 — so dL/dw1 is 0.290 times 0.197 times 2, roughly 0.114. Every one of those steps is a local derivative evaluated at the value that layer actually saw on the forward pass, multiplied along the chain back to the parameter, which is exactly the tape autograd keeps." },
             { t: "Write the two-sentence explanation of why the chain rule makes backprop possible",
               d: "For a strong engineer who has never trained a model. Compression is the skill being tested.",
               m: 8,
               where: "No resource — write it for a strong engineer who has never trained a model",
-              out: "two sentences, written down" }
+              out: "two sentences, written down",
+              ans: "A network is a composition of functions layered end to end, and the chain rule is precisely the rule for differentiating a composition — it says the derivative of the whole is the product of the derivatives of each part, evaluated at the values that part actually saw. Backpropagation is that product computed efficiently by walking backward through the network once, reusing each layer's local derivative rather than re-deriving the whole composition from scratch for every parameter, which is also exactly what autograd is: the chain rule applied automatically to a tape recorded during the forward pass." }
           ],
           quiz: [
             { q: "In the update rule, the learning rate multiplies what?",
@@ -1704,19 +1709,22 @@
               d: "They start as a table of random numbers, one row per token, and they are parameters like any other. Gradient descent on a task objective drags rows that behave similarly toward similar positions. The meaning is not put in — it falls out of the objective.",
               m: 10,
               where: "No resource — write it from the embed diagram on this page",
-              out: "two sentences: random initialisation, then gradient descent drags similar rows together" },
+              out: "two sentences: random initialisation, then gradient descent drags similar rows together",
+              ans: "An embedding table starts as a matrix of random numbers, one row per token, and every one of those numbers is a parameter exactly like any weight elsewhere in the network. Gradient descent on the training objective is what moves them: whenever two tokens behave alike for the task the model is being trained on, the objective's gradient nudges their rows toward each other, and whenever they behave differently it pushes them apart. The meaning was never inserted — it is a side effect of the objective rewarding the arrangement that makes the task easier to solve." },
             { t: "Write what Q, K and V are, correctly",
               d: "Value, not vector. Three learned projections of the same input: the query asks what am I looking for, the key advertises what each position offers, and the value is what gets carried forward when a match is found.",
               m: 8,
               where: "No resource — write it from the definitions on this page",
-              out: "one sentence per letter: query, key, value, and what each does" },
+              out: "one sentence per letter: query, key, value, and what each does",
+              ans: "Query, key and value are three separate learned projections of the same input vector, not three different kinds of thing. The query is what this position is asking for; the key is what each position advertises about itself, which the query is compared against to produce a score; and the value is the actual content that gets carried forward, weighted by those scores, once the matching is done. V stands for value, not vector — the letter is easy to get wrong and the mechanism is exactly why it matters." },
             { t: "Work out why the dot product is divided by the square root of d_k",
               d: "A variance argument, and it connects straight back to dot products from week three. Summing over d_k dimensions makes the variance grow with d_k, so raw scores get large, softmax saturates, and gradients vanish.",
               m: 27,
               where: "Karpathy, 'Let's build GPT: from scratch, in code, spelled out', the 'Scaled' self-attention aside, roughly 1:16:00 to 1:20:00",
               url: "https://www.youtube.com/watch?v=kCc8FmEb1nY&t=4600s",
               out: "the variance argument written down: dot-product variance grows with d_k, softmax saturates, dividing by the square root of d_k holds it near 1",
-              skip: "The rest of the video — it builds a full GPT; only the scaled-attention aside is this session's target" }
+              skip: "The rest of the video — it builds a full GPT; only the scaled-attention aside is this session's target",
+              ans: "Each attention score is a dot product q times k summed over d_k independent dimensions, and if the entries of q and k are roughly zero-mean with unit variance, each of the d_k product terms contributes about one unit of variance, so the variance of the whole sum grows linearly with d_k while its standard deviation grows with the square root of d_k. As d_k gets large the raw scores swing over an increasingly wide range, and once they are fed into softmax the largest one dominates — softmax saturates, one weight goes to nearly 1 and the rest to nearly 0, and the gradient through a saturated softmax is nearly zero everywhere. Dividing every score by the square root of d_k rescales the standard deviation back down to about 1 regardless of d_k, which keeps the scores in the range where softmax still has real gradient to learn from. That is the entire justification, and it is a variance argument, not an arbitrary constant." }
           ]
         }
       ]
@@ -1744,20 +1752,24 @@
               d: "A TTL is a bet that staleness is tolerable for a bounded window. Explicit invalidation is a promise you must keep on every write path, and missing one is how caches serve wrong answers for days.",
               m: 15,
               where: "No resource — write the four terms into one paragraph using the staleness argument from the previous step",
-              out: "one paragraph, written, that states placement, key, and TTL against explicit invalidation as a tradeoff rather than a list" },
+              out: "one paragraph, written, that states placement, key, and TTL against explicit invalidation as a tradeoff rather than a list",
+              ans: "The cache sits between the request path and whatever is expensive to recompute, keyed on exactly what makes a result reusable — the user plus the query — so unrelated requests never collide on the same entry. A TTL is a bet: it says staleness up to some bounded window is acceptable, and it costs nothing on the write path, only patience. Explicit invalidation is the opposite bet — a promise, made on every write path that changes the underlying data, that it will actively clear the entries that write affects — more expensive to build, but the only option where staleness has to be bounded tighter than a TTL can honestly promise." },
             { t: "Answer the memory-system cache question properly",
               d: "Where the cache sits, what exactly the key is, what the invalidation rule is, and what you give up. The tradeoff is the part that carries the answer: a write to memory must invalidate the cached search, or the product's whole promise quietly breaks.",
               m: 35,
               where: "No resource — this is the written answer, done properly this time; the diagram on this page has the write-path failure to check it against",
-              out: "a written answer covering all four parts: where the cache sits, what the key is, the invalidation rule, and what you give up — the fourth part is the one Q16 was missing" },
+              out: "a written answer covering all four parts: where the cache sits, what the key is, the invalidation rule, and what you give up — the fourth part is the one Q16 was missing",
+              ans: "The cache sits in front of the vector search step, keyed on the user id plus the query, so one user's cached results never leak into another's. The invalidation rule is explicit, not TTL-based: any write that adds or changes a memory for that user invalidates that user's cached search results immediately, because a TTL window would let the assistant keep answering from a world that no longer exists. What I give up is cache effectiveness right after every write — a user who writes and immediately searches gets a guaranteed miss — and the operational cost of a rule that has to be honoured on every write path in the system, including ones written later by someone who does not know the cache exists. That tradeoff, not the existence of the cache, is the actual answer, because the product's whole promise is that it remembers, and a stale cached search is the one way it can quietly stop keeping that promise." },
             { t: "Record yourself answering the hundred-million question out loud. Five minutes, no notes",
               d: "This is the deliverable. Saying something fluently is a separate skill from knowing it, and the only way to build it is to hear yourself do it badly a few times first.",
               m: 50,
               where: "No resource — this is the milestone's real deliverable, and it is a performance, not a read. Say the hundred-million answer built across the whole milestone, out loud, in primitives, as many takes as it needs",
-              out: "an audio recording, five minutes, no notes, in primitives rather than product names — this is the artifact, and it is what clears Q12" },
+              out: "an audio recording, five minutes, no notes, in primitives rather than product names — this is the artifact, and it is what clears Q12",
+              ans: "A hundred million of anything is a throughput question before it is a storage one, so I start with the rate: how many units arrive per second, how big each one is, and whether the arrival is even or bursty, because bursty traffic needs headroom an average never shows. Work lands on a queue, and the queue is bounded on purpose — an unbounded queue does not slow down under overload, it absorbs the excess silently while the dashboard still looks fine, and it dies all at once once memory runs out, which is a worse failure than one that shows itself early. When the bounded queue fills it has to push back: backpressure propagates the constraint upstream to the producer, so the producer slows down rather than the consumer silently accumulating work it will never finish, and if the producer genuinely cannot slow down I shed load deliberately, on my own terms, rather than let the system choose for me. Work is partitioned by a key I can defend, and I assume that key is skewed, because real usage follows a power law, so one partition ends up carrying far more than an even share, and I plan for that hot partition from day one instead of discovering it under load. At this scale a one-in-a-million failure happens roughly a hundred times a day, so partial failure is the normal operating condition and not an edge case: networks partition, machines die mid-task, and calls time out without telling you whether the work actually happened. Retries are necessary and dangerous at the same time, because a naive retry lands more load on a service that is already struggling and can finish it off entirely, so retries carry exponential backoff with jitter, and the operation being retried has to be idempotent, because at-least-once delivery plus idempotency is how you get exactly-once effects without ever promising exactly-once delivery, which barely exists. I size everything from the tail, p99 rather than the mean, because the mean is pulled around by the bulk of fast requests while the slowest one percent are disproportionately your heaviest users, and they are the ones who retry and make the tail worse. None of this is free, and cost is not a separate line item bolted on afterwards — a bigger queue buys time at the cost of memory, more partitions buy parallelism at the cost of coordination, and more generous retries buy resilience at the cost of the very capacity they are meant to protect, so the whole design is one continuous tradeoff between how much failure I am willing to absorb and how much I am willing to pay to absorb it. Nothing in any of that names a vendor, a specific database or a specific queue product, because the same primitives — rate, bound, backpressure, partition key, retry policy, tail latency, and the cost each one carries — hold underneath whichever technology is actually running it." },
             { t: "Listen back and write three things you would say differently",
               m: 15,
-              out: "three written sentences naming exactly what to change next time — a filler word to cut, a primitive to name earlier, a place the answer ran long" }
+              out: "three written sentences naming exactly what to change next time — a filler word to cut, a primitive to name earlier, a place the answer ran long",
+              ans: "First, cut the number of times I say 'so' as a connector between sentences — it is the filler that shows up most under pressure. Second, name partitioning earlier: I currently reach it only after backpressure, but skew is often the actual root cause of the saturation I describe first, so naming the partition key up front would match the answer's order to how the failure actually happens. Third, the cost section ran long relative to the rest — trim it to the one line about the tradeoff between resilience and capacity rather than three separate examples, so the whole answer lands closer to five minutes rather than past it." }
           ],
           quiz: [
             { q: "You cache vector-search results per user. The user adds a memory. What must happen?",
@@ -1790,7 +1802,8 @@
               d: "The diagram has the table. Build it yourself first, then check. Bayes was the right identification on the diagnostic; this is the table that goes with it.",
               m: 20,
               where: "No resource — build the hundred-thousand-person table on paper first, then check it against this session's Bayes diagram",
-              out: "the full setup on paper and the number: roughly 2 percent, derived from the table, not recalled from the diagnostic" },
+              out: "the full setup on paper and the number: roughly 2 percent, derived from the table, not recalled from the diagnostic",
+              ans: "Out of a hundred thousand people, point one percent are ill, which is a hundred people, and the other 99,900 are healthy. The test is 99 percent sensitive, so of the hundred ill people about 99 test positive. The false positive rate is 5 percent, so of the 99,900 healthy people about 4,995 also test positive. Total positives are 99 plus 4,995, which is 5,094, and the people actually ill among them are 99, so the probability of being ill given a positive test is 99 divided by 5,094, which is a bit under 2 percent. The test looks excellent in isolation, but the disease is so rare that the false positives, drawn from a pool five hundred times larger than the ill population, swamp the true positives — that is what a low base rate does to an accurate test." },
             { t: "Three more base-rate problems until the shape stops being surprising",
               d: "The shape: a very accurate test for a very rare thing is mostly wrong, because false positives are drawn from a much larger pool.",
               m: 20,
@@ -1804,7 +1817,8 @@
               where: "Neural networks and deep learning (Nielsen), Chapter 3 — the 'Softmax' section for why the outputs form a distribution, the 'Introducing the cross-entropy cost function' section, earlier in the same chapter, for why cross-entropy is its natural loss",
               url: "http://neuralnetworksanddeeplearning.com/chap3.html#softmax",
               out: "one written paragraph covering both halves: softmax's construction as a distribution, and the saturating-gradient argument for pairing it with cross-entropy rather than squared error",
-              links: [{ label: "Nielsen, ch3 — Softmax", url: "http://neuralnetworksanddeeplearning.com/chap3.html#softmax" }, { label: "Nielsen, ch3 — the cross-entropy cost function", url: "http://neuralnetworksanddeeplearning.com/chap3.html#the_cross-entropy_cost_function" }] }
+              links: [{ label: "Nielsen, ch3 — Softmax", url: "http://neuralnetworksanddeeplearning.com/chap3.html#softmax" }, { label: "Nielsen, ch3 — the cross-entropy cost function", url: "http://neuralnetworksanddeeplearning.com/chap3.html#the_cross-entropy_cost_function" }],
+              ans: "Softmax takes a vector of raw scores, exponentiates each one so every entry becomes strictly positive, then divides by the sum of all the exponentials so the entries add up to exactly one — non-negative and summing to one is the whole definition of a probability distribution, so that is what a softmax output is. Cross-entropy is the natural loss to pair it with because it measures the distance between that predicted distribution and the true one directly, as the negative log of the probability assigned to the correct class, and its gradient with respect to the raw scores stays proportional to the error even when softmax has saturated toward zero or one. Squared error does not have that property: when the output is confidently wrong, its gradient contains a factor that comes from the saturated softmax and is itself close to zero, so the model gets almost no signal exactly when it most needs correcting. Cross-entropy's gradient does not carry that vanishing factor, which is why it keeps learning through the cases squared error would stall on." }
           ],
           quiz: [
             { q: "Prevalence 0.1%, sensitivity 99%, false positives 5%. Someone tests positive. How likely are they ill?",
@@ -1836,10 +1850,12 @@
               d: "f0_mean measures the source. Vocal-tract length and the formants measure the filter. Spectral tilt is meant to measure the source's spectral shape and partly measures the buzz rate instead, which is exactly how an axis fails to separate.",
               m: 15,
               where: "Alaap study guide, E:/VoiceForge TTV Pipeine/v3/learning/01-STUDY-GUIDE.md, section 2.3 The source-filter model, then the estimator table in 2.4. Apply the split to f0_mean, vocal-tract length, the formants and spectral tilt",
-              out: "one written line per measurement naming which side of the split it sits on, plus the one sentence on why spectral tilt partly leaks across it" },
+              out: "one written line per measurement naming which side of the split it sits on, plus the one sentence on why spectral tilt partly leaks across it",
+              ans: "f0_mean sits entirely on the source side — it is the buzz rate of the vocal folds, and it is what carries pitch. Vocal-tract length and the formants sit on the filter side — they describe the resonant tube the buzz passes through, and that is where speaker identity lives. Spectral tilt was meant to measure the source's spectral shape, but it partly measures the buzz rate instead, because it is fit as a straight line across log-frequency bins and a large share of that fit's leverage sits on the first few harmonics, so a change in f0 changes how those harmonics land even when the true filter envelope has not moved — the axis leaks across the split it was supposed to respect." },
             { t: "Answer: why would a 250 Hz voice read a flatter spectral tilt than a 90 Hz voice with the same envelope",
               m: 15,
-              out: "one or two sentences connecting f0 to harmonic spacing: a higher f0 means fewer, more widely spaced harmonics sampling the same envelope, which reads as flatter tilt even though the true envelope has not changed" }
+              out: "one or two sentences connecting f0 to harmonic spacing: a higher f0 means fewer, more widely spaced harmonics sampling the same envelope, which reads as flatter tilt even though the true envelope has not changed",
+              ans: "A higher f0 spaces the harmonics further apart, so a 250 Hz voice has about 2.8 times fewer harmonics across the same band than a 90 Hz voice sampling the identical envelope. Spectral tilt is fit from those harmonic peaks, and with fewer of them more of the fitted bins fall in the flat, low-energy floor between harmonics rather than on a peak, which drags the fitted slope toward flat — so the tilt reads flatter for the higher voice even though the true spectral envelope, the filter, has not changed at all." }
           ]
         }
       ]
