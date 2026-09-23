@@ -2722,7 +2722,8 @@
             url: "https://www.zenml.io/blog/introducing-the-new-kitaru",
             skip: "The opening 'why this gets messy' framing and the closing comparison to Langfuse and Braintrust — neither defines an object." },
           { a: "Say the four objects out loud, one sentence each, without notes", m: 2,
-            out: "sessions, cohorts, evaluators and replays defined correctly, unprompted" }
+            out: "sessions, cohorts, evaluators and replays defined correctly, unprompted",
+            ans: "A session is a recorded run, captured by an adapter or imported from Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix. A replay re-executes the agent against one, answering tool calls from the recording. A cohort is an immutable, versioned set of sessions I evaluate together. An evaluator judges the result, either deterministically from stored evidence or with an LLM." }
         ] },
       { t: "Faithful baseline, then fork with one override",
         say: "Validate an unchanged replay first. Then fork with exactly one change — model, prompt, parameters — so any difference is attributable.",
@@ -2732,7 +2733,8 @@
             where: "ZenML blog, 'Braintrust vs Langfuse vs Kitaru', Feature 2 'Agent Replay and Tool-Call Overrides', the opening two sentences",
             url: "https://www.zenml.io/blog/braintrust-vs-langfuse" },
           { a: "Say out loud why exactly one override and not several", m: 2,
-            out: "the attribution argument, in one sentence" }
+            out: "the attribution argument, in one sentence",
+            ans: "I validate the baseline first, an unchanged replay, so I know the harness itself reproduces the original run. Then I fork with exactly one change — model, prompt or parameters, never more than one at a time. If I changed two things and the score moved, I would not know which one did it. One override keeps the result attributable." }
         ] },
       { t: "on_miss, static and passthrough",
         say: "Two different knobs, often conflated. on_miss governs what happens to a call the recording never saw, and takes three values: fail, error_result, passthrough. Separately, a single tool can be overridden — pinned to a static result, or routed live — while everything else still answers from history.",
@@ -2742,7 +2744,8 @@
             where: "same post, same 'Agent Replay and Tool-Call Overrides' section, the paragraph naming fail, error_result and passthrough",
             url: "https://www.zenml.io/blog/braintrust-vs-langfuse" },
           { a: "Write the three on_miss values and the two override types from memory, then check them against the page", m: 3,
-            out: "fail, error_result, passthrough, plus static and passthrough-for-one-tool — five terms correct" }
+            out: "fail, error_result, passthrough, plus static and passthrough-for-one-tool — five terms correct",
+            ans: "on_miss controls what happens when a tool call has no match in the recording, and it takes three values: fail, error_result, or passthrough to the live tool. Separately, and this is the part people conflate, a single tool can be overridden — pinned to a static result, or routed to pass through live — while every other call still answers from history. Those are two different knobs: one for the unmatched case, one for a deliberate per-tool exception." }
         ] },
       { t: "Deterministic evaluators",
         say: "They read stored session evidence only. They never run the agent, call a provider, replay, or touch a live tool, and evaluation is started explicitly rather than on import.",
@@ -2753,7 +2756,8 @@
             url: "https://docs.zenml.io/kitaru/guides/deterministic-evaluations",
             skip: "'Run through the Python SDK', 'Respect the batch limit', 'Current evidence limits' and 'Versioning' — implementation detail, not needed for the room." },
           { a: "Say the constraint list out loud", m: 2,
-            out: "no agent run, no provider call, no replay, no live tool, no external read, evaluation started explicitly" }
+            out: "no agent run, no provider call, no replay, no live tool, no external read, evaluation started explicitly",
+            ans: "Deterministic evaluators read stored session evidence only. They never run the agent, never call a provider, never trigger a replay, and never touch a live tool. Evaluation itself is started explicitly, not fired automatically on import, so nothing runs without someone asking for it." }
         ] },
       { t: "The guided tour, run by a coding agent",
         say: "The tour is driven by skills inside Claude Code, Codex or Cursor. Run it yourself and keep notes on friction.",
@@ -2766,7 +2770,8 @@
             where: "kitaru-skills README, the kitaru-guided-tour entry",
             url: "https://github.com/zenml-io/kitaru-skills" },
           { a: "Say out loud what the tour is supposed to produce before you run it", m: 2,
-            out: "one accepted finding turned into a deterministic evaluator, and one approved bounded replay" }
+            out: "one accepted finding turned into a deterministic evaluator, and one approved bounded replay",
+            ans: "Before I run it, the tour should end with one accepted finding turned into a deterministic evaluator, and one approved bounded replay. Along the way I expect it to show recorded evidence before asking for a verdict, and to ask before anything paid or live runs. If it just runs things automatically and shows a green tick, that is the product skipping the part that matters." }
         ] }
     ],
     wc8: [
@@ -2782,7 +2787,8 @@
             where: "Stripe blog, 'Designing robust and predictable APIs with idempotency' — the section on guaranteeing exactly-once semantics",
             url: "https://stripe.com/blog/idempotency" },
           { a: "Say Kitaru's key and Stripe's key side by side, out loud", m: 3,
-            out: "session, step and argument-hash versus a client-supplied UUID — both compared to a stored result on repeat" }
+            out: "session, step and argument-hash versus a client-supplied UUID — both compared to a stored result on repeat",
+            ans: "Kitaru's key is built from session, step and a hash of the canonical arguments — it is derived, not supplied. Stripe's is a client-supplied key, typically a UUID, sent with the request. Both do the same job: a repeat with the same key gets the stored result back instead of the operation running again. The difference is just who generates the key and what it is scoped to." }
         ] },
       { t: "Idempotence in stream processing",
         say: "Exactly-once processing is really at-least-once delivery plus idempotent effects. DDIA's section on idempotence in chapter 11 is the canonical explanation.",
@@ -2791,7 +2797,8 @@
           { a: "Read the section", m: 5,
             where: "DDIA 2e - index: idempotence; exactly-once semantics. The stream-processing chapter's fault-tolerance section, the idempotence subsection" },
           { a: "Write one sentence connecting it to your bench", m: 4,
-            out: "one written sentence: exactly-once evaluation is at-least-once replay plus idempotent tool responses" }
+            out: "one written sentence: exactly-once evaluation is at-least-once replay plus idempotent tool responses",
+            ans: "Exactly-once evaluation in my bench is really at-least-once replay plus idempotent tool responses. The delivery can retry or repeat; what makes the result exactly-once is that every write lands in the same fake world and produces the same stored effect each time." }
         ] },
       { t: "Durable execution: event history and replay",
         say: "Temporal re-runs workflow code from the start, and previously executed activities return their results from the event history instead of running again. That is Kitaru's answer-from-recording idea in its original form.",
@@ -2805,7 +2812,8 @@
             where: "Temporal docs, 'Tasks' page, 'How does a Worker process a Workflow Task?'",
             url: "https://docs.temporal.io/tasks" },
           { a: "Say the one-sentence mapping out loud", m: 3,
-            out: "Temporal's event history is to a crashed workflow what your recording is to a replayed session" }
+            out: "Temporal's event history is to a crashed workflow what your recording is to a replayed session",
+            ans: "Temporal's event history is to a crashed workflow what my recording is to a replayed session. A worker re-runs the workflow code from the start, but every activity that already executed returns its result straight from the history instead of running again. That is the same answer-from-recording idea Kitaru uses, just older and pointed at fault tolerance instead of evaluation." }
         ] },
       { t: "Determinism, and replay-safe time",
         say: "Workflow code must make the same decisions given the same history, so time is read from the workflow context rather than the real clock. That is the fix for the frozen-data, live-clock critique of Kitaru.",
@@ -2815,7 +2823,8 @@
             where: "Temporal docs, 'Workflows' page, 'Resuming a Workflow' subsection — the Date.now, random and unrecorded-network-call examples, and the note that time is read from the workflow context",
             url: "https://docs.temporal.io/workflows" },
           { a: "Say the mapping to Kitaru's clock critique out loud", m: 3,
-            out: "one sentence: a replay-safe evaluator reads time from the recorded session, never the wall clock" }
+            out: "one sentence: a replay-safe evaluator reads time from the recorded session, never the wall clock",
+            ans: "A replay-safe evaluator reads time from the recorded session, never from the wall clock. Temporal workflows have the same rule — Date.now, randomness and any unrecorded network call all break determinism, because a resumed workflow has to make the same decisions given the same history. That is the fix for the frozen-data, live-clock problem: the clock has to be part of what gets replayed, not something read live." }
         ] },
       { t: "Activities are where side effects live",
         say: "Side effects belong in activities, which are retried and therefore must be idempotent. The workflow itself stays deterministic. Map this onto tools in an agent.",
@@ -2825,7 +2834,8 @@
             where: "Temporal docs, 'What is a Temporal Activity?' — the whole page, it has no subheadings",
             url: "https://docs.temporal.io/activities" },
           { a: "Say the two-line mapping out loud", m: 3,
-            out: "activities are to workflows what tools are to an agent; both are retried, so both must be idempotent" }
+            out: "activities are to workflows what tools are to an agent; both are retried, so both must be idempotent",
+            ans: "Activities are to workflows what tools are to an agent. Both are the parts that touch the outside world, both get retried, and that is exactly why both have to be idempotent — the workflow, like the agent's own reasoning, stays deterministic, and the side effects are quarantined into the piece designed to be repeated safely." }
         ] },
       { t: "Retries with backoff and jitter",
         say: "Why naive retries cause storms, and why jitter matters more than backoff alone.",
@@ -2836,7 +2846,8 @@
             url: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/",
             skip: "The opening incident narrative — go straight to the algorithm comparison and its chart." },
           { a: "Say why jitter beats backoff alone", m: 3,
-            out: "one sentence: jitter decorrelates clients that failed together, backoff alone does not" }
+            out: "one sentence: jitter decorrelates clients that failed together, backoff alone does not",
+            ans: "Backoff alone still lets every client that failed at the same moment retry at the same moment, just later — it delays the storm, it does not break it up. Jitter decorrelates them by adding randomness to the wait, so retries spread out instead of arriving in another synchronised wave. That is why jitter matters more than the backoff curve itself." }
         ] },
       { t: "Fakes, stubs and mocks",
         say: "A stub returns canned answers, a mock checks it was called correctly, a fake is a working lightweight implementation. Your SQLite snapshot is a fake; Kitaru's recorded results behave like stubs. That distinction explains why your bench survives going off-path.",
@@ -2847,7 +2858,8 @@
             url: "https://martinfowler.com/articles/mocksArentStubs.html",
             skip: "'Classical and Mockist Testing' and 'Choosing Between the Differences' — the testing-philosophy debate, not the definitions." },
           { a: "Say where your bench and Kitaru sit, out loud, in Fowler's terms", m: 3,
-            out: "your SQLite snapshot named as a fake, Kitaru's recorded results named as stubs" }
+            out: "your SQLite snapshot named as a fake, Kitaru's recorded results named as stubs",
+            ans: "In Fowler's terms, my SQLite snapshot is a fake — a working, lightweight implementation of the world the agent writes to. Kitaru's recorded tool results are closer to stubs, canned answers returned for a given call. The difference matters: my fake lets a write actually land and a later read see it, where a stub just replays what was recorded. That is why my bench survives the agent going off-path and pure stub replay does not." }
         ] }
     ],
     wc9: [
@@ -2865,7 +2877,8 @@
             skip: "the installation and CLI-flag sections \u2014 that is setup, not design",
             out: "can name both domains and say the agent's tool calls write to a real database, not a mock" },
           { a: "Say the one-sentence setup out loud, cold", m: 3,
-            out: "the sentence spoken correctly without checking the page" }
+            out: "the sentence spoken correctly without checking the page",
+            ans: "tau-bench sits an agent in conversation with an LLM-simulated user who has a goal and reveals it gradually, while the agent calls tools that write to a shared database. Success is judged by comparing the final database state against an annotated goal state, not by grading the conversation itself. It covers airline and retail domains." }
         ] },
       { t: "Goal-state evaluation",
         say: "Checking the world at the end, rather than the transcript, is exactly what your frozen-world bench does, and it is what makes multi-turn evaluation robust to a different path. This is your strongest link between your work and theirs.",
@@ -2876,9 +2889,11 @@
             url: "https://arxiv.org/abs/2406.12045",
             out: "the reward is checked against the final database matching a unique ground-truth outcome database, not by grading the conversation" },
           { a: "Write two sentences naming what plays the role of \"final database\" and \"annotated goal state\" in your own frozen-world bench", m: 8,
-            out: "two sentences in the Answer field naming your bench's equivalent objects" },
+            out: "two sentences in the Answer field naming your bench's equivalent objects",
+            ans: "In my bench, the SQLite snapshot for a case plays the role of tau-bench's final database — it is the fake world the agent's tool calls actually write to. The annotated goal state is the expected snapshot I define per case, so scoring means comparing the two database states at the end, not grading the transcript." },
           { a: "Say out loud why checking the end state survives the agent taking a different path to the same goal", m: 5,
-            out: "one spoken sentence: path independence \u2014 the same argument behind your own goal-state check" }
+            out: "one spoken sentence: path independence \u2014 the same argument behind your own goal-state check",
+            ans: "Checking the end state survives a different path because it does not care how the agent got there, only where it ended up. Two agents can take completely different routes and still be judged correctly, as long as I compare final states rather than steps. That is path independence, and it is the same argument behind my own goal-state check." }
         ] },
       { t: "pass^k against pass@k",
         say: "pass@k asks whether at least one of k attempts succeeds. pass^k asks whether all k succeed, which is the right measure for an agent that gets one chance per customer, and which falls off sharply as k grows.",
@@ -2898,7 +2913,8 @@
             url: "https://arxiv.org/abs/2406.12045",
             out: "the paper states it as bounds, so state it that way: under 50 percent at pass^1 on tau-retail, under 25 percent at pass^8. Repetition finds the unreliability a single run hides" },
           { a: "Say the formula and the one-sentence reliability argument out loud, no notes", m: 4,
-            out: "formula spoken correctly, then: pass@k asks if you can solve it once, pass^k asks if you can solve it every time" }
+            out: "formula spoken correctly, then: pass@k asks if you can solve it once, pass^k asks if you can solve it every time",
+            ans: "pass to the k equals the expectation over tasks of C of c choose k over C of n choose k — the chance that all k of n independent trials succeed, averaged across tasks. pass at k asks whether I can solve a task once in k tries; pass to the k asks whether I can solve it every single time. For an agent that gets one real shot per customer, pass to the k is the honest number, and it falls off fast as k grows." }
         ] },
       { t: "Simulated user failure modes",
         say: "Too cooperative, leaking the goal, drifting from the persona, and costing money every turn. Know how tau-bench structures its simulator, including the stop signal when the goal is met.",
@@ -2914,7 +2930,8 @@
             skip: "the airline and retail environment files in the same directory \u2014 different concern",
             out: "four strategies named: llm (plain), react (reasons before replying), verify (checks its own reply), reflection (redoes an unsatisfactory reply)" },
           { a: "Say the two failure modes that matter most for a support agent, and which strategy each argues for guarding against", m: 5,
-            out: "two sentences spoken: react and verify exist because a plain llm-strategy user can be too compliant or over-reveal the goal early" }
+            out: "two sentences spoken: react and verify exist because a plain llm-strategy user can be too compliant or over-reveal the goal early",
+            ans: "The two failure modes that matter most for a support agent are the simulated user being too cooperative, which inflates the score, and over-revealing its goal early, which makes the task easier than a real customer would. That is exactly why tau-bench has strategies beyond the plain llm one — react makes the user reason before replying, and verify makes it check its own reply, both guarding against a user that is too compliant." }
         ] }
     ],
     wc10: [
@@ -2932,7 +2949,8 @@
             skip: "the LLMOps Database methodology \u2014 the findings matter, not the corpus size",
             out: "can name two of the six without looking: engineering fundamentals over frontier models, and infrastructure-based guardrails over prompt-based ones" },
           { a: "Say, in one sentence each, what these two pieces show about how Alex explains things", m: 5,
-            out: "two spoken sentences naming the worktree reversal and one of the six findings \u2014 concrete numbers and a named decision, not general praise" }
+            out: "two spoken sentences naming the worktree reversal and one of the six findings \u2014 concrete numbers and a named decision, not general praise",
+            ans: "The rebuild post shows he will name a decision he reversed, not just the ones that worked — he tried git worktrees for parallel Claude Code sessions and dropped them because merge conflicts across many changed files made it slower than working sequentially. The production-deployments post shows the same instinct with data: engineering fundamentals beat frontier models, and infrastructure-based guardrails beat prompt-based ones, out of twelve hundred real deployments. Both pieces are concrete and numbered, not general praise, and that is the bar I hold my own answers to in this room." }
         ] },
       { t: "Kitaru's onboarding path",
         say: "Clone, open the example in a coding agent, run the guided tour skill. Know every step because you did it.",
@@ -2949,7 +2967,8 @@
             skip: "letting the tour touch anything paid or live \u2014 it should ask first, and the answer is no",
             out: "the four stages named from having watched them run: a prepared session review, a human verdict on one finding, that finding turned into a deterministic evaluator, one approved bounded experiment" },
           { a: "Say the four stages in order, out loud, and name the point where the tour paused to ask before continuing", m: 5,
-            out: "four stages spoken in order, and the pause point named" }
+            out: "four stages spoken in order, and the pause point named",
+            ans: "The tour ran through four stages: a prepared session review, a human verdict on one finding, that finding turned into a deterministic evaluator, and one approved bounded experiment. It paused at the human verdict — it would not turn a finding into an evaluator or run anything until I said yes. That is the same principle Kitaru applies everywhere: show evidence, then ask, before anything paid or live happens." }
         ] }
     ],
     wc11: [
@@ -2963,7 +2982,8 @@
             skip: "Materializers, Models, Parameters and Settings \u2014 good to know exist, not needed for this call",
             out: "five one-line definitions in your own words: a step is a decorated function, a pipeline is steps in order, a stack is a bound set of infrastructure components, the orchestrator decides what runs and when, the artifact store holds and versions every input and output" },
           { a: "Say the five terms out loud in one sentence each, no notes", m: 4,
-            out: "five sentences spoken correctly, in order: steps, pipelines, stacks, orchestrator, artifact store" }
+            out: "five sentences spoken correctly, in order: steps, pipelines, stacks, orchestrator, artifact store",
+            ans: "A step is a decorated function, the unit of work. A pipeline is steps composed in order. A stack is a bound set of infrastructure components that a pipeline runs against. The orchestrator decides what runs, when, and in what order. The artifact store holds and versions every input and output, which is what makes a run reproducible." }
         ] },
       { t: "Kitaru's positioning",
         say: "It sits beside trace stores rather than competing with them: they keep the traces, Kitaru makes them runnable. It also frames itself as adding a durable runtime around agent harnesses.",
@@ -2978,7 +2998,8 @@
             url: "https://www.zenml.io/blog/braintrust-vs-langfuse",
             out: "one sentence: Kitaru treats Langfuse and Braintrust as import sources, not replacements, and tests a candidate change against the same recorded tool history" },
           { a: "Form your own one-line answer to whether replay is the wedge or the whole product, and say it out loud", m: 7,
-            out: "one spoken sentence that takes a position, not a summary of the docs" }
+            out: "one spoken sentence that takes a position, not a summary of the docs",
+            ans: "I think replay is the wedge, not the whole product. The whole product is closing the loop from production to change — trust that a result reflects reality, a review workflow, eventually simulated users for multi-turn — and replay is just the first mechanism that makes any of that credible. Once provenance and productive misses are solid, the moat is in how much of that loop nobody else has closed, not in the replay mechanism itself." }
         ] }
     ],
     wc12: []
