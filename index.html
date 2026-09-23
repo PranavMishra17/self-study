@@ -446,7 +446,24 @@
   .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }
   .stepdo { margin-top: 3px; }
   .dnlm { font-size: 11.5px; color: var(--alaap); margin-top: 2px; }
-  .srow .tx .dhead { gap: 14px; }
+  .srow .tx .dhead { gap: 14px; }  .abox { margin: 7px 0 4px; max-width: 74ch; }
+  .abox textarea { min-height: 96px; background: var(--live); font-size: 13px; }
+  .abox .meta { display: flex; justify-content: space-between; gap: 12px;
+    font-size: 11px; color: var(--faint); margin-top: 3px; }
+  .abox .amodel { border-left: 3px solid var(--math); background: var(--sheet);
+    padding: 9px 13px; margin-top: 9px; }
+  .abox .amodel .alab { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--math); margin-bottom: 4px; }
+  .abox .amodel p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink); }
+  .abox > button.sec { margin-top: 7px; font-size: 12px; padding: 5px 12px; }
+  .doitem .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
+    cursor: pointer; padding: 3px 0 0; display: block; }
+  .doitem .xp:hover { color: var(--ink); }
+  .doitem .xp.has { color: var(--mark); }
+  .stepdo .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
+    cursor: pointer; padding: 3px 0 0; display: block; }
+  .stepdo .xp:hover { color: var(--ink); }
+  .stepdo .xp.has { color: var(--mark); }
 </style>
 </head>
 <body>
@@ -1235,7 +1252,8 @@
               d: "A short rehearsal for the week five deliverable, so that week five is not the first attempt.",
               m: 20,
               where: "No resource - spoken rehearsal, timed",
-              out: "two minutes accounted for, spoken once without notes" }
+              out: "two minutes accounted for, spoken once without notes",
+              ans: "A hundred million of anything is a throughput question before it is a storage one, so I start with the rate: how many arrive a second, how big is each, and is the arrival even or bursty. Work lands on a queue, and the queue is bounded, because an unbounded one does not slow down under overload, it absorbs silently and then dies all at once while the dashboard still looks fine. When the queue fills it pushes back on the producer, and if the producer cannot be slowed I shed load deliberately rather than by accident. Work is partitioned by a key I can defend, and I assume the key is skewed, because real usage is power-law and hashing spreads keys rather than traffic. I size from the tail, not the mean, because the mean hides the slow requests and the slow requests are where the heaviest users live. Nothing in that answer is a product name, and that is the point: the same sentences hold whichever vendor is underneath." }
           ],
           quiz: [
             { q: "A queue in front of your workers is unbounded and load doubles past capacity. What does a user notice first?",
@@ -3689,6 +3707,15 @@
     if (st.out) { box.appendChild(el("div", "dout", "Done when: " + st.out)); }
     if (st.skip) { box.appendChild(el("div", "dskip", "Skip: " + st.skip)); }
     if (st.nlm) { box.appendChild(el("div", "dnlm", "Ask NotebookLM: " + st.nlm)); }
+    if (st.ans) {
+      var akey = sKey(s.id, s.steps.indexOf(st)) + ":a";
+      var held = state.answers[akey];
+      var ab = el("button", "xp" + (held && held.text ? " has" : ""),
+        open[akey] ? "Close" : (held && held.text ? "Answer kept" : "Answer, then check"));
+      ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
+      box.appendChild(ab);
+      if (open[akey]) { box.appendChild(answerBox(akey, st.ans, null)); }
+    }
     return box;
   }
   function stepMinutes(s) {
@@ -3696,6 +3723,57 @@
     var m = 0;
     s.steps.forEach(function (st) { m += (st.m || 0); });
     return m;
+  }
+
+  /* An action that says "say this out loud" needs two things a stopping condition
+     cannot give it: somewhere to put your own attempt, and the actual answer to
+     check it against. Same pedagogy as the practice steps, so the model answer
+     stays shut until something is written or it is asked for outright. */
+  function answerBox(key, model, placeholder) {
+    var wrap = el("div", "abox");
+    var rec = state.answers[key];
+    var mine = el("div", "amine");
+
+    var ta = document.createElement("textarea");
+    ta.value = (rec && rec.text) || "";
+    ta.placeholder = placeholder || "Say it, then write what you actually said.";
+    var meta = el("div", "meta");
+    var wc = el("span", "", "");
+    var when = el("span", "", rec && rec.at ? "last written " + rec.at : "");
+    function count() {
+      var t = ta.value.trim();
+      wc.textContent = (t ? t.split(/\s+/).length : 0) + " words";
+    }
+    count();
+    ta.addEventListener("input", function () {
+      var v = ta.value;
+      if (v.trim()) { state.answers[key] = { text: v, at: stampNow(), via: "typed" }; }
+      else { delete state.answers[key]; }
+      count();
+      when.textContent = v.trim() ? "last written " + stampNow() : "";
+      save();
+    });
+    meta.appendChild(wc);
+    meta.appendChild(when);
+    mine.appendChild(ta);
+    mine.appendChild(meta);
+    wrap.appendChild(mine);
+
+    if (model) {
+      var mkey = key + ":model";
+      var written = rec && rec.text && rec.text.trim();
+      if (open[mkey] || written) {
+        var mb = el("div", "amodel");
+        mb.appendChild(el("div", "alab", "The answer"));
+        mb.appendChild(el("p", "", model));
+        wrap.appendChild(mb);
+      } else {
+        var sh = el("button", "sec", "Show the answer");
+        sh.addEventListener("click", function () { open[mkey] = true; draw(); });
+        wrap.appendChild(sh);
+      }
+    }
+    return wrap;
   }
 
   function doList(s, it, i) {
@@ -3734,6 +3812,15 @@
       }
       if (d.out) { body.appendChild(el("div", "dout", "Done when: " + d.out)); }
       if (d.skip) { body.appendChild(el("div", "dskip", "Skip: " + d.skip)); }
+
+      var akey = doKey(s.id, i, j) + ":a";
+      var held = state.answers[akey];
+      var ab = el("button", "xp" + (held && held.text ? " has" : ""),
+        open[akey] ? "Close" : (held && held.text ? "Answer kept" : (d.ans ? "Answer, then check" : "Answer")));
+      ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
+      body.appendChild(ab);
+      if (open[akey]) { body.appendChild(answerBox(akey, d.ans, null)); }
+
       li.appendChild(body);
       ol.appendChild(li);
     });
