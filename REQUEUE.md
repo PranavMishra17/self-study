@@ -40,4 +40,34 @@ topics to rebuild came from. Add to it whenever something is set aside unresolve
 
 ## Added since
 
-_Nothing yet. Date each addition and each clearing._
+_Date each addition and each clearing._
+
+**2026-09-22 — The gate's bar contradicts this file.**
+`MILESTONE-1.md` says of the requeued items that "those six are what this milestone
+exists to clear". The milestone-1 table above has **twelve** rows, not six. Either the
+bar was written before the list grew, or six of the twelve were meant to be optional
+and nobody recorded which. `PROTOCOL.md`'s re-plan ritual opens with taking the gate
+and recording the result, so a gate whose bar cannot be evaluated blocks the ritual
+rather than just being untidy. Decide before the week of 26 October: is the bar all
+twelve, or a named six.
+
+**2026-09-22 — The gate has no scoring instrument.**
+The bar includes "seventy percent on the systems section", but the 14 September
+diagnostic it is modelled on was free text, self-graded, with no percentage logic
+anywhere. So the number cannot currently be produced. `diagnostics/baseline-diagnostic.html`
+is the precedent to build from. None of the twenty-one items in `IMPROVEMENTS.md`
+owns this, which is how it stayed invisible.
+
+**2026-09-22 — Alaap does not exist on this machine.**
+Three of the fifteen planned sessions are Alaap — `w1c` Part 0 orientation, `w3c`
+sampling and the frequency domain, `w5c` the source-filter model — and the charter
+budgets four hours of milestone 1 to it. The sessions reference `architecture.html`,
+diagrams 1 to 5, an executive verdict, and a demo to run and listen to. A search of
+the whole of `E:\_Resume-Curator` by filename and by content, and a sweep of every
+top-level folder on `E:`, found nothing named Alaap and no `architecture.html`.
+
+It is presumably on another drive, in a repository not cloned here, or not yet built.
+Until its location is known, those three sessions cannot be done as written, and the
+public-source substitutes now in `w5c` cover the idea but not the project. This is
+not a failure of the plan; it is a missing pointer, and it costs four hours of the
+milestone if it stays missing.
