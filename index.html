@@ -1268,6 +1268,15 @@
           diagrams: ["queue"],
           steps: [
             { t: "Read DDIA chapter 1, and sit properly on the percentiles section",
+              close: [
+                { k: "blank", q: "The mean is dominated by the bulk of ___ requests, which is why it hides the tail.", a: "fast" },
+                { k: "word", q: "Which percentile is the number that 99 percent of requests beat?", a: "p99" },
+                { k: "why", q: "Why do retries tend to make the tail worse rather than better?", a: "Retries add more load onto paths that are already slow and struggling, so the extra traffic lands exactly where the system has the least capacity to absorb it." },
+                { k: "pick", q: "You can give your team only one number to describe response time. Which do you pick?",
+                  o: ["The mean", "The median (p50)", "The p99"], a: 2,
+                  why: "The mean is dominated by the bulk of fast requests and hides the tail entirely; p99 is where the heaviest users, and the retries they trigger, actually live." },
+                { k: "short", q: "One sentence: why does capacity planning use the tail, not the mean?", a: "Because the mean is pulled down by the bulk of fast requests and hides exactly the slow, heavy fraction that capacity actually has to cover." }
+              ],
               d: "It is short. The argument that the mean hides everything and p99 is where users live is the most quotable thing in the book, and you will use it in interviews within the month.",
               m: 25,
               where: "DDIA 2e - index: percentiles; response time; tail latency amplification. Sections 'Describing Performance', 'Latency and Response Time', 'Average, Median, and Percentiles'. Not in 2e chapter 1, which is Trade-Offs in Data Systems Architecture; the nonfunctional-requirements chapter carries it",
@@ -1281,12 +1290,30 @@
                 "The slowest requests are disproportionately the heaviest users, and retries make the tail worse"
               ] },
             { t: "Write one-line definitions in your own words: throughput, latency, p50, p99, bounded queue, unbounded queue, backpressure, load shedding",
+              close: [
+                { k: "pick", q: "Requests are arriving faster than your workers can drain them, and the queue is unbounded. Twenty minutes from now, what do the dashboards show?",
+                  o: ["Throughput drops and errors spike immediately", "Throughput and error rate look unchanged while latency and memory climb", "The queue rejects new work and the producer slows down"], a: 1,
+                  why: "An unbounded queue accepts everything, so throughput and errors look fine right up until memory is exhausted and the process dies — that is what makes the failure dangerous." },
+                { k: "word", q: "What is the term for a full queue refusing new work and pushing that refusal back to the producer?", a: "Backpressure" },
+                { k: "blank", q: "___ deliberately drops some work so the rest keeps running fast.", a: "Load shedding" },
+                { k: "short", q: "One sentence: what is the practical difference between a bounded and an unbounded queue under overload?", a: "A bounded queue fails fast and loud by rejecting work; an unbounded queue fails slow and silent by absorbing everything until it runs out of memory." },
+                { k: "why", q: "Why is throughput on its own a bad signal for whether a queue is saturating?", a: "An unbounded queue keeps accepting and completing work, so throughput can look completely normal even while the backlog and latency grow toward a crash — queue depth or latency shows saturation, throughput does not." }
+              ],
               d: "Your own words is the whole instruction. A definition you can only recite is one you lose under pressure. If a line runs past about fifteen words, it is not understood yet." ,
               m: 25,
               where: "No resource - your own words, checked against chapter 1 and the queue diagram above",
               out: "eight one-line definitions, each under about fifteen words",
               ans: "Throughput is requests completed per second. Latency is how long one request takes end to end. P50 is the median latency: half of requests are faster. P99 is the latency the slowest one percent cross, where the pain lives. A bounded queue has a fixed capacity and refuses work once full. An unbounded queue has no capacity limit, so it keeps absorbing work instead of refusing it. Backpressure pushes the overload signal back to the producer so it slows down. Load shedding deliberately drops some work so the rest stays fast." },
             { t: "Answer in writing: what an unbounded queue does under sustained overload",
+              close: [
+                { k: "figure", q: "In the backpressure figure, what does the dashed arrow running back to the producer carry?", a: "The 'full — stop sending' signal: the refusal that tells the producer to slow down." },
+                { k: "pick", q: "Which would you rather have fail loudly: a bounded queue rejecting work when full, or an unbounded queue silently growing until the process runs out of memory?",
+                  o: ["The bounded queue rejecting work when full", "The unbounded queue silently growing until it runs out of memory", "No preference — they fail the same way"], a: 0,
+                  why: "Rejection is immediate, actionable information. Silent growth gives no warning at all until the process is already dead." },
+                { k: "word", q: "What dashboard metric, not just throughput, actually shows a queue heading toward saturation?", a: "Queue depth" },
+                { k: "short", q: "One sentence: why does an unbounded queue's failure look like nothing is wrong right up until it dies?", a: "It keeps accepting and completing work, so throughput and error rate stay flat while latency and memory quietly climb underneath." },
+                { k: "why", q: "Why does a bounded queue's rejection count as useful information rather than mere failure?", a: "Rejecting work early and loudly tells you immediately that capacity is exceeded so you can react, where a silent unbounded queue gives no such signal until it is too late." }
+              ],
               d: "The diagram above is the short version. Write the long one, including what your dashboard shows while it happens, which is the part that makes this failure dangerous rather than merely bad.",
               m: 25,
               where: "System design primer README, the 'Asynchronism' section, the 'Message queues' and 'Back pressure' subsections",
@@ -1296,12 +1323,32 @@
               links: [L.primer],
               ans: "Under sustained overload an unbounded queue does not slow down, it absorbs. Every request is still accepted, so throughput on the dashboard looks unchanged and no error rate rises, which is the dangerous part because nothing looks wrong yet. Latency climbs steadily as the backlog grows, memory climbs with the backlog since every queued item has to be held somewhere, and the graph everyone is watching shows nothing until memory runs out and the process dies all at once. A bounded queue fails loudly and early, by rejecting work; an unbounded one fails silently and late, by exhausting a resource nobody was watching. The dashboard should track queue depth, not just throughput, or this failure mode stays invisible until it is total." },
             { t: "Rewrite the hundred-million answer with no product names at all",
+              close: [
+                { k: "num", q: "How many words is the primitives-only rewrite capped at?", a: "300 words" },
+                { k: "figure", q: "In the backpressure figure's top row, what does the dashboard show while the unbounded queue is filling?", a: "Nothing wrong yet — throughput and error rate stay flat; only latency and memory quietly climb, until the process dies all at once." },
+                { k: "blank", q: "Capacity should be sized from the ___, not the mean, because the mean hides the slowest fraction of requests.", a: "tail" },
+                { k: "why", q: "Why must the rewritten answer name no vendor or product?", a: "The argument is about primitives — queues, backpressure, skewed keys — that hold regardless of which company's infrastructure sits underneath; naming a vendor would hide that generality." },
+                { k: "pick", q: "In the rewrite, a bounded queue fills and refuses new work, pushing that refusal to the producer. What is that, in this session's vocabulary?",
+                  o: ["Load shedding", "Backpressure", "Rate limiting"], a: 1,
+                  why: "Backpressure is specifically the constraint pushed back to the producer so it slows down; load shedding is dropping work outright, a related but different response." }
+              ],
               d: "Same question you were asked. Supabase, edge function and every vendor word is banned. Primitives only: where the work is, what the ceiling is, what saturates first, what happens at the saturation point. Three hundred words, written, kept.",
               m: 55,
               where: "No resource - your own 14 September answer, rewritten from scratch in primitives",
               out: "three hundred words, written and kept, with no vendor or product name anywhere in it",
               ans: "A hundred million of anything is first a rate problem, not a size problem. I start by working out arrivals per second, how large each unit of work is, and whether the arrival is steady or bursty, because a bursty rate needs headroom a steady one does not. That work lands on a queue in front of the workers, and the queue has to be bounded on purpose: an unbounded queue does not slow down under overload, it silently absorbs everything, latency climbs while the throughput graph still looks fine, and eventually the process runs out of memory and dies all at once. A bounded queue instead fills up and refuses new work, and that refusal is backpressure — the constraint is pushed back upstream to whatever is producing the work, so the producer slows down or the system sheds load on purpose rather than by accident. I size capacity from the tail, not the mean, because the mean hides the slowest fraction of requests, and at scale those slow requests are disproportionately the heaviest users, the ones who retry and make things worse if the retries are not controlled. Work is split across many machines on a key I can defend, and I assume that key is skewed, because real traffic follows a power law rather than a uniform distribution — one customer, one time window, or one kind of request usually dominates, and a single hot partition becomes the ceiling for the whole system however many machines exist behind it. Where the result of that work is stored, and for how long, is a separate decision from the arrival rate: the queue and the backpressure design answer how fast work arrives, not where it ends up. None of this names a vendor or a product, because none of it needs to — the same queue, the same backpressure, and the same skewed key exist whichever company's boxes happen to be running underneath, and that is exactly why the answer has to be phrased this way." },
             { t: "Say it out loud once. Two minutes, no notes",
+              close: [
+                { k: "order", q: "Put these in the order the rehearsed answer actually uses them.",
+                  items: ["Size from the tail, not the mean", "Partition by a defensible key, assuming skew", "Work out the arrival rate first", "Queue the arriving work, bounded on purpose"],
+                  a: "Work out the arrival rate first, queue the arriving work bounded on purpose, partition by a defensible key assuming skew, then size capacity from the tail rather than the mean." },
+                { k: "pick", q: "You have named a defensible partition key and assumed it is skewed. What does the hottest partition now determine?",
+                  o: ["Nothing beyond that one partition's own performance", "The throughput ceiling for the whole system, however many machines exist behind it", "Only how fast that partition's writes are flushed to disk"], a: 1,
+                  why: "A single hot partition becomes the ceiling for the whole system regardless of total machine count, because every other partition sits idle while it saturates." },
+                { k: "word", q: "What do you call a key where one customer or time window carries a disproportionate share of traffic?", a: "A skewed key" },
+                { k: "why", q: "Why rehearse the hundred-million answer out loud now, in week one, rather than waiting for week five?", a: "Week five is when it is actually delivered; rehearsing now means the first time it is said under time pressure is not during the real evaluation." },
+                { k: "blank", q: "A hundred million of anything is a ___ problem before it is a storage one.", a: "rate" }
+              ],
               d: "A short rehearsal for the week five deliverable, so that week five is not the first attempt.",
               m: 20,
               where: "No resource - spoken rehearsal, timed",
@@ -1328,6 +1375,15 @@
           diagrams: ["logs"],
           steps: [
             { t: "Watch the first chapter of Essence of Calculus",
+              close: [
+                { k: "word", q: "What single mathematical concept is a derivative defined as, in this chapter's framing?", a: "A limit" },
+                { k: "blank", q: "The chapter's worked example treats each thin ring of the circle as a straightened-out ___.", a: "rectangle" },
+                { k: "why", q: "Why does the chapter build up the ring-slicing approximation before computing any derivative?", a: "A derivative is defined as what that approximation converges to as the slices get infinitely thin — the limit is the concept, and calculation rules come after it." },
+                { k: "pick", q: "You are explaining a derivative to someone who has only seen the power rule. Which is the more honest one-line answer?",
+                  o: ["A shortcut formula for lowering the exponent by one", "The limit a simplifying approximation converges to as it gets arbitrarily fine", "The slope of a curve, full stop"], a: 1,
+                  why: "The power rule is a shortcut for computing it; the derivative itself is defined as a limit, which is the framing this chapter spends its time on before any computation rule appears." },
+                { k: "short", q: "One sentence: what happens to the approximation's error as the slice width goes to zero?", a: "It shrinks to zero, and what is left in that limit is the exact derivative." }
+              ],
               d: "Twenty minutes, and it reframes what a derivative is before you ever compute one. Watch it without doing anything else.",
               m: 20,
               where: "3Blue1Brown, Essence of Calculus, Chapter 1 - 'The essence of calculus' (17:04)",
@@ -1342,6 +1398,15 @@
                 "The chapter previews this approach for the whole series before any differentiation rules appear"
               ] },
             { t: "Work through logarithms as the inverse of exponentiation until it is obvious rather than remembered",
+              close: [
+                { k: "figure", q: "In the logs figure, what happens to an exponential curve once it is redrawn against a log-scale vertical axis?", a: "It straightens into a line — constant multiplicative growth becomes constant slope, because the log undoes the exponential." },
+                { k: "why", q: "Why does log(ab) = log(a) + log(b) matter for likelihoods?", a: "A likelihood is a product of many small probabilities; logging turns that product into a sum, which does not underflow and differentiates term by term instead of needing the product rule." },
+                { k: "short", q: "One sentence: what breaks if you multiply thousands of small probabilities directly, without logging them first?", a: "The product underflows to zero in floating point long before you have multiplied through the whole dataset." },
+                { k: "blank", q: "Log turns a product into a sum because multiplying two numbers is adding their ___ once both are written over the same base.", a: "exponents" },
+                { k: "pick", q: "You need to compare two candidate models by their likelihood over a large dataset. Which quantity do you actually compute?",
+                  o: ["The raw product of per-example probabilities", "The sum of per-example log-probabilities", "The average per-example probability"], a: 1,
+                  why: "The raw product underflows to zero for any reasonably sized dataset; summing logs is numerically stable and is exactly what logging turns the product into." }
+              ],
               d: "The property to internalise is that log turns products into sums. That single fact is why likelihoods are logged, why log-loss exists, and why paper plots have log axes.",
               m: 25,
               where: "Khan Academy, Algebra 2, Unit 8 (Logarithms), Lesson 1 'Introduction to logarithms' - video 'Intro to logarithms' (7:02), then Lesson 3 'Properties of logarithms'",
@@ -1351,6 +1416,13 @@
               links: [L.ka_alg],
               ans: "Let x be log base c of a, and y be log base c of b, so a equals c to the power x and b equals c to the power y. Multiplying them, a times b equals c to the power x times c to the power y, which is c to the power (x plus y), by the rule for multiplying two powers of the same base. Taking log base c of both sides gives log(ab) equal to x plus y, which is log(a) plus log(b). So the log of a product is the sum of the logs because multiplying two numbers is adding their exponents once both are written over the same base, and the log is exactly the operation that reads that exponent back off. This is why likelihoods are logged: a likelihood is a product of many small probabilities, multiplying thousands of them underflows to zero in floating point, but summing their logs does not, and it turns a product that is awkward to differentiate into a sum that differentiates term by term." },
             { t: "Ten log and exponent manipulations by hand, on paper",
+              close: [
+                { k: "num", q: "Log base 2 of 32 equals what?", a: "5" },
+                { k: "num", q: "5 to the power 0 equals what?", a: "1" },
+                { k: "word", q: "What is the name of the rule that lets you pull an exponent out front of a log, as in log(a^n) = n log(a)?", a: "The power rule" },
+                { k: "blank", q: "Log base 2 of 8 minus log base 2 of 2 equals log base 2 of ___, by the quotient rule.", a: "4" },
+                { k: "why", q: "Why work these ten cold on paper before checking the video walkthroughs?", a: "Solving cold first is what makes the product-to-sum rule and pulling the exponent out front automatic, rather than something to look up every time." }
+              ],
               d: "Paper, not a screen, not a notebook cell. Ten is a small number and it will take less time than it sounds.",
               m: 30,
               where: "Khan Academy, Algebra 2, Unit 8, Lesson 3 - 'Use the properties of logarithms' practice",
@@ -1359,6 +1431,15 @@
               skip: "The video walkthroughs on that page. Solve cold first, check after.",
               ans: "Working the properties by hand: log base 2 of 32 is 5, since 2 to the power 5 is 32. Log base 3 of 1 is 0, since anything to the power 0 is 1. Log(100) plus log(10) is log(1000), which is 3, using the product rule directly. Log base 2 of 8 minus log base 2 of 2 is log base 2 of 4, which is 2, using the quotient rule. 5 to the power 0 is 1, e to the power 1 is e, and 2 to the power minus 3 is one eighth, from the definitions of zero, one and negative exponents. Log base 5 of 25 cubed is 3 times log base 5 of 25, which is 3 times 2, or 6, using the power rule to pull the exponent out front. Ten of these, done cold on paper before checking, made the product-to-sum rule and pulling the exponent out front automatic rather than something to look up." },
             { t: "Write one line: why minimise negative log-likelihood rather than maximise likelihood",
+              close: [
+                { k: "why", q: "Why minimise the negative log-likelihood rather than maximise the likelihood directly?", a: "The raw likelihood is a product of many small probabilities that underflows to zero, while its log is a stable sum; and standard optimisers are built to descend, so negating the log-likelihood turns maximisation into the descent they already do." },
+                { k: "blank", q: "Negating the log-likelihood turns a maximisation problem into the ___ optimisers are already built to do.", a: "descent" },
+                { k: "pick", q: "Your optimiser only knows how to walk downhill, and you want the parameters that make your data most probable. What do you hand it?",
+                  o: ["The likelihood, unmodified", "The negative log-likelihood", "The log-likelihood, unmodified"], a: 1,
+                  why: "Negating the log-likelihood turns 'find the maximum' into 'find the minimum', which is the direction a descent-only optimiser can actually walk." },
+                { k: "short", q: "One sentence: what happens numerically to a product of many small probabilities if it is not logged first?", a: "It underflows to zero in floating point long before you have multiplied through the whole dataset." },
+                { k: "figure", q: "In the logs figure, why is the summed-log box labelled 'stable, and easy to differentiate' rather than just 'stable'?", a: "A sum differentiates term by term, one derivative per log, while the product on the left needs the product rule and stays exposed to underflow throughout." }
+              ],
               d: "Two reasons, both practical. Products of many small probabilities underflow; sums do not. And optimisers are written to descend, not to climb.",
               m: 15,
               where: "No resource - your own line, checked against the reasons above only after writing it",
@@ -1384,6 +1465,15 @@
           intro: "Two of the four hours Alaap gets across the whole milestone. Orientation only, and no machine learning required.",
           steps: [
             { t: "Run the demo script and listen to the output",
+              close: [
+                { k: "why", q: "Why does the study guide insist on actually listening to demo_out/audio/ rather than trusting the gate numbers?", a: "None of the gates that pass — drift, consistency, uniqueness, CER — check whether the voice sounds natural; the naturalness floor is proposed but never enforced, so listening is the only check that catches synthetic-sounding audio." },
+                { k: "pick", q: "The demo's gates all pass on a rendered line. What does that tell you about how it sounds?",
+                  o: ["Nothing about naturalness — the gates check identity and intelligibility only", "That it sounds natural, since all gates are calibrated", "That it is the correct speaker but the words may be garbled"], a: 0,
+                  why: "Passing gates only confirm this is the right identity and the words are intelligible. Naturalness is never gated, so a passing render can still sound synthetic." },
+                { k: "short", q: "One sentence: what does the demo actually do, start to finish?", a: "It mints a voice identity from a text description through the mapper, then renders scripted lines through the frozen TTS using that fixed identity." },
+                { k: "blank", q: "The gates that pass before you ever listen check identity and ___, not whether the voice sounds natural.", a: "intelligibility" },
+                { k: "word", q: "What is the one action no gate number substitutes for?", a: "Listening" }
+              ],
               d: "Actually listen. No number in that repo substitutes for hearing it, and the study guide says so for a reason.",
               m: 10,
               where: "VoiceForge TTV Pipeline v3 (E:\\VoiceForge TTV Pipeine\\v3) - run scripts/demo_script_render.py with envs/qwen3/Scripts/python.exe from the repo root, then listen to demo_out/audio/",
@@ -1394,6 +1484,15 @@
                 "No gate in the stack currently rejects on naturalness: the floor is proposed, never enforced, so listening is the only check that catches synthetic-sounding audio"
               ] },
             { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict",
+              close: [
+                { k: "word", q: "What is the only channel between the learned tower (the mapper) and the frozen tower (the TTS)?", a: "The speaker vector" },
+                { k: "pick", q: "Someone proposes fine-tuning Tower B's weights to fix a rendering quirk. What does the two-tower design say about that?",
+                  o: ["Fine, retrain Tower B — the mapper does not care", "Don't: Tower B is frozen, and training it turns a swappable component into a fragile, expensive dependency", "Retrain both towers together for consistency"], a: 1,
+                  why: "Tower B is frozen by design; all the learning lives in the mapper. This project has already swapped Tower B once, from Zonos to Qwen3-TTS — training it would have made that swap far more expensive." },
+                { k: "blank", q: "The renderer changed from the scope document's ___ to Qwen3-TTS after it turned out to be dead and licence-poisoned.", a: "Zonos-v0.1" },
+                { k: "why", q: "Why does the identity store keep a seed clip as well as a speaker vector?", a: "An encoder change has already orphaned every stored vector once before; keeping the original audio means identities can be re-extracted under a new encoder rather than lost." },
+                { k: "short", q: "One sentence: what does the naturalness gate actually do today?", a: "Nothing enforced — its floor of 75 is a proposal that has never actually rejected a render, unlike the four gates beside it." }
+              ],
               m: 22,
               where: "Same repo, learning/architecture.html sections 1 through 5 (System context, The two-tower thesis, The mint pipeline in full, The render pipeline, The gate stack), then RESEARCH/00-EXECUTIVE-VERDICT.md, section 1 (THE VERDICT ON THE ARCHITECTURE)",
               out: "the two-tower shape in one sentence - a trained mapper into a frozen TTS's voice-identity input - and one component that has since changed",
@@ -1406,6 +1505,15 @@
                 "What has changed since the original scope: the renderer, from the now-dead and licence-poisoned Zonos-v0.1 to Qwen3-TTS-1.7B"
               ] },
             { t: "Answer in writing: why is the TTS model never trained, and what breaks if it is",
+              close: [
+                { k: "why", q: "Why does keeping the TTS frozen turn training into a cheap, well-scoped job?", a: "The only thing that needs learning is the mapper, a small head mapping a text description into a speaker-vector space the frozen model already knows how to consume — far less data and risk than training the base acoustic model itself." },
+                { k: "pick", q: "Suppose the TTS model were fine-tuned instead of kept frozen. What is the most direct cost, given this project's own history?",
+                  o: ["Nothing changes — fine-tuning only helps", "The model stops being swappable, and this project has already swapped its renderer once", "It becomes cheaper to train because less new data is needed"], a: 1,
+                  why: "The renderer already changed once, from Zonos-v0.1 to Qwen3-TTS. A dependency fine-tuned into one checkpoint's quirks would have made a swap like that far more expensive or impossible." },
+                { k: "short", q: "One sentence: what is the only channel through which the mapper's training can affect what the audio sounds like?", a: "The speaker vector it hands to the frozen TTS as voice identity." },
+                { k: "blank", q: "Fine-tuning the frozen model risks ___ the general speech quality it already has.", a: "catastrophically forgetting" },
+                { k: "word", q: "What is the name of the small trained component that carries all of this system's learning?", a: "The mapper" }
+              ],
               d: "The study guide's own check for Part 0. Write it rather than think it.",
               m: 13,
               where: "No resource - write it from what the reading above just gave you",
