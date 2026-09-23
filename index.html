@@ -2257,7 +2257,8 @@
             url: "https://github.com/donnemartin/system-design-primer#how-to-approach-a-system-design-interview-question",
             skip: "Steps 2 to 4 and the rest of the repo — it is a reference, not a reading list" },
           { a: "Say the five-phase order out loud once, then say why requirements come first", m: 2,
-            out: "the causal link stated aloud: requirements decide which deep dive matters, not the reverse" }
+            out: "the causal link stated aloud: requirements decide which deep dive matters, not the reverse",
+            ans: "Clarify, requirements, happy path end to end, the one hard part, failure and evaluation, then what I would build first. Requirements come first because they decide which deep dive earns the twelve minutes. In audit the non-functional ones are the product, so if traceability is the binding requirement the deep dive is grounding, and if isolation is, it is tenancy. Pick the deep dive before the requirements and you are guessing at what the company cares about." }
         ] },
       { t: "Functional against non-functional requirements",
         say: "Functional is what the system does. Non-functional is how well, and under which guarantees. In audit, the non-functional ones — traceability, reproducibility, isolation — are the product.",
@@ -2269,7 +2270,8 @@
             out: "the one-line distinction: functional is what the system does, non-functional is how well and under what guarantee" },
           { a: "Say out loud which two items on the page's non-functional checklist bite hardest for audit software, and why", m: 3,
             where: "same page, the non-functional requirements checklist below the definition",
-            out: "compliance and durability named first, one reason each — this feeds the written list in the next step, it does not replace it" }
+            out: "compliance and durability named first, one reason each — this feeds the written list in the next step, it does not replace it",
+            ans: "Compliance and durability are the two that bite hardest for audit software. Compliance, because SOX and PCAOB rules define exactly what has to be recorded and how a sample has to be defensible — for audit, that requirement is not background polish, it is the product itself. Durability, because a signed workpaper is the record of the audit for years afterwards; if it can be lost or altered after the fact, the traceability the whole system exists for stops meaning anything." }
         ] },
       { t: "Back-of-envelope estimation",
         say: "Pages per engagement, bytes per page, OCR cost per page, to one significant figure, out loud. And which constraint does not matter here: batch latency.",
@@ -2284,7 +2286,8 @@
             url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html",
             out: "roughly 359 microseconds, 2 milliseconds, 500 microseconds, 150 milliseconds" },
           { a: "Say out loud what each implies for a batch pipeline rather than a live one", m: 3,
-            out: "sequential disk read is cheap, so stream large PDFs rather than seek around them; an in-region hop is negligible next to OCR compute; a cross-region hop costs roughly 300 times more, the case for keeping compute inside the tenant's region" }
+            out: "sequential disk read is cheap, so stream large PDFs rather than seek around them; an in-region hop is negligible next to OCR compute; a cross-region hop costs roughly 300 times more, the case for keeping compute inside the tenant's region",
+            ans: "For a batch ingestion pipeline these numbers point the same way. Sequential disk read is cheap, so I would stream large PDFs through rather than seek around inside them. An in-region round trip is negligible next to OCR compute time, so it barely shows up in the budget. A cross-region hop costs roughly three hundred times a same-region one, which is the argument for keeping OCR and storage inside the tenant's own region rather than centralising compute globally. None of this is about response-time latency, because this is batch work — it is about not wasting cost and time on network hops that do not need to happen." }
         ] },
       { t: "ICFR, and SOX sections 302, 404(a) and 404(b)",
         say: "ICFR is the set of controls that give reasonable assurance the financial statements are reliable. 404(a) is management's own assessment of those controls, 404(b) is the external auditor's attestation, and 302 is the quarterly certification by the CEO and CFO. Oxus mostly serves the internal audit team doing the 404(a) work.",
@@ -2299,7 +2302,8 @@
             url: "https://pcaobus.org/oversight/standards/auditing-standards/details/AS2201",
             out: "footnote 2 names this standard as the 404(b) attestation standard; .C2 names Section 302, management's certification" },
           { a: "Say the three sections in one sentence each, out loud, no notes", m: 2,
-            out: "302 is the CEO/CFO's quarterly certification, 404(a) is management's own annual assessment, 404(b) is the external auditor's attestation on it — Oxus mostly serves the 404(a) work" }
+            out: "302 is the CEO/CFO's quarterly certification, 404(a) is management's own annual assessment, 404(b) is the external auditor's attestation on it — Oxus mostly serves the 404(a) work",
+            ans: "Section 302 is the CEO and CFO's quarterly certification that the financial statements and disclosure controls are accurate. Section 404(a) is management's own annual assessment of internal control over financial reporting. Section 404(b) is the external auditor's attestation on that assessment. Oxus mostly serves the 404(a) work — it helps the internal team build and test the evidence management will certify." }
         ] }
     ],
     wc2: [
@@ -2316,7 +2320,8 @@
             url: "https://go.auditboard.com/rs/961-ZQV-184/images/AB-AR-Best-Practices-Effective-SOX-Testing.pdf",
             out: "one sentence: frequency sets the sample size, so it has to be right before anything downstream is trustworthy" },
           { a: "Say the four terms in one sentence each, out loud: key control, control objective, owner, frequency", m: 2,
-            out: "four short sentences, no notes" }
+            out: "four short sentences, no notes",
+            ans: "A key control is a control the company relies on to prevent or catch a significant risk of misstatement. Its control objective is the specific thing it is meant to achieve, stated as a testable claim. Its owner is the named person accountable for it operating correctly. Its frequency — annual, quarterly, monthly, daily, or per transaction — is what drives the sample size, so it has to be settled before testing starts." }
         ] },
       { t: "Test of design against test of operating effectiveness",
         say: "Design asks whether the control, if it works, would address the risk; it is tested with a walkthrough of one transaction end to end. Operating effectiveness asks whether it actually worked across the whole period; it is tested on a sample.",
@@ -2331,7 +2336,8 @@
             url: "https://go.auditboard.com/rs/961-ZQV-184/images/AB-AR-Best-Practices-Effective-SOX-Testing.pdf",
             skip: "Pages 3 to 5 — engagement management, not the definitions you need here" },
           { a: "Say the distinction out loud in one sentence, naming which one uses a sample", m: 3,
-            out: "design is checked with one walkthrough transaction; operating effectiveness is checked on a sample across the period" }
+            out: "design is checked with one walkthrough transaction; operating effectiveness is checked on a sample across the period",
+            ans: "Test of design asks whether the control, if it operated as intended, would actually address the risk, and it is tested with a single walkthrough transaction end to end. Test of operating effectiveness asks whether the control actually worked that way across the whole period, and that one is tested on a sample, not a single instance." }
         ] },
       { t: "The four testing methods",
         say: "Inquiry, observation, inspection, re-performance. Inquiry alone is never enough evidence. Oxus's agents mostly do inspection — reading the evidence — and some re-performance, recomputing what the control should have produced.",
@@ -2342,9 +2348,11 @@
             url: "https://skillselion.com/skills/anthropics/knowledge-work-plugins/audit-support",
             out: "the four words in the order given: inspection, observation, re-performance, inquiry" },
           { a: "Say which two Oxus's agents mostly do, and why inquiry alone is never enough", m: 2,
-            out: "inspection, reading the evidence, and re-performance, recomputing it; inquiry alone is a claim with no independent check behind it" },
+            out: "inspection, reading the evidence, and re-performance, recomputing it; inquiry alone is a claim with no independent check behind it",
+            ans: "Oxus's agents mostly do inspection — reading the evidence documents directly — and re-performance, recomputing what the control should have produced and checking that it matches. Inquiry alone is never enough evidence because it is just someone's claim that the control worked, with no independent check behind it." },
           { a: "Use each of the four words in one sentence about Oxus, out loud, no notes", m: 2,
-            out: "four sentences, each naming a concrete Oxus action for that method" }
+            out: "four sentences, each naming a concrete Oxus action for that method",
+            ans: "Inspection: the agent reads the approval evidence attached to a journal entry and checks the second signature is there. Observation: for something like a physical inventory count, the closest Oxus gets is reviewing a recording of the walkthrough, since it is not present live. Re-performance: the agent recomputes the approval-threshold check itself rather than trusting a label that says it was checked. Inquiry: the agent can read what a control owner said in an interview transcript, but that alone never closes a test — it always needs inspection or re-performance behind it." }
         ] },
       { t: "Population, and IPE: information produced by the entity",
         say: "The sample is drawn from a population report the company produces. That report must itself be checked for completeness and accuracy, or the whole test rests on data nobody verified. This is a great place for a design question: how does the system know the population is complete?",
@@ -2358,7 +2366,8 @@
             where: "same page, Sample Selection Approaches, Random Selection, Method",
             out: "the population must be a complete, sequentially numbered listing before any sample from it is defensible" },
           { a: "Say your one-sentence answer to 'how does the system know the population is complete' out loud", m: 3,
-            out: "an answer naming a concrete check, such as a row-count reconciliation against the source system, run in code before sampling" }
+            out: "an answer naming a concrete check, such as a row-count reconciliation against the source system, run in code before sampling",
+            ans: "The system knows the population is complete because code reconciles the row count and a control total of the population report against the source system before any sampling happens — a completeness check, not a trust assumption — and that check is logged in the workpaper alongside the sample seed." }
         ] },
       { t: "Sample sizes by control frequency",
         say: "Firms use a table mapping frequency to sample size: small for annual controls, large for controls that run many times a day. Know that the table exists and where it comes from, rather than quoting numbers.",
@@ -2372,7 +2381,8 @@
             where: "same page, directly under the Sample Size Guidance table",
             out: "one you would raise unprompted: no compensating control, or a prior-period deficiency" },
           { a: "Say out loud where the table comes from, and why you would never quote a number from memory", m: 2,
-            out: "one sentence naming the firm's methodology table as the source, not a memorised rule" }
+            out: "one sentence naming the firm's methodology table as the source, not a memorised rule",
+            ans: "Sample sizes come from the firm's own methodology table, keyed to frequency and risk factors, not from a number I carry in my head. I would never quote one from memory because the table is calibrated per firm and moves with risk factors like a missing compensating control or a prior-period deficiency — quoting a fixed number would be exactly the kind of unfounded claim this whole system exists to avoid." }
         ] },
       { t: "Attributes, tickmarks, redboxing, exceptions, PBC",
         say: "Attributes are the specific things checked per sample, like approved before posting, and by someone other than the preparer. Tickmarks and red boxes annotate the evidence. An exception is a sample where an attribute failed. PBC is the list of evidence requested from the client.",
@@ -2388,9 +2398,11 @@
             out: "the four questions: right person, timely, evidenced, sufficient information" },
           { a: "Write your own one-line definitions of tickmark and redbox, since neither source spells them out", m: 3,
             where: "no verified source for these two terms specifically — see NOTES.md",
-            out: "tickmark: a mark on a workpaper showing a procedure was performed against that figure. Redbox: the highlighted region on a document image a citation resolves to" },
+            out: "tickmark: a mark on a workpaper showing a procedure was performed against that figure. Redbox: the highlighted region on a document image a citation resolves to",
+            ans: "A tickmark is a mark placed next to a figure on a workpaper to show that a specific procedure was performed against it, usually a symbol with a legend explaining what it means. A redbox is the highlighted region on a source document image that a citation resolves to, so a reviewer can see exactly where an extracted value came from." },
           { a: "Say all five terms — attribute, tickmark, redbox, exception, PBC — in one sentence each, out loud", m: 1,
-            out: "five sentences, no notes" }
+            out: "five sentences, no notes",
+            ans: "An attribute is one specific thing checked per sample, such as whether the entry was approved before posting and by someone other than the preparer. A tickmark is the mark on a workpaper showing that check was performed against a figure. A redbox is the highlighted region on the evidence image that a citation resolves to. An exception is any sampled item where an attribute failed. PBC is provided-by-client — the list of evidence requested from the client to run the test." }
         ] },
       { t: "Deficiency, significant deficiency, material weakness",
         say: "A deficiency means a control does not prevent or detect misstatements in a timely way. A material weakness is one where there is a reasonable possibility a material misstatement will not be caught. A significant deficiency sits between them. One material weakness means ICFR cannot be called effective.",
@@ -2405,7 +2417,8 @@
             url: "https://skillselion.com/skills/anthropics/knowledge-work-plugins/audit-support",
             out: "one indicator that needs no judgment call: fraud by senior management, of any size" },
           { a: "Say the three terms in order of severity, each in one sentence, out loud, no notes", m: 3,
-            out: "deficiency, then significant deficiency, then material weakness, each placed on the same reasonable-possibility-of-misstatement scale" }
+            out: "deficiency, then significant deficiency, then material weakness, each placed on the same reasonable-possibility-of-misstatement scale",
+            ans: "A deficiency is when a control fails to prevent or detect a misstatement in a timely way — the base case, before severity is added. A significant deficiency is a deficiency important enough to merit attention from those responsible for oversight, but not severe enough to be a material weakness. A material weakness sits at the top: a reasonable possibility that a material misstatement would not be prevented or detected, and finding even one means ICFR cannot be called effective." }
         ] },
       { t: "Automated controls and ITGCs",
         say: "IT general controls — access, change management, operations — underpin automated controls. If the ITGCs are effective, an automated control can often be tested with very few samples, because it behaves the same way every time.",
@@ -2419,7 +2432,8 @@
             where: "same page, IT General Controls (ITGCs), the three subheadings",
             out: "one example control per category, said from memory" },
           { a: "Say out loud why an effective ITGC lets you test an automated control with almost no samples", m: 2,
-            out: "because the system does the same thing every time; the ITGC is what guarantees it has not quietly changed" }
+            out: "because the system does the same thing every time; the ITGC is what guarantees it has not quietly changed",
+            ans: "An automated control does exactly the same thing on every transaction, so testing it once genuinely tells you how it behaves on all of them — there is no variation across a sample to check. The reason you still need the ITGC is that the automated control could only start behaving differently through a configuration or code change, and change-management ITGC testing is what proves that has not happened." }
         ] },
       { t: "Constrained citation, off the shelf",
         say: "The Claude citations feature parses citations so every pointer is guaranteed valid, and custom content documents let you define the citable blocks yourself — which is your opaque-handle pattern as an API. The limit to name: a valid pointer does not prove the cited text supports the claim, so a verifier is still needed.",
@@ -2434,9 +2448,11 @@
             url: "https://docs.claude.com/en/docs/build-with-claude/citations#custom-content-documents",
             out: "citations reference content-block index ranges you defined — the opaque-handle pattern, shipped as an API" },
           { a: "Say the one limit out loud: what a valid pointer does not prove", m: 2,
-            out: "a valid pointer proves the span exists; it does not prove the span supports the claim, so a verifier is still needed" },
+            out: "a valid pointer proves the span exists; it does not prove the span supports the claim, so a verifier is still needed",
+            ans: "A citation being valid only proves the pointer resolves to a real span in the source document — it does not prove that span actually supports the claim being made about it. That gap is exactly why a verifier still has to run afterwards, checking the cited span against the extracted value rather than trusting that a valid pointer means a correct one." },
           { a: "Write one sentence naming which Oxus stage plays the verifier role citations alone do not cover", m: 2,
-            out: "written into the Answer field: the exact-match check between cited span and extracted value, run in code after the model cites" }
+            out: "written into the Answer field: the exact-match check between cited span and extracted value, run in code after the model cites",
+            ans: "That verifier role is the citation-verification stage in the pipeline: the exact-match check that confirms the cited span actually contains the extracted value, run in code right after the model produces its citation and before the result can reach an exception or a conclusion." }
         ] }
     ],
     wc3: [
@@ -2454,7 +2470,8 @@
             skip: "Table Structure Recognition and OCR in between — separate items own those",
             out: "one sentence: reading order is corrected once all pages are assembled, not decided page by page" },
           { a: "Say the page-to-ordered-text path out loud, four steps, no notes", m: 2,
-            out: "layout model finds and classes elements, elements merge with PDF text tokens, per-page results aggregate, assembly fixes reading order — spoken clean" }
+            out: "layout model finds and classes elements, elements merge with PDF text tokens, per-page results aggregate, assembly fixes reading order — spoken clean",
+            ans: "A layout model first finds page elements and classes them as headings, paragraphs, tables or footers, predicting a bounding box for each. Those boxes are then intersected with the PDF's own text tokens, so each element gets its actual text rather than a guess from pixels. That happens page by page, and the per-page results are aggregated across the whole document. Only once the full document is assembled does a final pass correct reading order, because column layout and multi-page tables can only be resolved once everything is in front of you." }
         ] },
       { t: "Table structure recognition",
         say: "Tables are recovered as structured grids of cells, not flattened text, so a value can be cited to an exact cell. Docling uses TableFormer for this.",
@@ -2470,7 +2487,8 @@
             url: "https://docling-project.github.io/docling/reference/docling_document/#docling_core.types.doc.TableCell",
             out: "confirm a cell carries its own bounding box, not just its text" },
           { a: "Say why flattening a table to text breaks citation, out loud", m: 3,
-            out: "one sentence: flattening drops the column header a value was read against, so keeping the grid is what lets an amount cite to one exact cell" }
+            out: "one sentence: flattening drops the column header a value was read against, so keeping the grid is what lets an amount cite to one exact cell",
+            ans: "Flattening a table into a text blob throws away the column header that gave a number its meaning, so you can still find the string fifty thousand but you can no longer say it was the approved-amount column for that row. Keeping the table as a structured grid, with each cell carrying its own bounding box, means an extracted value cites to one exact cell rather than to a page. That is the difference between a red box a reviewer can trust and one they have to double-check by hand." }
         ] },
       { t: "The provenance data model",
         say: "Every item carries its source page, bounding box and character span. Walk through Docling's document model and map it onto what Oxus needs for red boxes.",
@@ -2482,9 +2500,11 @@
             skip: "the surrounding TextItem and DocItem classes — provenance is the one that matters tonight",
             out: "the three fields named correctly: page number, bounding box, character span" },
           { a: "Map each field to what a red box needs, out loud", m: 3,
-            out: "one clause per field: page_no picks the image, bbox draws the rectangle, charspan ties it back to the exact characters extracted" },
+            out: "one clause per field: page_no picks the image, bbox draws the rectangle, charspan ties it back to the exact characters extracted",
+            ans: "Page number picks which page image to render. Bounding box draws the rectangle on that page. Character span ties the box back to the exact characters that were extracted, so the highlighted region and the cited text are provably the same thing rather than two things that happen to be near each other. All three have to survive parsing together, because a red box built from only two of them is a box that points at the wrong thing some of the time." },
           { a: "Write the one-line consequence into the Answer field", m: 2,
-            out: "one sentence: drop any of the three at parse time and that span can never be cited again, no matter what runs downstream" }
+            out: "one sentence: drop any of the three at parse time and that span can never be cited again, no matter what runs downstream",
+            ans: "If any of page number, bounding box or character span is dropped at parse time, that span can never be cited again, no matter how good the retrieval, the model or the verifier downstream turns out to be. Provenance has to be captured once, at ingestion, or it does not exist." }
         ] },
       { t: "OCR confidence and human review",
         say: "Low-confidence regions are flagged, carried forward, and can force an insufficient result or a human check. Know the honest line about your own gap here.",
@@ -2496,9 +2516,11 @@
             skip: "the benchmark numbers in Section 5 — cost, not confidence, is the point of this read",
             out: "which two engines Docling integrates, and which one the paper flags as the biggest compute cost" },
           { a: "Write the honest gap down", m: 2,
-            out: "one written line: the paper documents engine choice and speed, not a published per-region confidence score — the confidence-gating idea is a design layered on top, not something the paper hands you" },
+            out: "one written line: the paper documents engine choice and speed, not a published per-region confidence score — the confidence-gating idea is a design layered on top, not something the paper hands you",
+            ans: "Docling documents which OCR engines it integrates and how they trade off speed, but it does not publish a per-region confidence score as part of that pipeline. The idea of gating results on OCR confidence is a design decision I would layer on top of the engine's own output, not something the paper hands me ready-made, and I should be clear about that distinction rather than implying it is built in." },
           { a: "Say the honest line about your own gap out loud, once", m: 2,
-            out: "spoken clean: you have not run OCR in production, you have designed the layers on both sides of it, and you would expect to be slow on OCR specifics and fast on everything around them" }
+            out: "spoken clean: you have not run OCR in production, you have designed the layers on both sides of it, and you would expect to be slow on OCR specifics and fast on everything around them",
+            ans: "I have not run OCR in production. What I have built is the layers on both sides of it: the provenance model a parsed span has to carry, and the downstream verification that checks a citation against its source. So I would expect to be slow for a couple of weeks on OCR-specific tuning, engine choice and confidence calibration, and fast on everything that consumes its output, because that part is the part I have actually shipped." }
         ] },
       { t: "Hybrid retrieval: lexical plus dense, and rank fusion",
         say: "BM25 for exact identifiers, amounts and dates; dense embeddings for meaning; combine the rankings, commonly with reciprocal rank fusion. Your MetaRAG finding on metadata prefixes applies on the dense side.",
@@ -2516,7 +2538,8 @@
           { a: "Reread why prefix-fusion beats TF-IDF weighting, in your own paper", m: 2,
             where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 2.2, the paragraph on why prefix-fusion beats TF-IDF weighting" },
           { a: "Say where that finding sits in Oxus's design, out loud", m: 3,
-            out: "one sentence: BM25 stays untouched for exact identifiers, and the MetaRAG finding says the dense side should get metadata prefixed into the text before encoding, not blended in afterward as a separately weighted vector" }
+            out: "one sentence: BM25 stays untouched for exact identifiers, and the MetaRAG finding says the dense side should get metadata prefixed into the text before encoding, not blended in afterward as a separately weighted vector",
+            ans: "BM25 stays untouched for exact identifiers like invoice numbers, dates and amounts, because that is where lexical matching wins outright. On the dense side, my MetaRAG finding applies directly: metadata should be prefixed into the chunk text before encoding so one encoder represents content and metadata jointly, rather than computed as a separate TF-IDF vector and blended in afterward. Blending two independently computed vectors assumes their spaces are aligned, and in my experiments they were not; prefix-fusion beat that weighted blend consistently." }
         ] },
       { t: "Multi-tenant isolation",
         say: "Silo — separate storage and index per tenant — against pool with row-level isolation. Per-tenant encryption keys. No shared cache. Your Postgres row-level-security story from alfred_ is real evidence here.",
@@ -2528,7 +2551,8 @@
           { a: "Read 'Skewed Workloads and Relieving Hot Spots'", m: 4,
             where: "same chapter, the section immediately after — a couple of pages" },
           { a: "Say silo against pool out loud, anchored to your own RLS experience", m: 3,
-            out: "one sentence: which of the two Oxus should use for a VPC-deployed audit tool, and why isolation and blast radius decide it rather than raw scale" }
+            out: "one sentence: which of the two Oxus should use for a VPC-deployed audit tool, and why isolation and blast radius decide it rather than raw scale",
+            ans: "For a VPC-deployed audit tool I would silo by tenant, separate storage and index per client engagement, rather than pool with row-level isolation, because the failure mode that matters here is one client's evidence leaking into another's workpaper, not raw scale. I have shipped row-level security in a pooled Postgres schema at alfred_, including finding and closing a cross-user leak from a default PUBLIC execute grant on an agent-facing function, and that is exactly why I would not trust RLS alone for audit evidence: it reduces blast radius, but a physical silo removes the failure mode instead of just gating it." }
         ] },
       { t: "Zero data retention with model providers",
         say: "What it means for a provider not to retain inputs, why VPC customers demand it, and how it limits which models and features you can use.",
@@ -2540,9 +2564,11 @@
             skip: "the HIPAA-readiness section further down — not tonight's question",
             out: "one sentence: which API features ride on ZDR, and which stateful features sit outside it regardless" },
           { a: "Write down one stateful feature that stays outside ZDR", m: 2,
-            out: "one line naming a feature such as the Files API or code execution, and why its own storage need is what excludes it" },
+            out: "one line naming a feature such as the Files API or code execution, and why its own storage need is what excludes it",
+            ans: "A feature like the Files API sits outside zero data retention, because it exists specifically to store uploaded content for reuse across calls; its whole value is persistence, so it cannot simultaneously promise not to retain what you send it." },
           { a: "Say the VPC consequence out loud", m: 2,
-            out: "one sentence: a VPC customer demanding ZDR rules out any feature that necessarily stores prompts or responses, which is a real constraint on model and feature choice, not a formality" }
+            out: "one sentence: a VPC customer demanding ZDR rules out any feature that necessarily stores prompts or responses, which is a real constraint on model and feature choice, not a formality",
+            ans: "A VPC customer demanding zero data retention rules out any provider feature that necessarily stores prompts or responses, so that requirement is a real constraint on which models and which features you can build on, not a checkbox you tick after the design is done." }
         ] }
     ],
     wc4: [
@@ -2561,7 +2587,8 @@
             skip: "everything on the page before that section — inspection findings and the risk-based approach belong to wc2",
             out: "one sentence: the RCM is the row-per-control table linking each control back to the risk and assertion it addresses and forward to how it is tested" },
           { a: "Say the three-artifact pipeline out loud", m: 4,
-            out: "walkthrough recording in, narrative and flowchart out as two views of the same steps, RCM out as the row-per-control table — spoken clean, no notes" }
+            out: "walkthrough recording in, narrative and flowchart out as two views of the same steps, RCM out as the row-per-control table — spoken clean, no notes",
+            ans: "A walkthrough recording goes in. A process narrative and a flowchart come out as two views of the same underlying steps, generated from one graph rather than authored twice. The risk and control matrix comes out alongside them as the row-per-control table, linking each control back to the risk and assertion it addresses. Three artifacts, one walkthrough, one graph underneath all of them." }
         ] },
       { t: "Financial statement assertions",
         say: "Existence or occurrence, completeness, valuation or accuracy, rights and obligations, presentation and disclosure. Each control addresses one or more. Knowing the list lets you talk about risk mapping in their language.",
@@ -2573,9 +2600,11 @@
             skip: "everything else on the page — evidence sufficiency and specialists are not tonight's question",
             out: "all five named correctly: existence or occurrence, completeness, valuation or allocation, rights and obligations, presentation and disclosure" },
           { a: "Write which assertion a red-boxed invoice amount tests, in the Answer field", m: 2,
-            out: "one line naming both: existence or occurrence for the transaction, valuation or allocation for the amount" },
+            out: "one line naming both: existence or occurrence for the transaction, valuation or allocation for the amount",
+            ans: "A red-boxed invoice amount tests existence or occurrence for the transaction itself, that it actually happened, and valuation or allocation for the amount, since the citation is what lets a reviewer confirm the figure was recorded correctly." },
           { a: "Say all five from memory, cold, twice", m: 4,
-            out: "five assertions, no notes, said twice without dropping one" }
+            out: "five assertions, no notes, said twice without dropping one",
+            ans: "Existence or occurrence. Completeness. Valuation or allocation. Rights and obligations. Presentation and disclosure." }
         ] },
       { t: "Roll-forward of prior-year work",
         say: "Each year, prior documentation is carried forward and updated rather than rebuilt. That is exactly what Oxus's knowledge base automates, and the diff between years is where the value is.",
@@ -2587,7 +2616,8 @@
           { a: "Invent one concrete diff and say it out loud", m: 5,
             out: "one worked example, spoken: a named control whose owner changed between two years, and what that change should surface to the auditor first" },
           { a: "Write the update-not-rebuild line into the Answer field, in your own words", m: 4,
-            out: "one sentence distinguishing 'carried forward and updated' from 'rebuilt from scratch', in language you would use in the room" }
+            out: "one sentence distinguishing 'carried forward and updated' from 'rebuilt from scratch', in language you would use in the room",
+            ans: "Each year's process documentation should be carried forward and updated against this year's evidence, not rebuilt from a blank page, because rebuilding throws away exactly the year-over-year comparison that makes the diff valuable in the first place." }
         ] }
     ],
     wc5: [
@@ -2596,7 +2626,8 @@
         res: [R.dcg],
         do: [
           { a: "Write DCG_p and NDCG_p from memory, on paper", m: 3,
-            out: "both formulas on paper, unaided" },
+            out: "both formulas on paper, unaided",
+            ans: "DCG at p is the sum over the top p results of relevance at rank i divided by log base two of i plus one, summed from i equals one to p. NDCG at p is DCG at p divided by IDCG at p, where IDCG is the DCG of the ideal ordering, the same relevance scores sorted from most to least relevant. Dividing by that ideal value normalises the score to between zero and one, so it is comparable across queries with different numbers of relevant results." },
           { a: "Check against Wikipedia, then say aloud why the discount is logarithmic", m: 3,
             where: "Wikipedia, 'Discounted cumulative gain', the Discounted Cumulative Gain and Normalized DCG sections",
             url: "https://en.wikipedia.org/wiki/Discounted_cumulative_gain",
@@ -2628,7 +2659,8 @@
             url: "https://eugeneyan.com/writing/llm-evaluators/",
             skip: "the rest of the post — it runs to about fifty minutes; the use-case, prompting and fine-tuning sections are not tonight's question" },
           { a: "Say your own calibration loop out loud, ending on the number", m: 2,
-            out: "label by hand, measure agreement, iterate the rubric, re-check as the product changes — ending on roughly three in four flags genuine" }
+            out: "label by hand, measure agreement, iterate the rubric, re-check as the product changes — ending on roughly three in four flags genuine",
+            ans: "Label a sample by hand, measure agreement between the judge and those labels, iterate the rubric where they disagree, and re-check periodically as the product itself changes and drifts the distribution of cases. That loop is how the production-failure scanner's judge got to the point where roughly three in four of its flags were genuine failures rather than expected behaviour misread as a bug." }
         ] },
       { t: "Evals when there is no ground truth",
         say: "Error analysis on real outputs first, then targeted checks. Your two versions of this — silver standard in MetaRAG, replay bench in production — are the answer.",
@@ -2639,7 +2671,8 @@
             url: "https://hamel.dev/blog/posts/evals/",
             skip: "the rest of the post — the levels framework, RAG and fine-tuning sections are not tonight's question" },
           { a: "Say your own two versions of this out loud", m: 3,
-            out: "both named in one breath: the silver standard in MetaRAG, the replay bench in production, and what ground truth each one is missing" }
+            out: "both named in one breath: the silver standard in MetaRAG, the replay bench in production, and what ground truth each one is missing",
+            ans: "In MetaRAG I built a silver-standard pseudo-ground-truth from cross-encoder reranking, because human annotation over nine configurations and a six-thousand-page corpus was not feasible; it is missing true human relevance judgments, so I scoped every claim as a relative comparison rather than an absolute number. In production, the eval harness replays real traces against fixture-driven scenarios and scores tool-calling and decision-layer output; it is missing a labelled correct answer for every case, so completeness against the snapshot I actually own is what stands in for ground truth. Both are the same move: build the best proxy you can, characterise exactly how it is biased, and only make the claims the proxy can support." }
         ] },
       { t: "Your own MetaRAG paper, methods and limitations",
         say: "Re-read the method and limitations sections tonight. An AI-degree interviewer will ask about the parts you wrote least recently.",
@@ -2650,7 +2683,8 @@
           { a: "Reread what the paper does not claim", m: 3,
             where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 2.4, all five bullets" },
           { a: "Say the three stated contributions and the retrieval-pool-bias limitation out loud, cold", m: 3,
-            out: "three contributions plus one limitation, spoken without the file open" }
+            out: "three contributions plus one limitation, spoken without the file open",
+            ans: "First, a reproducible metadata enrichment pipeline that generates structured annotations for document chunks and integrates them through TF-IDF weighting and prefix-fusion embedding. Second, a controlled three-by-three factorial evaluation isolating the individual and interaction effects of chunking strategy and metadata integration, including an ablation of which metadata category contributes what. Third, a practitioner configuration framework grounded in statistically validated benchmarks, Bonferroni-corrected paired t-tests and bootstrap confidence intervals, for picking chunking and embedding pairings by objective. The limitation: only chunks retrieved by at least one of the nine configurations ever entered the scoring pool, so anything all nine configurations missed is invisible to the evaluation, and recall-flavoured metrics are optimistic in absolute terms." }
         ] }
     ],
     wc6: [
