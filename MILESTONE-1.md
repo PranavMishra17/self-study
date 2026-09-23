@@ -52,7 +52,7 @@ what bounded versus unbounded means; **backpressure** — what it is, what a sys
 without it does when it saturates (it does not slow down, it dies, and the way it
 dies is the interesting part); load shedding; tail latency and why the mean is a lie.
 
-**DDIA** — Chapter 1, and specifically the percentiles section. It is short. The p99
+**DDIA** (2nd edition) — look up *percentiles* in the index; the sections are Describing Performance, Latency and Response Time, and Average, Median, and Percentiles. Not chapter 1 in this edition. It is short. The p99
 argument is the single most quotable thing in the book and you will use it in
 interviews.
 
@@ -103,7 +103,7 @@ Cover: partitioning and sharding; choosing a partition key; hot partitions and s
 bad luck; rebalancing; fan-out and the tail-latency amplification problem, where one
 slow shard makes the whole request slow.
 
-**DDIA** — Chapter 6, all of it. This is the chapter that pays for itself.
+**DDIA** (2nd edition) — chapter 7, *Sharding*, all of it. This was chapter 6 in the first edition. This is the chapter that pays for itself.
 
 **Do.** Design the sharding for your eval harness at a hundred million replays. What
 is the partition key — scenario, user, time, hash? Where is the skew? What happens
@@ -146,7 +146,7 @@ answer; the write path versus the read path; append-only logs; indexes and what 
 cost you on write; retention and tiering, because the answer to "where do a hundred
 million traces live" is often "not all in the same place, and not forever."
 
-**DDIA** — Chapter 3, the first half. LSM-trees against B-trees at the level of
+**DDIA** (2nd edition) — the storage and retrieval chapter, first half; look up *LSM-tree* and *B-tree* in the index. LSM-trees against B-trees at the level of
 *why writes are cheap in one and reads are cheap in the other*, not implementation.
 
 **Do.** Size it. Estimate bytes per eval trace, multiply by a hundred million, and
@@ -196,7 +196,7 @@ at-least-once against at-most-once, and why exactly-once is mostly a marketing
 claim; dead-letter queues; partial failure and why a run that is 97% complete is a
 design question, not an error.
 
-**DDIA** — Chapter 8. Skim Chapter 11's section on stream-processing delivery
+**DDIA** (2nd edition) — chapter 9, *The Trouble with Distributed Systems*. Skim the stream-processing chapter's section on delivery
 guarantees.
 
 **Do.** Three percent of your hundred million replays fail mid-run. Design the retry
@@ -247,7 +247,7 @@ a write to memory must invalidate the cached search, and *that* is the tradeoff 
 skipped on 14 September; read-through and write-through; and what staleness costs in
 a product where the whole promise is that it remembers.
 
-**DDIA** — Chapter 5 on replication, lightly, for the staleness and read-your-writes
+**DDIA** (2nd edition) — replication, lightly; look up *replication lag* and *read-your-writes* in the index, for the staleness and read-your-writes
 material.
 
 **Do, part one.** Answer the memory-system cache question properly. Where the cache

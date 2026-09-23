@@ -1,6 +1,6 @@
 # Study list: Oxus and ZenML round 3
 
-Generated from the tracker on 22 Sep 2026 by the sheet view's copy-as-markdown control.
+Generated from the tracker on 23 Sep 2026 by the sheet view's copy-as-markdown control.
 Tick an item only when you can say it out loud without notes. The indented actions
 under an item are what to actually do, with honest minutes and where to stop.
 
@@ -37,7 +37,7 @@ Oxus technical on 23 Sep, then ZenML round 3 on Mon 28 Sep at 9 AM Eastern.
   Pages per engagement, bytes per page, OCR cost per page, to one significant figure, out loud. And which constraint does not matter here: batch latency.
   - [Latency numbers, interactive](https://colin-scott.github.io/personal_website/research/interactive_latency.html)
   - [ ] Read the percentiles pages, then say which constraint you are dismissing and why  _(5m)_
-    DDIA (Kleppmann), Chapter 1, the 'Describing Performance' section, through to Tail Latency Amplification
+    DDIA 2e - index: percentiles; response time. Sections 'Describing Performance' through 'Use of Response Time Metrics'. It is not in 2e chapter 1; look it up in the index rather than by chapter number
     Done when: one sentence: this is a batch pipeline, so p99 response time is not the constraint, throughput per engagement and cost per page are
     Skip: the rest of chapter 1. Reliability and maintainability are not being asked about here.
   - [ ] Read off four numbers: disk sequential read, disk seek, same-datacenter round trip, cross-region round trip  _(3m)_
@@ -248,9 +248,9 @@ Practice:
     Done when: one sentence: BM25 stays untouched for exact identifiers, and the MetaRAG finding says the dense side should get metadata prefixed into the text before encoding, not blended in afterward as a separately weighted vector
 - [ ] **Multi-tenant isolation**  (12m)
   Silo — separate storage and index per tenant — against pool with row-level isolation. Per-tenant encryption keys. No shared cache. Your Postgres row-level-security story from alfred_ is real evidence here.
-  - DDIA chapter 6, partitioning
+  - DDIA 2e chapter 7, Sharding
   - [ ] Read 'Partitioning by Hash of Key'  _(5m)_
-    DDIA (Kleppmann), Chapter 6 'Partitioning', the section 'Partitioning by Hash of Key' — a few pages
+    DDIA 2e chapter 7, 'Sharding' (confirmed) - index: hash partitioning; consistent hashing. The sharding-by-hash section, a few pages
     Skip: 'Partitioning by Key Range', earlier in the same chapter — hashing is the relevant scheme for a tenant key
   - [ ] Read 'Skewed Workloads and Relieving Hot Spots'  _(4m)_
     same chapter, the section immediately after — a couple of pages
@@ -474,9 +474,9 @@ Practice:
     Done when: session, step and argument-hash versus a client-supplied UUID — both compared to a stored result on repeat
 - [ ] **Idempotence in stream processing**  (9m)
   Exactly-once processing is really at-least-once delivery plus idempotent effects. DDIA's section on idempotence in chapter 11 is the canonical explanation.
-  - DDIA chapter 11, the idempotence section
+  - DDIA 2e - index: idempotence. The stream-processing chapter
   - [ ] Read the section  _(5m)_
-    DDIA chapter 11, Stream Processing, Fault Tolerance — the Idempotence subsection
+    DDIA 2e - index: idempotence; exactly-once semantics. The stream-processing chapter's fault-tolerance section, the idempotence subsection
   - [ ] Write one sentence connecting it to your bench  _(4m)_
     Done when: one written sentence: exactly-once evaluation is at-least-once replay plus idempotent tool responses
 - [ ] **Durable execution: event history and replay**  (11m)
