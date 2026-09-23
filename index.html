@@ -443,7 +443,8 @@
   .dout { font-size: 11.5px; color: var(--math); margin-top: 2px; }
   .dskip { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
   .sheetdo { margin-top: 3px; padding-left: 9px; border-left: 1px solid var(--hair); }
-  .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }  .stepdo { margin-top: 3px; }
+  .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }
+  .stepdo { margin-top: 3px; }
   .dnlm { font-size: 11.5px; color: var(--alaap); margin-top: 2px; }
   .srow .tx .dhead { gap: 14px; }
 </style>
@@ -3009,7 +3010,7 @@
       s.steps.forEach(function (st, i) {
         if (!st.d) { return; }
         out.push({ k: sKey(s.id, i), front: st.t, back: st.d, res: st.links,
-          kind: s.study ? "Practice" : "The work", name: s.name, sid: s.id });
+          kind: s.study ? "Practice" : "The work", name: s.name, sid: s.id, src: st });
       });
     }
     if (s.quiz) {
@@ -4844,9 +4845,16 @@
           c.src.do.forEach(function (d) {
             var line = d.a + (d.m ? " (" + mins(d.m) + ")" : "");
             if (d.where) { line += " \u2014 " + d.where; }
+            if (d.out) { line += "  Done when: " + d.out; }
             ul.appendChild(el("div", "", line));
           });
           it.appendChild(ul);
+        } else if (c.src && (c.src.where || c.src.out)) {
+          var sl = el("div", "sheetdo");
+          if (c.src.where) { sl.appendChild(el("div", "", c.src.where)); }
+          if (c.src.out) { sl.appendChild(el("div", "", "Done when: " + c.src.out)); }
+          if (c.src.skip) { sl.appendChild(el("div", "", "Skip: " + c.src.skip)); }
+          it.appendChild(sl);
         }
         cols.appendChild(it);
       });
@@ -5516,7 +5524,16 @@
         });
         if (practice.length) {
           lines.push("Practice:");
-          practice.forEach(function (c) { lines.push("- [ ] " + c.front); });
+          practice.forEach(function (c) {
+            var st = c.src || {};
+            lines.push("- [ ] " + c.front + (st.m ? "  _(" + mins(st.m) + ")_" : ""));
+            if (st.where) {
+              lines.push("  " + (st.url ? "[" + st.where + "](" + st.url + ")" : st.where));
+            } else if (st.url) { lines.push("  " + st.url); }
+            if (st.out) { lines.push("  Done when: " + st.out); }
+            if (st.skip) { lines.push("  Skip: " + st.skip); }
+            if (st.nlm) { lines.push("  Ask NotebookLM: " + st.nlm); }
+          });
         }
         lines.push("");
       });
