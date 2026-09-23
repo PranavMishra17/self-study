@@ -3685,6 +3685,17 @@
     ],
     wc7: [
       { t: "Kitaru's core objects",
+        close: [
+          { k: "word", q: "Which object re-executes an agent, answering its tool calls from a recording?", a: "A replay." },
+          { k: "blank", q: "A cohort is a(n) ___, versioned set of sessions.", a: "immutable" },
+          { k: "pick", q: "You want to compare an agent's behaviour on the same ten failing sessions across three separate weekly changes. Which object guarantees you are testing against the same ten every time?",
+            o: ["Sessions imported fresh from the trace store each time", "A cohort, pinned once and reused", "A new evaluator written each week"], a: 1,
+            why: "Cohorts are immutable and versioned, so the set stays fixed while everything else around it changes." },
+          { k: "short", q: "One sentence: what does a session capture, and where can it come from?",
+            a: "A session is a recorded run, captured by an adapter or imported from an existing trace store such as Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix." },
+          { k: "why", q: "Why must a cohort be immutable rather than a live, ever-changing set of sessions?",
+            a: "So that a result stays reproducible — if a cohort's membership could change after the fact, a score from last week would no longer describe the same set of cases today." }
+        ],
         say: "Sessions, recorded by an adapter or imported from Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix. Replays. Cohorts, which are immutable versions of a chosen set of sessions. Evaluators, deterministic and LLM-based.",
         res: [R.kitaruLaunch, R.kitaruGH],
         do: [
@@ -3697,6 +3708,17 @@
             ans: "A session is a recorded run, captured by an adapter or imported from Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix. A replay re-executes the agent against one, answering tool calls from the recording. A cohort is an immutable, versioned set of sessions I evaluate together. An evaluator judges the result, either deterministically from stored evidence or with an LLM." }
         ] },
       { t: "Faithful baseline, then fork with one override",
+        close: [
+          { k: "word", q: "What word names a baseline replay that reproduces the original run exactly?", a: "Faithful." },
+          { k: "blank", q: "Fork with exactly ___ change, so any difference is attributable.", a: "one" },
+          { k: "short", q: "One sentence: what are the three kinds of change a single fork is allowed to make?",
+            a: "Model, prompt, or parameters." },
+          { k: "pick", q: "To save time, you change both the model and the prompt in the same fork, and the score moves. What can you conclude?",
+            o: ["The new model is better", "Nothing on its own — with two changes at once you cannot tell which one moved the score", "The prompt change caused it, since prompts usually matter more"], a: 1,
+            why: "Attribution needs exactly one override. Two changes at once make any difference in outcome uninterpretable." },
+          { k: "why", q: "Why validate an unchanged replay before forking anything?",
+            a: "Because it proves the harness itself reproduces the original run, so a difference found later can be pinned on the fork rather than on the replay mechanism failing to reproduce reality." }
+        ],
         say: "Validate an unchanged replay first. Then fork with exactly one change — model, prompt, parameters — so any difference is attributable.",
         res: [R.kitaruCompare],
         do: [
@@ -3708,6 +3730,18 @@
             ans: "I validate the baseline first, an unchanged replay, so I know the harness itself reproduces the original run. Then I fork with exactly one change — model, prompt or parameters, never more than one at a time. If I changed two things and the score moved, I would not know which one did it. One override keeps the result attributable." }
         ] },
       { t: "on_miss, static and passthrough",
+        close: [
+          { k: "order", q: "Order on_miss's three values by how much contact with the live world they allow, from none to full.",
+            items: ["passthrough", "fail", "error_result"],
+            a: "fail, error_result, passthrough." },
+          { k: "blank", q: "on_miss takes exactly ___ values.", a: "three" },
+          { k: "pick", q: "A tool call in a forked replay has no match in the recording, and on_miss is set to error_result. What happens?",
+            o: ["The live tool executes", "The agent gets back a tool error and the replay continues", "The replay stops immediately"], a: 1,
+            why: "error_result hands back a tool error and continues — that is what separates it from fail, which stops, and passthrough, which executes live." },
+          { k: "word", q: "Is pinning a single tool to a static result part of on_miss, or a separate knob?", a: "A separate knob — the per-tool override." },
+          { k: "short", q: "One sentence: what is the difference between on_miss and a per-tool override?",
+            a: "on_miss governs what happens to any call the recording never saw, while a per-tool override pins one specific tool to a static result or to passthrough regardless of the global on_miss setting." }
+        ],
         say: "Two different knobs, often conflated. on_miss governs what happens to a call the recording never saw, and takes three values: fail, error_result, passthrough. Separately, a single tool can be overridden — pinned to a static result, or routed live — while everything else still answers from history.",
         res: [R.kitaruCompare],
         do: [
@@ -3719,6 +3753,17 @@
             ans: "on_miss controls what happens when a tool call has no match in the recording, and it takes three values: fail, error_result, or passthrough to the live tool. Separately, and this is the part people conflate, a single tool can be overridden — pinned to a static result, or routed to pass through live — while every other call still answers from history. Those are two different knobs: one for the unmatched case, one for a deliberate per-tool exception." }
         ] },
       { t: "Deterministic evaluators",
+        close: [
+          { k: "pick", q: "A teammate wants evaluation to run automatically the moment a session is imported. Is that how deterministic evaluators work?",
+            o: ["Yes, that is the fastest feedback loop", "No — evaluation has to be started explicitly, never fired automatically on import", "Yes, as long as it is a deterministic evaluator"], a: 1,
+            why: "Nothing runs without someone asking for it, by design." },
+          { k: "blank", q: "Deterministic evaluators read stored session ___ only.", a: "evidence" },
+          { k: "short", q: "One sentence: name the four things a deterministic evaluator never does.",
+            a: "It never runs the agent, calls a model provider, triggers a replay, or touches a live tool." },
+          { k: "why", q: "Why must a deterministic evaluator never touch a live tool?",
+            a: "Because it is meant to judge stored evidence reproducibly — touching a live tool would make the verdict depend on something outside the recorded session, which defeats the point of a fixed, replayable evaluation." },
+          { k: "word", q: "Is evaluation triggered automatically, or does something else have to happen first?", a: "It has to be started explicitly." }
+        ],
         say: "They read stored session evidence only. They never run the agent, call a provider, replay, or touch a live tool, and evaluation is started explicitly rather than on import.",
         res: [R.kitaruEval],
         do: [
@@ -3731,6 +3776,17 @@
             ans: "Deterministic evaluators read stored session evidence only. They never run the agent, never call a provider, never trigger a replay, and never touch a live tool. Evaluation itself is started explicitly, not fired automatically on import, so nothing runs without someone asking for it." }
         ] },
       { t: "The guided tour, run by a coding agent",
+        close: [
+          { k: "word", q: "Which three coding agents can drive Kitaru's guided tour?", a: "Claude Code, Codex and Cursor." },
+          { k: "blank", q: "Before running the tour, it should end with one accepted finding turned into a(n) ___, and one approved bounded replay.", a: "deterministic evaluator" },
+          { k: "pick", q: "The tour finishes a case and shows a green tick without asking anything first. What does that tell you?",
+            o: ["The product is fast and efficient", "It skipped the part that matters — asking before anything paid or live runs", "The finding is automatically correct"], a: 1,
+            why: "If it just runs things automatically and shows a green tick, that is the product skipping the part that matters." },
+          { k: "short", q: "One sentence: what should the tour show before asking for a verdict?",
+            a: "Recorded evidence, so the judgement is grounded in what actually happened rather than taken on trust." },
+          { k: "why", q: "Why does it matter that the tour asks before anything paid or live happens, rather than after?",
+            a: "Because once a paid or live action has run, the side effect has already happened — asking beforehand is what keeps the tour from causing an unintended consequence without consent." }
+        ],
         say: "The tour is driven by skills inside Claude Code, Codex or Cursor. Run it yourself and keep notes on friction.",
         res: [R.kitaruGH, R.kitaruSkills],
         do: [
@@ -3747,6 +3803,17 @@
     ],
     wc8: [
       { t: "Idempotency keys",
+        close: [
+          { k: "word", q: "What is Kitaru's idempotency key built from?", a: "Session, step and a hash of the canonical arguments." },
+          { k: "blank", q: "Stripe's idempotency key is ___-supplied, typically a UUID.", a: "client" },
+          { k: "pick", q: "Two requests arrive at Stripe with the same idempotency key but different parameters. What happens?",
+            o: ["The second request runs normally, since the key only matters for retries", "It is flagged as an error, since a retry is expected to carry identical parameters", "The stored result from the first request is returned regardless"], a: 1,
+            why: "An idempotency key assumes a retry of the exact same operation. Different parameters under the same key signal a mistake, not a legitimate retry." },
+          { k: "figure", q: "In the diagram \"Replay policy follows what a tool call does to the world\", what happens to a repeat call once its ledger entry exists?",
+            a: "It returns the stored result instead of running again." },
+          { k: "short", q: "One sentence: beyond who generates it, what is the real difference between Kitaru's key and Stripe's?",
+            a: "Kitaru's key is derived automatically from the call itself, while Stripe's is chosen and supplied by the client — but both make a repeat return the same stored result instead of repeating the effect." }
+        ],
         say: "A client-supplied key per logical operation, stored with its result, so a retry returns the stored result instead of acting twice. Walk through Stripe's version.",
         res: [R.stripe, R.stripeApi],
         do: [
@@ -3762,6 +3829,17 @@
             ans: "Kitaru's key is built from session, step and a hash of the canonical arguments — it is derived, not supplied. Stripe's is a client-supplied key, typically a UUID, sent with the request. Both do the same job: a repeat with the same key gets the stored result back instead of the operation running again. The difference is just who generates the key and what it is scoped to." }
         ] },
       { t: "Idempotence in stream processing",
+        close: [
+          { k: "blank", q: "Exactly-once processing is really at-least-once ___ plus idempotent effects.", a: "delivery" },
+          { k: "word", q: "Per the notes, which DDIA chapter is the canonical explanation of idempotence?", a: "Chapter 11." },
+          { k: "short", q: "One sentence connecting this to your own bench.",
+            a: "Exactly-once evaluation in the bench is really at-least-once replay plus idempotent tool responses — retries can repeat, but every write lands in the same fake world and produces the same stored effect each time." },
+          { k: "pick", q: "Your replay mechanism can call a tool twice for the same step because of a retry. What actually makes the overall result exactly-once?",
+            o: ["Making sure the replay never retries", "At-least-once delivery combined with an idempotent tool response, so a repeat is harmless", "Using a faster network so retries are rare"], a: 1,
+            why: "Exactly-once is not about preventing repeats; it is about making a repeat harmless." },
+          { k: "why", q: "Why is exactly-once delivery on its own treated as unachievable, with idempotent effects doing the real work instead?",
+            a: "Because a message can always be duplicated or lost undetectably over an unreliable network, so systems instead guarantee at-least-once delivery and make the effect of processing idempotent, so a duplicate causes no harm." }
+        ],
         say: "Exactly-once processing is really at-least-once delivery plus idempotent effects. DDIA's section on idempotence in chapter 11 is the canonical explanation.",
         res: [bk("DDIA 2e - index: idempotence. The stream-processing chapter")],
         do: [
@@ -3772,6 +3850,18 @@
             ans: "Exactly-once evaluation in my bench is really at-least-once replay plus idempotent tool responses. The delivery can retry or repeat; what makes the result exactly-once is that every write lands in the same fake world and produces the same stored effect each time." }
         ] },
       { t: "Durable execution: event history and replay",
+        close: [
+          { k: "word", q: "In Temporal, what does an already-executed activity return when the workflow re-runs?", a: "Its result from the event history." },
+          { k: "blank", q: "A worker re-runs the workflow code from the ___.", a: "start" },
+          { k: "short", q: "One sentence: map Temporal's event history onto Kitaru's replay.",
+            a: "Temporal's event history is to a crashed workflow what a recording is to a replayed session — both let already-executed work return its stored result instead of running again." },
+          { k: "pick", q: "A workflow crashes after activity A has completed but before activity B starts. On resume, what happens to A?",
+            o: ["A re-executes from scratch", "A's result is returned from the event history without re-running", "The whole workflow restarts from B"], a: 1,
+            why: "That is the point of the event history — already-executed work is read back, not repeated." },
+          { k: "order", q: "Order what happens when a Temporal workflow resumes after a crash.",
+            items: ["New activities execute normally", "The workflow crashes", "Already-executed activities return their stored results from history", "A worker re-runs the workflow code from the start"],
+            a: "The workflow crashes, a worker re-runs the workflow code from the start, already-executed activities return their stored results from history, new activities execute normally." }
+        ],
         say: "Temporal re-runs workflow code from the start, and previously executed activities return their results from the event history instead of running again. That is Kitaru's answer-from-recording idea in its original form.",
         res: [R.temporalWf, R.temporalTasks],
         do: [
@@ -3787,6 +3877,17 @@
             ans: "Temporal's event history is to a crashed workflow what my recording is to a replayed session. A worker re-runs the workflow code from the start, but every activity that already executed returns its result straight from the history instead of running again. That is the same answer-from-recording idea Kitaru uses, just older and pointed at fault tolerance instead of evaluation." }
         ] },
       { t: "Determinism, and replay-safe time",
+        close: [
+          { k: "blank", q: "A replay-safe evaluator reads time from the recorded session, never from the ___ clock.", a: "wall" },
+          { k: "word", q: "Name one thing besides Date.now that breaks workflow determinism, per Temporal's docs.", a: "Randomness (or an unrecorded network call)." },
+          { k: "pick", q: "An evaluator you are writing calls Date.now() directly inside logic that also reads a recorded session. What is wrong with that?",
+            o: ["Nothing, as long as the session data is correct", "It breaks determinism, since two runs of the same replay could read different real-world times", "It only matters if the session is more than a day old"], a: 1,
+            why: "A replay-safe evaluator has to make the same decision given the same history every time; the live clock gives a different answer on every call." },
+          { k: "short", q: "One sentence: what problem does replay-safe time fix?",
+            a: "The frozen-data, live-clock critique — a replay stuck with old recorded data but a fresh clock reading is a contradiction, so time has to be part of what gets replayed too." },
+          { k: "why", q: "Why must workflow code make the same decisions given the same history?",
+            a: "Because a resumed or replayed run needs to reach the same outcome every time it runs, and any live source — Date.now, randomness, an unrecorded call — would make that reproducibility impossible." }
+        ],
         say: "Workflow code must make the same decisions given the same history, so time is read from the workflow context rather than the real clock. That is the fix for the frozen-data, live-clock critique of Kitaru.",
         res: [R.temporalWf],
         do: [
@@ -3798,6 +3899,17 @@
             ans: "A replay-safe evaluator reads time from the recorded session, never from the wall clock. Temporal workflows have the same rule — Date.now, randomness and any unrecorded network call all break determinism, because a resumed workflow has to make the same decisions given the same history. That is the fix for the frozen-data, live-clock problem: the clock has to be part of what gets replayed, not something read live." }
         ] },
       { t: "Activities are where side effects live",
+        close: [
+          { k: "word", q: "What are activities to workflows, in an agent's own terms?", a: "What tools are to an agent." },
+          { k: "blank", q: "Side effects belong in ___, which are retried and therefore must be idempotent.", a: "activities" },
+          { k: "short", q: "One sentence: why does quarantining side effects into activities keep the workflow itself deterministic?",
+            a: "Because the workflow only orchestrates and makes decisions, while all the unpredictable, retried contact with the outside world happens in activities designed to be repeated safely." },
+          { k: "pick", q: "You are designing retries for an agent framework. Where should the retried, potentially-repeated logic live — the reasoning loop, or the tool calls?",
+            o: ["The reasoning loop, so it can adapt on retry", "The tool calls, since those are the side-effecting part that gets retried and must be idempotent", "It does not matter, as long as retries happen somewhere"], a: 1,
+            why: "Tools are where the agent touches the outside world, which is exactly where retries and idempotency have to live." },
+          { k: "why", q: "Why must an activity, or a tool, be idempotent if it is going to be retried?",
+            a: "Because a retry means the same call can run more than once; if it is not idempotent, a retry changes the world twice instead of once, corrupting the very effect it was meant to guarantee." }
+        ],
         say: "Side effects belong in activities, which are retried and therefore must be idempotent. The workflow itself stays deterministic. Map this onto tools in an agent.",
         res: [R.temporalWf],
         do: [
@@ -3809,6 +3921,17 @@
             ans: "Activities are to workflows what tools are to an agent. Both are the parts that touch the outside world, both get retried, and that is exactly why both have to be idempotent — the workflow, like the agent's own reasoning, stays deterministic, and the side effects are quarantined into the piece designed to be repeated safely." }
         ] },
       { t: "Retries with backoff and jitter",
+        close: [
+          { k: "word", q: "Name the three jitter strategies compared in the AWS post.", a: "Full Jitter, Equal Jitter and Decorrelated Jitter." },
+          { k: "blank", q: "Backoff alone delays a retry storm; jitter ___ it by adding randomness so retries spread out.", a: "breaks up" },
+          { k: "short", q: "One sentence: why does jitter beat plain exponential backoff?",
+            a: "Backoff alone still has every client that failed together retry together, just later; jitter adds randomness so their retries spread out instead of arriving as another synchronised wave." },
+          { k: "pick", q: "A thousand clients all fail at once and all use exponential backoff with no jitter. What happens on the retry?",
+            o: ["The retries spread out naturally over time", "They all retry again at roughly the same moment, causing another spike", "The server automatically rate-limits them"], a: 1,
+            why: "Without jitter, every client computes the same delay and stays synchronised." },
+          { k: "why", q: "Why does a retry storm keep recurring even as backoff delays get longer, without jitter?",
+            a: "Because every client that failed at the same instant computes the same delay and therefore retries at the same instant again — backoff shifts the storm later without breaking the synchronisation that causes it." }
+        ],
         say: "Why naive retries cause storms, and why jitter matters more than backoff alone.",
         res: [R.jitter],
         do: [
@@ -3821,6 +3944,17 @@
             ans: "Backoff alone still lets every client that failed at the same moment retry at the same moment, just later — it delays the storm, it does not break it up. Jitter decorrelates them by adding randomness to the wait, so retries spread out instead of arriving in another synchronised wave. That is why jitter matters more than the backoff curve itself." }
         ] },
       { t: "Fakes, stubs and mocks",
+        close: [
+          { k: "word", q: "In Fowler's terms, what is Pranav's SQLite snapshot?", a: "A fake." },
+          { k: "blank", q: "A ___ checks that it was called correctly; a stub just returns canned answers.", a: "mock" },
+          { k: "short", q: "One sentence: why does a fake survive an agent going off-path where a stub does not?",
+            a: "A fake lets a write actually land and a later read see it, while a stub only replays what was recorded for calls it anticipated, leaving nothing sensible for a call it did not foresee." },
+          { k: "pick", q: "An agent under test writes a new record, then reads it back later in the same run. Which test double supports that correctly — Kitaru's recorded stub, or Pranav's SQLite fake?",
+            o: ["Kitaru's recorded stub, since it has the original session's data", "Pranav's SQLite fake, since the write actually lands and a later read sees it", "Neither, this needs a live database"], a: 1,
+            why: "A stub replays canned answers; only a fake lets a genuinely new write be read back correctly." },
+          { k: "why", q: "Why does Fowler distinguish a fake from a stub, rather than treating them as the same idea?",
+            a: "Because a stub only returns pre-canned answers for calls it expects, while a fake is a working implementation that behaves consistently on genuinely new interactions — the difference matters exactly when behaviour goes off the anticipated script." }
+        ],
         say: "A stub returns canned answers, a mock checks it was called correctly, a fake is a working lightweight implementation. Your SQLite snapshot is a fake; Kitaru's recorded results behave like stubs. That distinction explains why your bench survives going off-path.",
         res: [R.fowler],
         do: [
@@ -3835,6 +3969,18 @@
     ],
     wc9: [
       { t: "tau-bench's design",
+        close: [
+          { k: "word", q: "Name tau-bench's two domains.", a: "Airline and retail." },
+          { k: "blank", q: "Success in tau-bench is judged by comparing the final ___ state against an annotated goal state.", a: "database" },
+          { k: "short", q: "One sentence: how does tau-bench's simulated user behave?",
+            a: "An LLM plays a user with a goal, revealing information gradually across the conversation rather than stating it all upfront." },
+          { k: "pick", q: "Two agents solve the same tau-bench task by completely different conversational paths but reach the same final database state. Does tau-bench score them the same?",
+            o: ["No, the better conversation scores higher", "Yes — scoring only checks the end state, not the path taken", "No, only the faster agent scores"], a: 1,
+            why: "Scoring compares the final database state to the annotated goal state, not the transcript." },
+          { k: "order", q: "Put a tau-bench episode's stages in order.",
+            items: ["The final database state is compared to the annotated goal state", "The simulated user reveals its goal gradually across the conversation", "The agent calls tools that write to the shared database"],
+            a: "The simulated user reveals its goal gradually across the conversation, the agent calls tools that write to the shared database, the final database state is compared to the annotated goal state." }
+        ],
         say: "An agent converses with an LLM-simulated user who has a goal and reveals information gradually, while the agent calls tools that write to a shared database. Success is judged by comparing the final database state with an annotated goal state.",
         res: [R.tau, R.tauExplain],
         do: [
@@ -3852,6 +3998,17 @@
             ans: "tau-bench sits an agent in conversation with an LLM-simulated user who has a goal and reveals it gradually, while the agent calls tools that write to a shared database. Success is judged by comparing the final database state against an annotated goal state, not by grading the conversation itself. It covers airline and retail domains." }
         ] },
       { t: "Goal-state evaluation",
+        close: [
+          { k: "word", q: "What is the general term for a scoring method that does not care how the agent reached the end state?", a: "Path independence." },
+          { k: "blank", q: "In Pranav's bench, the ___ plays the role of tau-bench's final database.", a: "SQLite snapshot" },
+          { k: "short", q: "One sentence: what plays the role of tau-bench's annotated goal state in the bench?",
+            a: "The expected snapshot defined per case, which the final SQLite snapshot is compared against." },
+          { k: "pick", q: "Two runs of the same case take different tool-call sequences but end with identical database contents. Under goal-state evaluation, should they score the same?",
+            o: ["No, the shorter path should score higher", "Yes — only the end state is compared, not the sequence of steps", "It depends on which tools were used"], a: 1,
+            why: "That is exactly what path independence means." },
+          { k: "why", q: "Why does checking the end state survive an agent taking a different path to the same goal?",
+            a: "Because comparing final states does not care how the agent got there, only where it ended up — two different routes to the same result score identically." }
+        ],
         say: "Checking the world at the end, rather than the transcript, is exactly what your frozen-world bench does, and it is what makes multi-turn evaluation robust to a different path. This is your strongest link between your work and theirs.",
         res: [R.tau],
         do: [
@@ -3867,6 +4024,17 @@
             ans: "Checking the end state survives a different path because it does not care how the agent got there, only where it ended up. Two agents can take completely different routes and still be judged correctly, as long as I compare final states rather than steps. That is path independence, and it is the same argument behind my own goal-state check." }
         ] },
       { t: "pass^k against pass@k",
+        close: [
+          { k: "word", q: "Which measure asks whether the agent succeeds on at least one of k attempts?", a: "pass@k." },
+          { k: "blank", q: "pass^k asks whether ___ of k independent trials succeed.", a: "all" },
+          { k: "figure", q: "In the diagram \"One good run is not evidence. Eight are.\", what happens to the paper's own reported bound between pass^1 and pass^8?",
+            a: "It drops from under 50 percent to under 25 percent." },
+          { k: "pick", q: "A colleague says the paper found pass^1 is \"about 45 percent\", as a precise estimate. What is wrong with that claim?",
+            o: ["Nothing, 45 percent is close enough", "The paper reports it as a bound, under 50 percent — restating it as a precise point estimate misrepresents what was measured", "Bounds and point estimates mean the same thing"], a: 1,
+            why: "The paper's retail result is stated as bounds — under 50 percent at pass^1, under 25 percent at pass^8 — not as a point estimate." },
+          { k: "why", q: "Why is pass^k the honest number for an agent that gets one real shot per customer, rather than pass@k?",
+            a: "Because pass@k only asks whether the agent can succeed once across several tries, which does not reflect a situation with no retry in the real world; pass^k asks whether it succeeds every single time, which is what actually matters there." }
+        ],
         say: "pass@k asks whether at least one of k attempts succeeds. pass^k asks whether all k succeed, which is the right measure for an agent that gets one chance per customer, and which falls off sharply as k grows.",
         res: [R.tauExplain],
         do: [
@@ -3888,6 +4056,18 @@
             ans: "pass to the k equals the expectation over tasks of C of c choose k over C of n choose k — the chance that all k of n independent trials succeed, averaged across tasks. pass at k asks whether I can solve a task once in k tries; pass to the k asks whether I can solve it every single time. For an agent that gets one real shot per customer, pass to the k is the honest number, and it falls off fast as k grows." }
         ] },
       { t: "Simulated user failure modes",
+        close: [
+          { k: "word", q: "What literal string does tau-bench's simulated user emit to end an episode?", a: "###STOP###." },
+          { k: "order", q: "Order these four user-simulation strategies from the plain baseline to the most guarded.",
+            items: ["verify", "llm", "reflection", "react"],
+            a: "llm, react, verify, reflection." },
+          { k: "blank", q: "A simulated user that reveals the goal too early makes the task ___ than a real customer would.", a: "easier" },
+          { k: "pick", q: "Your simulated user in a multi-turn replay scores every fork as a success, including ones you know contain real regressions. What is the most likely explanation?",
+            o: ["The agent has actually gotten better", "The simulated user is too cooperative, which inflates scores", "The database snapshot is corrupted"], a: 1,
+            why: "Too-cooperative simulated users are one of tau-bench's named failure modes, and they inflate scores exactly this way." },
+          { k: "figure", q: "In the diagram \"When the agent's reply changes, the recorded user stops making sense\", what is the simulated user conditioned on when it takes over from the recorded user turns?",
+            a: "The goal extracted from the original session." }
+        ],
         say: "Too cooperative, leaking the goal, drifting from the persona, and costing money every turn. Know how tau-bench structures its simulator, including the stop signal when the goal is met.",
         res: [R.tauExplain],
         do: [
@@ -3907,6 +4087,17 @@
     ],
     wc10: [
       { t: "How Alex writes and what he writes about",
+        close: [
+          { k: "word", q: "What specific tool did Alex try for parallel Claude Code sessions and then drop?", a: "Git worktrees." },
+          { k: "blank", q: "Alex dropped worktrees because merge conflicts across many changed files made it ___ than working sequentially.", a: "slower" },
+          { k: "short", q: "One sentence: name one of the six findings from Alex's analysis of 1,200 production deployments.",
+            a: "Engineering fundamentals matter more than which frontier model you use, or: infrastructure-based guardrails beat prompt-based ones." },
+          { k: "pick", q: "You are about to cite Alex's rebuild post to make a general point about \"AI coding tools being great for parallel work.\" Is that faithful to what he actually argued?",
+            o: ["Yes, that is his overall takeaway", "No — he specifically reversed course on parallel worktrees because they were slower, which cuts against that framing", "Yes, as long as Claude Code is mentioned by name"], a: 1,
+            why: "He named a decision he reversed. Citing the post for the opposite conclusion misreads what he actually wrote." },
+          { k: "why", q: "Why does citing the worktree reversal make a stronger impression on Alex than praising the product in general?",
+            a: "Because it shows he names a decision he reversed, not just the ones that worked — concrete and specific, which is the same bar he holds writing to." }
+        ],
         say: "Read two or three of his recent posts, including the analysis of production LLM deployments and the one on rebuilding the site with Claude Code. Notice how he explains things; that is the bar he will hold you to.",
         res: [R.alexBlog, R.alexSite],
         do: [
@@ -3924,6 +4115,18 @@
             ans: "The rebuild post shows he will name a decision he reversed, not just the ones that worked — he tried git worktrees for parallel Claude Code sessions and dropped them because merge conflicts across many changed files made it slower than working sequentially. The production-deployments post shows the same instinct with data: engineering fundamentals beat frontier models, and infrastructure-based guardrails beat prompt-based ones, out of twelve hundred real deployments. Both pieces are concrete and numbered, not general praise, and that is the bar I hold my own answers to in this room." }
         ] },
       { t: "Kitaru's onboarding path",
+        close: [
+          { k: "word", q: "What single command installs Kitaru?", a: "curl -fsSL https://kitaru.ai/install | bash" },
+          { k: "order", q: "Order the four stages of the guided tour.",
+            items: ["That finding turned into a deterministic evaluator", "A prepared session review", "One approved bounded experiment", "A human verdict on one finding"],
+            a: "A prepared session review, a human verdict on one finding, that finding turned into a deterministic evaluator, one approved bounded experiment." },
+          { k: "blank", q: "The tour paused at the ___, waiting for a yes before continuing.", a: "human verdict" },
+          { k: "pick", q: "The guided tour reaches the point where a finding could become a deterministic evaluator. What should it do next?",
+            o: ["Create the evaluator automatically and move on", "Stop and wait for a human verdict before turning it into an evaluator", "Skip straight to running a live experiment"], a: 1,
+            why: "That is the pause point — nothing gets turned into an evaluator or run until a human says yes." },
+          { k: "short", q: "One sentence: what does installing Kitaru register besides the CLI itself?",
+            a: "An MCP server and coding-agent skills." }
+        ],
         say: "Clone, open the example in a coding agent, run the guided tour skill. Know every step because you did it.",
         res: [R.kitaruGH, R.kitaruSkills],
         do: [
@@ -3944,6 +4147,18 @@
     ],
     wc11: [
       { t: "ZenML's core abstractions",
+        close: [
+          { k: "word", q: "What is a step, in ZenML's vocabulary?", a: "A decorated function — the unit of work." },
+          { k: "blank", q: "The ___ decides what runs, when, and in what order.", a: "orchestrator" },
+          { k: "order", q: "Order these from the smallest unit of work outward.",
+            items: ["Pipeline", "Step", "Stack"],
+            a: "Step, pipeline, stack." },
+          { k: "pick", q: "You want to run the same pipeline definition on your laptop for testing and then on cloud infrastructure for production, without changing the pipeline code. What lets you do that?",
+            o: ["Rewriting the pipeline for each environment", "Swapping the stack while keeping the same pipeline and steps", "Using a different orchestrator language"], a: 1,
+            why: "A stack is the bound set of infrastructure components, swappable between local and cloud, while the pipeline stays the same." },
+          { k: "short", q: "One sentence: what makes a ZenML run reproducible?",
+            a: "The artifact store holds and versions every input and output that passes through the pipeline." }
+        ],
         say: "Pipelines and steps, stacks that bind them to infrastructure, orchestrators, artifact stores and lineage. Enough to hold a conversation, not to pass an exam.",
         res: [R.zenDocs],
         do: [
@@ -3957,6 +4172,17 @@
             ans: "A step is a decorated function, the unit of work. A pipeline is steps composed in order. A stack is a bound set of infrastructure components that a pipeline runs against. The orchestrator decides what runs, when, and in what order. The artifact store holds and versions every input and output, which is what makes a run reproducible." }
         ] },
       { t: "Kitaru's positioning",
+        close: [
+          { k: "word", q: "Does Kitaru treat Langfuse and Braintrust as import sources or as replacements?", a: "Import sources." },
+          { k: "blank", q: "Kitaru positions itself as sitting ___ your observability tools, not instead of them.", a: "beside" },
+          { k: "short", q: "One sentence: in Pranav's own stated view, is replay the wedge or the whole product?",
+            a: "Replay is the wedge — the whole product is closing the loop from production to change, and replay is just the first mechanism that makes that credible." },
+          { k: "pick", q: "A prospect says \"we already have Langfuse, so we do not need this.\" What is the accurate response, per Kitaru's own positioning?",
+            o: ["Kitaru replaces Langfuse, so they should switch", "Langfuse stays the system of record for watching production; Kitaru is where you re-run it", "Langfuse and Kitaru compete for the same job"], a: 1,
+            why: "Kitaru sits beside observability tools, not instead of them — they keep the traces, Kitaru makes them runnable." },
+          { k: "why", q: "Why does Pranav argue the moat sits in closing the loop rather than in the replay mechanism itself?",
+            a: "Because once provenance and productive misses are solid, replay itself becomes table stakes — the durable advantage is in how completely the loop from production to change is closed, which is harder to replicate than the replay mechanism alone." }
+        ],
         say: "It sits beside trace stores rather than competing with them: they keep the traces, Kitaru makes them runnable. It also frames itself as adding a durable runtime around agent harnesses.",
         res: [R.kitaruCompare, R.kitaruCat],
         do: [
