@@ -1876,6 +1876,7 @@
     ]
   };
   var R = {
+    stripeApi: { label: "Stripe API, idempotent requests", url: "https://docs.stripe.com/api/idempotent_requests" },
     auditboard: { label: "AuditBoard, SOX testing best practices (PDF)", url: "https://go.auditboard.com/rs/961-ZQV-184/images/AB-AR-Best-Practices-Effective-SOX-Testing.pdf" },
     skill: { label: "Anthropic audit-support skill, SOX 404 primer", url: "https://skillselion.com/skills/anthropics/knowledge-work-plugins/audit-support" },
     as2201: { label: "PCAOB AS 2201, the ICFR audit standard", url: "https://pcaobus.org/oversight/standards/auditing-standards/details/AS2201" },
@@ -2350,42 +2351,140 @@
     wc7: [
       { t: "Kitaru's core objects",
         say: "Sessions, recorded by an adapter or imported from Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix. Replays. Cohorts, which are immutable versions of a chosen set of sessions. Evaluators, deterministic and LLM-based.",
-        res: [R.kitaruLaunch, R.kitaruGH] },
+        res: [R.kitaruLaunch, R.kitaruGH],
+        do: [
+          { a: "Read the four sections that introduce each object", m: 5,
+            where: "ZenML blog, 'Introducing the new Kitaru' — the sections 'Start with the traces you already have', 'Find the failure modes worth testing', 'Turn those judgments into evaluators', 'Replay what really happened'",
+            url: "https://www.zenml.io/blog/introducing-the-new-kitaru",
+            skip: "The opening 'why this gets messy' framing and the closing comparison to Langfuse and Braintrust — neither defines an object." },
+          { a: "Say the four objects out loud, one sentence each, without notes", m: 2,
+            out: "sessions, cohorts, evaluators and replays defined correctly, unprompted" }
+        ] },
       { t: "Faithful baseline, then fork with one override",
         say: "Validate an unchanged replay first. Then fork with exactly one change — model, prompt, parameters — so any difference is attributable.",
-        res: [R.kitaruCompare] },
+        res: [R.kitaruCompare],
+        do: [
+          { a: "Read the baseline-then-fork paragraph", m: 3,
+            where: "ZenML blog, 'Braintrust vs Langfuse vs Kitaru', Feature 2 'Agent Replay and Tool-Call Overrides', the opening two sentences",
+            url: "https://www.zenml.io/blog/braintrust-vs-langfuse" },
+          { a: "Say out loud why exactly one override and not several", m: 2,
+            out: "the attribution argument, in one sentence" }
+        ] },
       { t: "on_miss, static and passthrough",
-        say: "A call the recording never saw is handled by an explicit on_miss choice. One tool can be pinned to a static result or routed to pass through while everything else answers from history.",
-        res: [R.kitaruCompare] },
+        say: "Two different knobs, often conflated. on_miss governs what happens to a call the recording never saw, and takes three values: fail, error_result, passthrough. Separately, a single tool can be overridden — pinned to a static result, or routed live — while everything else still answers from history.",
+        res: [R.kitaruCompare],
+        do: [
+          { a: "Read the on_miss paragraph in the same section", m: 3,
+            where: "same post, same 'Agent Replay and Tool-Call Overrides' section, the paragraph naming fail, error_result and passthrough",
+            url: "https://www.zenml.io/blog/braintrust-vs-langfuse" },
+          { a: "Write the three on_miss values and the two override types from memory, then check them against the page", m: 3,
+            out: "fail, error_result, passthrough, plus static and passthrough-for-one-tool — five terms correct" }
+        ] },
       { t: "Deterministic evaluators",
         say: "They read stored session evidence only. They never run the agent, call a provider, replay, or touch a live tool, and evaluation is started explicitly rather than on import.",
-        res: [R.kitaruEval] },
+        res: [R.kitaruEval],
+        do: [
+          { a: "Read the guide up to the SDK section", m: 4,
+            where: "ZenML docs, 'Deterministic evaluations' guide, everything before 'Start with the descriptive bundles'",
+            url: "https://docs.zenml.io/kitaru/guides/deterministic-evaluations",
+            skip: "'Run through the Python SDK', 'Respect the batch limit', 'Current evidence limits' and 'Versioning' — implementation detail, not needed for the room." },
+          { a: "Say the constraint list out loud", m: 2,
+            out: "no agent run, no provider call, no replay, no live tool, no external read, evaluation started explicitly" }
+        ] },
       { t: "The guided tour, run by a coding agent",
         say: "The tour is driven by skills inside Claude Code, Codex or Cursor. Run it yourself and keep notes on friction.",
-        res: [R.kitaruGH, R.kitaruSkills] }
+        res: [R.kitaruGH, R.kitaruSkills],
+        do: [
+          { a: "Read the 'Get started' section", m: 2,
+            where: "Kitaru README, the paragraph on opening the example directory in Claude Code, Codex or Cursor and taking the guided tour",
+            url: "https://github.com/zenml-io/kitaru" },
+          { a: "Read the guided-tour skill's own description", m: 3,
+            where: "kitaru-skills README, the kitaru-guided-tour entry",
+            url: "https://github.com/zenml-io/kitaru-skills" },
+          { a: "Say out loud what the tour is supposed to produce before you run it", m: 2,
+            out: "one accepted finding turned into a deterministic evaluator, and one approved bounded replay" }
+        ] }
     ],
     wc8: [
       { t: "Idempotency keys",
         say: "A client-supplied key per logical operation, stored with its result, so a retry returns the stored result instead of acting twice. Walk through Stripe's version.",
-        res: [R.stripe] },
+        res: [R.stripe, R.stripeApi],
+        do: [
+          { a: "Read the key-mechanics passage", m: 4,
+            where: "Stripe API docs, 'Idempotent requests' — the paragraphs on how the key is generated, the 24-hour retention window, and parameter comparison on retry",
+            url: "https://docs.stripe.com/api/idempotent_requests",
+            skip: "The Stripe CLI and agent-skills promo at the top of the page." },
+          { a: "Read the design rationale", m: 3,
+            where: "Stripe blog, 'Designing robust and predictable APIs with idempotency' — the section on guaranteeing exactly-once semantics",
+            url: "https://stripe.com/blog/idempotency" },
+          { a: "Say Kitaru's key and Stripe's key side by side, out loud", m: 3,
+            out: "session, step and argument-hash versus a client-supplied UUID — both compared to a stored result on repeat" }
+        ] },
       { t: "Idempotence in stream processing",
         say: "Exactly-once processing is really at-least-once delivery plus idempotent effects. DDIA's section on idempotence in chapter 11 is the canonical explanation.",
-        res: [bk("DDIA chapter 11, the idempotence section")] },
+        res: [bk("DDIA chapter 11, the idempotence section")],
+        do: [
+          { a: "Read the section", m: 5,
+            where: "DDIA chapter 11, Stream Processing, Fault Tolerance — the Idempotence subsection" },
+          { a: "Write one sentence connecting it to your bench", m: 4,
+            out: "one written sentence: exactly-once evaluation is at-least-once replay plus idempotent tool responses" }
+        ] },
       { t: "Durable execution: event history and replay",
         say: "Temporal re-runs workflow code from the start, and previously executed activities return their results from the event history instead of running again. That is Kitaru's answer-from-recording idea in its original form.",
-        res: [R.temporalWf, R.temporalTasks] },
+        res: [R.temporalWf, R.temporalTasks],
+        do: [
+          { a: "Read how replay works", m: 4,
+            where: "Temporal docs, 'Workflows' page, the 'How Workflow replay works' section",
+            url: "https://docs.temporal.io/workflows",
+            skip: "'Intro to Workflows' above it — background you already have." },
+          { a: "Read how a worker executes it", m: 4,
+            where: "Temporal docs, 'Tasks' page, 'How does a Worker process a Workflow Task?'",
+            url: "https://docs.temporal.io/tasks" },
+          { a: "Say the one-sentence mapping out loud", m: 3,
+            out: "Temporal's event history is to a crashed workflow what your recording is to a replayed session" }
+        ] },
       { t: "Determinism, and replay-safe time",
         say: "Workflow code must make the same decisions given the same history, so time is read from the workflow context rather than the real clock. That is the fix for the frozen-data, live-clock critique of Kitaru.",
-        res: [R.temporalWf] },
+        res: [R.temporalWf],
+        do: [
+          { a: "Read the determinism constraints", m: 4,
+            where: "Temporal docs, 'Workflows' page, 'Resuming a Workflow' subsection — the Date.now, random and unrecorded-network-call examples, and the note that time is read from the workflow context",
+            url: "https://docs.temporal.io/workflows" },
+          { a: "Say the mapping to Kitaru's clock critique out loud", m: 3,
+            out: "one sentence: a replay-safe evaluator reads time from the recorded session, never the wall clock" }
+        ] },
       { t: "Activities are where side effects live",
         say: "Side effects belong in activities, which are retried and therefore must be idempotent. The workflow itself stays deterministic. Map this onto tools in an agent.",
-        res: [R.temporalWf] },
+        res: [R.temporalWf],
+        do: [
+          { a: "Read the page", m: 3,
+            where: "Temporal docs, 'What is a Temporal Activity?' — the whole page, it has no subheadings",
+            url: "https://docs.temporal.io/activities" },
+          { a: "Say the two-line mapping out loud", m: 3,
+            out: "activities are to workflows what tools are to an agent; both are retried, so both must be idempotent" }
+        ] },
       { t: "Retries with backoff and jitter",
         say: "Why naive retries cause storms, and why jitter matters more than backoff alone.",
-        res: [R.jitter] },
+        res: [R.jitter],
+        do: [
+          { a: "Read the three jitter strategies", m: 5,
+            where: "AWS Architecture Blog, 'Exponential Backoff And Jitter' — the comparison of Full Jitter, Equal Jitter and Decorrelated Jitter",
+            url: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/",
+            skip: "The opening incident narrative — go straight to the algorithm comparison and its chart." },
+          { a: "Say why jitter beats backoff alone", m: 3,
+            out: "one sentence: jitter decorrelates clients that failed together, backoff alone does not" }
+        ] },
       { t: "Fakes, stubs and mocks",
         say: "A stub returns canned answers, a mock checks it was called correctly, a fake is a working lightweight implementation. Your SQLite snapshot is a fake; Kitaru's recorded results behave like stubs. That distinction explains why your bench survives going off-path.",
-        res: [R.fowler] }
+        res: [R.fowler],
+        do: [
+          { a: "Read the definitions and the mock-stub distinction", m: 5,
+            where: "Martin Fowler, 'Mocks Aren't Stubs' — the Fake, Stub and Mock definitions, and 'The Difference Between Mocks and Stubs'",
+            url: "https://martinfowler.com/articles/mocksArentStubs.html",
+            skip: "'Classical and Mockist Testing' and 'Choosing Between the Differences' — the testing-philosophy debate, not the definitions." },
+          { a: "Say where your bench and Kitaru sit, out loud, in Fowler's terms", m: 3,
+            out: "your SQLite snapshot named as a fake, Kitaru's recorded results named as stubs" }
+        ] }
     ],
     wc9: [
       { t: "tau-bench's design",
