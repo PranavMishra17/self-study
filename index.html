@@ -1536,6 +1536,15 @@
           diagrams: ["skew", "tail"],
           steps: [
             { t: "Read DDIA chapter 6 in full",
+              close: [
+                { k: "word", q: "What is the name for the partitioning scheme where a hash of the key picks the partition?", a: "Hash partitioning" },
+                { k: "blank", q: "___ partitioning keeps a contiguous range of keys on one partition, which keeps range queries efficient but concentrates load if access is skewed.", a: "Key-range" },
+                { k: "why", q: "Why must a rebalancing strategy avoid tying a key's partition to the total partition count?", a: "Tying assignment to the current count means changing that count forces almost every key to move, rather than a share proportional to the change." },
+                { k: "pick", q: "You need frequent range scans over sorted keys and are choosing how to partition. Which do you pick?",
+                  o: ["Hash partitioning, since it distributes load evenly", "Key-range partitioning, since it keeps a scanned range together on one or few partitions", "Round robin, since it is simplest to implement"], a: 1,
+                  why: "A hash scatters neighbouring keys across partitions, destroying the locality a range scan needs; key-range partitioning is exactly the scheme built to keep that locality." },
+                { k: "short", q: "One sentence: what must a good rebalancing strategy avoid moving?", a: "Far more data than the change in partition count actually requires." }
+              ],
               d: "Partitioning, partition keys, rebalancing and request routing. The chapter that pays for itself.",
               m: 45,
               where: "DDIA 2e chapter 7, 'Sharding' (confirmed) - index: sharding; partitioning; hot spots; skewed workload; rebalancing. Read the key-value sharding sections, then skewed workloads and relieving hot spots, then request routing. Secondary Indexes, Rebalancing Partitions, Request Routing",
@@ -1548,12 +1557,30 @@
                 "It must also avoid tying a key's partition to the total partition count, since that forces almost everything to move whenever the count changes"
               ] },
             { t: "Understand hot partitions as a key-choice problem",
+              close: [
+                { k: "figure", q: "In the skew figure, what does the one tall bar represent, and what happens to the other seven?", a: "It is the one user carrying four percent of all events; the other seven partitions stay well under the capacity line, idle." },
+                { k: "blank", q: "Hashing spreads the space of possible ___ evenly across partitions; it does nothing about how much traffic each actual one carries.", a: "keys" },
+                { k: "why", q: "Why does a key that looks uniform in the abstract turn out not to be uniform in production?", a: "Real usage follows a power law rather than a flat distribution, so one customer, time window or category dominates traffic even though the key space itself hashes evenly." },
+                { k: "pick", q: "A good hash function is applied to a heavily skewed key. What happens to the dominant key's events?",
+                  o: ["They spread evenly across partitions because the hash is good", "They all land on the same partition regardless of how good the hash is", "They are rejected as duplicate load"], a: 1,
+                  why: "A hash function distributes the key space, not the traffic each key carries; a good hash still sends every event for one dominant key to a single partition." },
+                { k: "num", q: "How many partitions does the skew figure draw?", a: "Eight" }
+              ],
               d: "A key that looks uniform in the abstract is rarely uniform in production, because real usage is power-law. See the diagram: hashing spreads keys, not traffic.",
               m: 15,
               where: "No separate resource - chapter 6's 'Skewed Workloads and Relieving Hot Spots' section and the skew diagram above",
               out: "one sentence on why hashing spreads keys but not necessarily traffic",
               ans: "A key that looks uniform in the abstract is rarely uniform in production, because real usage follows a power law rather than a flat distribution — one customer, one time window or one category dominates. Hashing spreads the space of possible keys evenly across partitions, but it does nothing about how much traffic each actual key carries, so a good hash function still lands every event for the one dominant key on a single partition, and that partition becomes the ceiling for the whole system." },
             { t: "Learn fan-out and tail-latency amplification",
+              close: [
+                { k: "num", q: "0.99 to the power 100 comes out to roughly what percentage?", a: "About 37 percent" },
+                { k: "figure", q: "In the tail figure, how many of the twelve drawn shards are shown slow?", a: "Two of the twelve, standing in for each real shard's one-in-a-hundred chance of being slow at any moment." },
+                { k: "why", q: "Why does a component's one-percent-slow tail become the system's typical case once a request fans out to a hundred shards?", a: "The request is only fast if all hundred shards are independently fast, and multiplying a 99 percent chance by itself a hundred times drives that down to about 37 percent, so roughly 63 percent of requests hit at least one slow shard." },
+                { k: "blank", q: "About ___ percent of requests are slow when fanning out to a hundred shards each independently slow one percent of the time.", a: "63" },
+                { k: "pick", q: "You cut the fan-out from 100 shards to 20, with the same one-percent-slow rate per shard. What happens to the fraction of slow requests?",
+                  o: ["It stays at about 63 percent, since the per-shard rate is unchanged", "It drops sharply, to roughly 18 percent, since 0.99 to the power 20 is about 82 percent", "It rises, since fewer shards means less redundancy"], a: 1,
+                  why: "Tail amplification scales with how many independent chances there are to hit the tail; at fan-out 20, 0.99 to the power 20 is about 0.82, so only about 18 percent of requests hit a slow shard." }
+              ],
               d: "The second diagram is the whole argument. It is also one of the most useful things you can say out loud in a systems interview, because it shows you think about systems rather than components.",
               m: 20,
               where: "DDIA 2e - index: tail latency amplification; percentiles. The fan-out discussion inside the response-time sections, plus the tail diagram above",
@@ -1561,12 +1588,30 @@
               links: [L.latency],
               ans: "If a request fans out to 100 shards and waits for all of them, the request is fast only when every one of the 100 shards is fast. Each shard is slow one percent of the time, so each is fast with probability 0.99, and the chance all 100 are independently fast is 0.99 to the power 100. Using natural logs, the natural log of 0.99 is about minus 0.01, multiplied by 100 gives about minus 1.005, and e to the power minus 1.005 is about 0.366 — so there is roughly a 37 percent chance every shard is fast, and about 63 percent of requests hit at least one slow shard and are themselves slow. A component's one-percent-slow tail becomes the system's typical case, because fan-out multiplies the chance of hitting that tail by the number of things being fanned out to." },
             { t: "Design the sharding for your eval harness at a hundred million replays",
+              close: [
+                { k: "word", q: "What key does the design choose to partition the eval harness by?", a: "Scenario id" },
+                { k: "why", q: "Why partition by scenario id rather than by a hash of the whole request?", a: "The eval harness's natural unit of comparison is the scenario, so keeping all of one scenario's replays on the same shard keeps aggregation for it local instead of scattered across the cluster." },
+                { k: "blank", q: "If one scenario family is a thousand times more common than the rest, its shard becomes the hot partition and the ___ for the whole run.", a: "ceiling" },
+                { k: "pick", q: "The default happy-path scenario turns out a thousand times more common than any other. What does the design do about it?",
+                  o: ["Move the whole harness to hash-of-user-id partitioning instead", "Split that one oversized scenario family further, by hashing a secondary key such as replay id within it", "Add more shards overall without changing the key"], a: 1,
+                  why: "Adding shards overall does not help, since the hot scenario's key still sends every one of its events to a single shard; the fix has to break up that one oversized key specifically." },
+                { k: "short", q: "One sentence: what does splitting the oversized scenario family by a secondary key actually buy?", a: "It spreads that one family's load across several shards instead of one, while every smaller, non-skewed family stays on a single shard where its results are easy to aggregate." }
+              ],
               d: "Decide the partition key and defend it: scenario, user, time bucket or hash. Then find the skew. What happens when one scenario family is a thousand times more common than the rest? Write it as a design.",
               m: 45,
               where: "No resource - your own design, on paper",
               out: "a written design: partition key chosen and defended, plus the failure mode when one scenario family is a thousand times more common",
               ans: "I would partition by scenario id rather than by user id or a hash of the whole request, because the eval harness's natural unit of comparison is the scenario, and grouping all replays of the same scenario onto the same shard keeps aggregation for that scenario local instead of scattered across the cluster. The failure mode is scenario skew: if one scenario family is a thousand times more common than the rest — say, the default happy-path conversation — its shard becomes the hot partition and the ceiling for the whole run, exactly like a hot user id would. To fix it I would split that one oversized scenario family further, by hashing a secondary key such as replay id within it, so its load spreads across several shards instead of one, while every other, smaller scenario family stays on a single shard where its results are easy to aggregate." },
             { t: "Answer the check: you partition by user id and one user is four percent of traffic",
+              close: [
+                { k: "pick", q: "You shard by user id and one user is four percent of all traffic. What happens?",
+                  o: ["Nothing; hashing distributes load evenly regardless of key skew", "That user's shard becomes the bottleneck for the whole system, whatever the shard count", "The system automatically rebalances that user's events across more shards"], a: 1,
+                  why: "Four percent of all traffic funnels into a single partition, and that partition's capacity becomes the ceiling for the entire system, the same picture as the skew figure." },
+                { k: "short", q: "Name a secondary key you could hash alongside the heavy user's id to spread their traffic.", a: "Session id, or a time bucket, hashed together with the user id." },
+                { k: "why", q: "Why does splitting the heavy user's traffic across several shards cost something, rather than being free?", a: "Operations that used to be a simple lookup by user id, such as reading all of one user's history in order, now have to fan out across the extra shards and be merged back together." },
+                { k: "blank", q: "Splitting a hot user's traffic by a secondary key trades a simple lookup for the same ___ tradeoff as the fan-out diagram.", a: "tail-latency-amplification" },
+                { k: "figure", q: "This four-percent user is drawn directly in the skew figure. What does the figure say happens to every partition that is not that user's?", a: "They stay idle - the figure notes the system's throughput becomes one partition's throughput while every other partition sits idle." }
+              ],
               d: "What breaks, and what do you change? More than one answer is reasonable. Pick one and say what it costs.",
               m: 25,
               where: "No resource - your own answer, on paper",
@@ -1593,6 +1638,15 @@
           diagrams: ["chain"],
           steps: [
             { t: "Watch Essence of Calculus chapters 2, 3 and 4",
+              close: [
+                { k: "word", q: "What geometric object does chapter 2 define a derivative as the slope of?", a: "The tangent line" },
+                { k: "blank", q: "Chapter 3 derives the standard rules from geometric reasoning about a ___ nudge, rather than symbol-pushing.", a: "tiny" },
+                { k: "why", q: "Why does chapter 2 insist a derivative is an instantaneous rate of change rather than an average over an interval?", a: "An average over an interval blurs together speeds that differ across it, while the instantaneous rate is the slope of the tangent at one exact point, which is what a derivative is defined to be." },
+                { k: "pick", q: "You want the honest one-line answer for what the chain rule computes, for someone who has only seen the power rule. Which is it?",
+                  o: ["A formula for lowering an exponent by one", "How two tiny nudges combine when functions are nested inside each other", "The slope of a curve, full stop"], a: 1,
+                  why: "The chain rule describes composition: the nudge from a composed function is the product of the two local rates, one from each layer, that is the mechanism, not a shortcut formula." },
+                { k: "short", q: "One sentence: what does chapter 4 show the product and chain rules as descriptions of?", a: "How two tiny nudges combine when functions are multiplied or nested inside each other." }
+              ],
               d: "Derivative as rate of change, then the rules, then the chain rule. Chapter 4 is the one to rewatch.",
               m: 50,
               where: "3Blue1Brown, Essence of Calculus - Chapter 2 'The paradox of the derivative' (16:50), Chapter 3 'Derivative formulas through geometry' (17:33), Chapter 4 'Visualizing the chain rule and product rule' (15:56)",
@@ -1607,6 +1661,15 @@
                 "The chain rule specifically: the nudge from a composed function is the product of the two local rates, one from each layer of the composition"
               ] },
             { t: "Drill the power, product and quotient rules until automatic",
+              close: [
+                { k: "word", q: "Which rule differentiates a function that is one expression divided by another?", a: "The quotient rule" },
+                { k: "blank", q: "The product rule applied to f(x) = x cubed times sine of x gives f'(x) = 3x squared sine of x plus x cubed ___.", a: "cosine of x" },
+                { k: "why", q: "Why drill fifteen to twenty of these by hand before checking the rule first?", a: "So picking the right rule becomes automatic rather than something to look up mid-problem, the same way a cold derivation only sticks once it is done without checking first." },
+                { k: "pick", q: "You are differentiating x squared over (x plus 1). Which rule applies?",
+                  o: ["The power rule alone", "The product rule", "The quotient rule"], a: 2,
+                  why: "It is one expression divided by another, exactly the shape the quotient rule is for; the product rule is for two things multiplied, not divided." },
+                { k: "num", q: "By the power rule, differentiating x to the power 5 gives what coefficient in front of x to the power 4?", a: "5" }
+              ],
               d: "Fifteen or twenty by hand. Not interesting, and the alphabet.",
               m: 20,
               where: "Khan Academy, AP Calculus AB, Unit 3 (Differentiation: definition and basic derivative rules) - 'Power rule (positive integer powers)', 'Differentiate products' and 'Differentiate quotients' practice sets",
@@ -1615,12 +1678,30 @@
               links: [L.ka_alg],
               ans: "Working the rules until they are automatic: for f(x) equal to x to the power 5, the power rule gives f prime of x equal to 5x to the power 4. For f(x) equal to x cubed times sine of x, the product rule gives f prime of x equal to 3x squared times sine of x, plus x cubed times cosine of x. For f(x) equal to x squared over (x plus 1), the quotient rule gives f prime of x equal to 2x times (x plus 1) minus x squared, all over (x plus 1) squared, which simplifies to (x squared plus 2x) over (x plus 1) squared. Fifteen more of these, done cold before checking against the rule, made picking the right rule automatic rather than something to look up mid-problem." },
             { t: "Requeued Q7 — derive the sigmoid's derivative in terms of itself",
+              close: [
+                { k: "word", q: "What is sigma(x) = 1 / (1 + e to the minus x) usually called, in shorthand?", a: "The sigmoid" },
+                { k: "blank", q: "Sigma prime of x equals sigma(x) times ___.", a: "one minus sigma(x)" },
+                { k: "why", q: "Why is writing the sigmoid's derivative as sigma(x) times (1 minus sigma(x)) specifically convenient in backpropagation?", a: "The forward pass has already computed sigma(x) at that point, so the gradient costs one subtraction and one multiplication rather than a fresh evaluation of the exponential." },
+                { k: "pick", q: "You already have sigma(x) from the forward pass and need sigma prime(x) for backprop. What is the cheapest way to get it?",
+                  o: ["Re-evaluate e to the minus x from scratch and redo the full derivative", "Multiply sigma(x) by (1 minus sigma(x)), values already in hand", "There is no shortcut; always recompute from x"], a: 1,
+                  why: "The self-referential form means the gradient is one subtraction and one multiplication away from a value already sitting in memory from the forward pass." },
+                { k: "short", q: "One sentence: what makes the sigmoid's derivative unusual compared to a typical derivative?", a: "It is written entirely in terms of the function's own output, so no fresh evaluation of the original function is needed to get the gradient." }
+              ],
               d: "Do not look up the result. Write sigma as one over one plus e to the minus x and differentiate until you reach sigma times one minus sigma. Then sit with why that form is convenient: the forward pass has already computed sigma, so the gradient costs one multiplication.",
               m: 15,
               where: "No resource - derive on paper from sigma(x) = 1 / (1 + e to the minus x); check only after you have an answer",
               out: "sigma times one minus sigma reached by your own hand, without looking up the result first",
               ans: "Starting from sigma(x), which is one over one plus e to the minus x, rewrite it as (one plus e to the minus x) to the power minus one and differentiate with the chain rule: bring down the minus one as a multiplier, drop the power by one, and multiply by the derivative of the inner term, which is minus e to the minus x. The two minus signs cancel, leaving sigma prime of x equal to e to the minus x, over (one plus e to the minus x) squared. To write that in terms of sigma itself, split it into two pieces already present in the answer: one over (one plus e to the minus x) is exactly sigma(x), and e to the minus x over (one plus e to the minus x) is exactly one minus sigma(x), since sigma(x) plus that second piece add to (one plus e to the minus x) over itself, which is one. Multiplying those two pieces, sigma(x) times one minus sigma(x), reproduces e to the minus x over (one plus e to the minus x) squared exactly. So sigma prime of x equals sigma(x) times one minus sigma(x). It is convenient in backpropagation because the forward pass has already computed sigma(x) at that point, so the gradient costs one subtraction and one multiplication rather than a fresh evaluation of the exponential." },
             { t: "Write two sentences on what the chain rule lets you do that nothing else does",
+              close: [
+                { k: "order", q: "Walking backward through the chain figure's boxes x, f1, f2, f3, loss, put these four local derivatives in the order you multiply them to reach d(loss)/dx.",
+                  items: ["The derivative of f2 with respect to f1", "The derivative of f1 with respect to x", "The derivative of loss with respect to f3", "The derivative of f3 with respect to f2"],
+                  a: "The derivative of loss with respect to f3, then f3 with respect to f2, then f2 with respect to f1, then f1 with respect to x." },
+                { k: "figure", q: "In the chain figure, what does each box remember during the forward pass, and why does that matter going backward?", a: "What it saw at that layer, inputs and outputs, which is exactly the tape that lets the backward pass multiply local derivatives without recomputing the forward pass." },
+                { k: "why", q: "Why does the chain rule let you get a gradient for every parameter without ever expanding the whole network into one formula?", a: "It computes the derivative of a nested composition from only the derivatives of its individual pieces, so each layer only ever needs its own local derivative, not the derivative of the whole composition at once." },
+                { k: "blank", q: "Autograd is not magic added to PyTorch; it is the chain rule's ___, done automatically.", a: "bookkeeping" },
+                { k: "word", q: "In the chain figure, which direction do the dashed arrows run?", a: "Backward, from loss toward x" }
+              ],
               d: "Rehearsal for requeued Q11 in week four. The answer is about composition: the derivative of a deeply nested function, from the derivatives of its parts.",
               m: 5,
               where: "No resource - two sentences, written",
@@ -1647,12 +1728,34 @@
           diagrams: ["overfit"],
           steps: [
             { t: "Write four interventions, each with its mechanism rather than its name",
+              close: [
+                { k: "figure", q: "The overfit figure marks a 'stop here' dashed line. What has just happened at that point?", a: "Validation loss has just turned upward while training loss is still falling, the point early stopping reads off the chart to halt." },
+                { k: "pick", q: "In terms of the overfit figure, what does early stopping actually act on?",
+                  o: ["The shape of the training curve's descent", "The moment training halts, read directly off where the validation curve turns upward", "The number of training examples available"], a: 1,
+                  why: "Early stopping does not change what the model would fit; it only changes when training stops, triggered by watching validation loss turn, exactly the dashed line in the figure." },
+                { k: "pick", q: "L2 regularisation is added to a network that is overfitting. What does it change, mechanistically?",
+                  o: ["It flattens the climb by shrinking every weight toward zero, limiting how sharply the model can respond to any one feature", "It deletes some weights outright, exactly like L1", "It adds more labelled examples to explain"], a: 0,
+                  why: "L2 penalises the sum of squared weights, shrinking them toward but not to zero; driving weights to exactly zero is L1's job. Neither one adds data." },
+                { k: "blank", q: "___ regularisation drives some weights to exactly zero, which is feature selection rather than shrinkage.", a: "L1" },
+                { k: "why", q: "Why does training loss falling count as 'not evidence of anything' on its own?", a: "Training loss falls both for a model that is genuinely learning and one that is only memorising the training set, and the two look identical until validation loss turns, only that turn tells them apart." }
+              ],
               d: "L2 penalises large weights and shrinks them toward zero without reaching it, limiting how sharply the model can respond to any one feature. L1 drives weights to exactly zero, which is selection rather than shrinkage. Early stopping halts before there is time to fit the noise. Dropout forces redundancy by removing units so no single path can be relied on. More or augmented data raises the amount of structure that must be explained before memorising becomes the easier option.",
               m: 30,
               where: "No resource - write it from what you already know, then check against the mechanisms in the description above",
               out: "four interventions written down: regularisation (both L1 and L2, by mechanism), early stopping, dropout, and more or augmented data",
               ans: "Four interventions, each by what it actually does rather than its name. L2 regularisation penalises the sum of squared weights, which shrinks every weight toward zero without forcing it to exactly zero, and that limits how sharply the model can respond to any single feature. L1 regularisation penalises the sum of absolute weights instead, which drives some weights to exactly zero — that is feature selection, not just shrinkage. Early stopping watches validation loss during training and halts once it turns upward, stopping the model before it has had time to fit noise in the training set. Dropout randomly removes units during training so no single path through the network can be relied on, which forces redundancy instead of a few units memorising specific examples. More or augmented data raises the amount of real structure the model has to explain, which makes memorising individual examples a worse strategy than learning the pattern." },
             { t: "Say which you would reach for first on your own work, and why",
+              close: [
+                { k: "pick", q: "More training data is added to a model that is overfitting. What does that change about the overfit figure, mechanistically?",
+                  o: ["It moves the point where the validation curve turns upward further to the right, since there is more real structure to explain before memorising pays off", "It flattens the training curve immediately", "It removes the need to watch a validation curve at all"], a: 0,
+                  why: "More data does not change how sharply the model responds to features, nor when training halts; it raises the amount of genuine structure to learn before memorising individual examples becomes the easier option." },
+                { k: "pick", q: "Dropout is proposed alongside L2 for the same overfitting model. What is the actual mechanistic difference?",
+                  o: ["They are the same operation applied to different layers", "Dropout randomly removes units during training so no single path can be relied on; L2 shrinks weight magnitudes without removing anything", "Dropout only works on convolutional layers"], a: 1,
+                  why: "Dropout forces redundancy by knocking out units at random; L2 penalises the size of every weight. One removes paths, the other shrinks magnitudes." },
+                { k: "word", q: "Which intervention does the answer name as the first one to reach for on his own work?", a: "Early stopping" },
+                { k: "why", q: "Why is early stopping picked first for his own work rather than regularisation or dropout?", a: "It costs nothing to add, since a held-out metric is already tracked on every run in the eval harness, so watching it turn and stopping there reuses infrastructure that already exists rather than requiring an architecture change or a new hyperparameter." },
+                { k: "short", q: "One sentence: what would have to be true before reaching for regularisation or dropout instead?", a: "Early stopping alone is not enough to control the overfitting." }
+              ],
               m: 15,
               where: "No resource - spoken or written, about your own work",
               out: "one intervention named as your first choice, with the reason stated",
@@ -2249,6 +2352,15 @@
           diagrams: ["cache"],
           steps: [
             { t: "Read DDIA chapter 5 on replication, lightly",
+              close: [
+                { k: "word", q: "What is the delay between a write landing on the leader and that write becoming visible on a follower called?", a: "Replication lag" },
+                { k: "blank", q: "___ consistency guarantees a user immediately sees their own write, even from a lagging replica.", a: "Read-your-writes" },
+                { k: "why", q: "Why is eventual consistency, on its own, not enough to say how stale a read might be?", a: "Because eventual consistency only guarantees replicas converge given enough time with no new writes — it makes no promise about how long that takes, so it cannot bound staleness by itself." },
+                { k: "pick", q: "A read taken right after a user's own write comes back stale. Is that necessarily a caching bug?",
+                  o: ["Yes — the cache must be misconfigured", "No — replication lag alone can cause this before any cache is involved", "No — this can only happen if a TTL is set too long"], a: 1,
+                  why: "Replication lag can produce a stale read with no cache anywhere in the picture; caching is an independent second source of staleness stacked on top of it." },
+                { k: "short", q: "One sentence: why should this week's caching argument build on replication lag rather than start fresh?", a: "Because the underlying data can already be stale from replication lag before a cache is ever added, so caching layers a second staleness problem onto an already-imperfect one." }
+              ],
               d: "For staleness, replication lag and read-your-writes. Those three ideas are most of what a cache costs you.",
               m: 30,
               where: "DDIA 2e - index: replication lag; read-your-writes consistency; eventual consistency. The problems-with-replication-lag sections, read-your-writes in particular",
@@ -2263,24 +2375,62 @@
                 "Caching sits on top of an already-imperfect consistency picture: the underlying data can be stale even before a TTL or an invalidation rule is added on top"
               ] },
             { t: "Cache placement, keys, TTL against explicit invalidation",
+              close: [
+                { k: "figure", q: "In the cache figure, what is the cache keyed on?", a: "The user plus the query, so one user's cached results never leak into another's." },
+                { k: "order", q: "Put these in the order you would settle them when designing a cache for a new lookup.",
+                  items: ["Write the invalidation rule for every write path that changes the underlying data", "Decide where in the request path the cache sits", "Decide whether staleness has a bounded, tolerable window or must be exact", "Choose the key that defines what counts as the same request"],
+                  a: "Decide where in the request path the cache sits, choose the key that defines what counts as the same request, decide whether staleness has a bounded tolerable window or must be exact, then write the invalidation rule for every write path that changes the underlying data." },
+                { k: "pick", q: "Which of these is the actual cost of choosing a TTL over explicit invalidation?",
+                  o: ["It uses more memory than invalidation", "It knowingly serves stale answers for up to the TTL window", "It is slower to implement than invalidation"], a: 1,
+                  why: "A TTL is an open bet: staleness up to the window is judged acceptable, in exchange for never having to touch every write path the way explicit invalidation does." },
+                { k: "why", q: "Why does explicit invalidation get harder to keep correct the longer a system runs, in a way a TTL does not?", a: "Because invalidation is a promise that has to be honoured on every write path that changes the underlying data, including one added later by someone who does not know the cache exists — a TTL requires no such promise on the write path at all." },
+                { k: "short", q: "One sentence: why does the key matter as much as the invalidation rule?", a: "A key that is too broad or too narrow changes what counts as 'the same request', and the invalidation rule can only clear the entries it can correctly identify by that key." }
+              ],
               d: "A TTL is a bet that staleness is tolerable for a bounded window. Explicit invalidation is a promise you must keep on every write path, and missing one is how caches serve wrong answers for days.",
               m: 15,
               where: "No resource — write the four terms into one paragraph using the staleness argument from the previous step",
               out: "one paragraph, written, that states placement, key, and TTL against explicit invalidation as a tradeoff rather than a list",
               ans: "The cache sits between the request path and whatever is expensive to recompute, keyed on exactly what makes a result reusable — the user plus the query — so unrelated requests never collide on the same entry. A TTL is a bet: it says staleness up to some bounded window is acceptable, and it costs nothing on the write path, only patience. Explicit invalidation is the opposite bet — a promise, made on every write path that changes the underlying data, that it will actively clear the entries that write affects — more expensive to build, but the only option where staleness has to be bounded tighter than a TTL can honestly promise." },
             { t: "Answer the memory-system cache question properly",
+              close: [
+                { k: "pick", q: "Right after a user writes a new memory, they immediately search, and the cache still holds results from before the write. What do you do?",
+                  o: ["Serve the cached results — one write is unlikely to have changed anything relevant", "Invalidate that user's cached search on the write, and accept a guaranteed miss on this search even though it costs load", "Extend the TTL slightly so the case resolves itself without extra work"], a: 1,
+                  why: "The tradeoff is the actual answer: invalidating on write costs load on every write-then-search sequence, but serving the stale cache breaks the one promise the product makes — that it remembers what it was just told." },
+                { k: "word", q: "What exactly is the cache keyed on, in this answer?", a: "The user id plus the query" },
+                { k: "blank", q: "What you give up: cache effectiveness right after every write, because a user who writes and immediately searches gets a guaranteed ___.", a: "miss" },
+                { k: "why", q: "Why is a TTL not an honest option for this particular cache?", a: "Because a TTL window would let the assistant keep answering from a world that no longer exists — the product's whole promise is that it remembers, so staleness has to be bounded by the write itself, not by a clock." },
+                { k: "short", q: "One sentence: what is the actual answer to the cache question — its existence, or something else?", a: "The tradeoff is the answer, what is given up in load and guaranteed misses right after every write, not the mere fact that a cache sits in front of the search." }
+              ],
               d: "Where the cache sits, what exactly the key is, what the invalidation rule is, and what you give up. The tradeoff is the part that carries the answer: a write to memory must invalidate the cached search, or the product's whole promise quietly breaks.",
               m: 35,
               where: "No resource — this is the written answer, done properly this time; the diagram on this page has the write-path failure to check it against",
               out: "a written answer covering all four parts: where the cache sits, what the key is, the invalidation rule, and what you give up — the fourth part is the one Q16 was missing",
               ans: "The cache sits in front of the vector search step, keyed on the user id plus the query, so one user's cached results never leak into another's. The invalidation rule is explicit, not TTL-based: any write that adds or changes a memory for that user invalidates that user's cached search results immediately, because a TTL window would let the assistant keep answering from a world that no longer exists. What I give up is cache effectiveness right after every write — a user who writes and immediately searches gets a guaranteed miss — and the operational cost of a rule that has to be honoured on every write path in the system, including ones written later by someone who does not know the cache exists. That tradeoff, not the existence of the cache, is the actual answer, because the product's whole promise is that it remembers, and a stale cached search is the one way it can quietly stop keeping that promise." },
             { t: "Record yourself answering the hundred-million question out loud. Five minutes, no notes",
+              close: [
+                { k: "pick", q: "Listening back, you hear yourself say a vendor's product name once, out of habit, in an otherwise clean five minutes. What does that mean for this take?",
+                  o: ["Nothing — it is one word out of five minutes", "The take does not clear Q12 as recorded, since Q12's bar is primitives with no product names", "Fix it by writing the product name down as a footnote afterwards"], a: 1,
+                  why: "Q12 requires primitives only, with no vendor or product name anywhere in the answer; one surviving name means this recorded take does not clear it, however good the rest of the delivery is, and a spoken recording cannot be patched after the fact." },
+                { k: "blank", q: "The deliverable this step actually produces is an audio ___, not a written document.", a: "recording" },
+                { k: "why", q: "Why must this be recorded aloud rather than rehearsed silently in your head?", a: "Saying something fluently is a separate skill from knowing it, and the only way to build that fluency is to hear yourself do it badly a few times first — silent rehearsal never surfaces the filler words or the primitive you quietly skipped." },
+                { k: "short", q: "One sentence: what should a listener who has never seen any of this milestone's diagrams be able to say back to you afterwards?", a: "The constraint you were optimising for at each point in the answer, not the diagrams or the vocabulary used to say it." },
+                { k: "word", q: "Name one primitive from the full build — rate, the bounded queue, backpressure, the partition key and skew, retries with idempotency, or tail latency — you are least confident survived into your own take.", a: "Any one of the six, honestly named — the check is whether you can name one, not which one." }
+              ],
               d: "This is the deliverable. Saying something fluently is a separate skill from knowing it, and the only way to build it is to hear yourself do it badly a few times first.",
               m: 50,
               where: "No resource — this is the milestone's real deliverable, and it is a performance, not a read. Say the hundred-million answer built across the whole milestone, out loud, in primitives, as many takes as it needs",
               out: "an audio recording, five minutes, no notes, in primitives rather than product names — this is the artifact, and it is what clears Q12",
               ans: "A hundred million of anything is a throughput question before it is a storage one, so I start with the rate: how many units arrive per second, how big each one is, and whether the arrival is even or bursty, because bursty traffic needs headroom an average never shows. Work lands on a queue, and the queue is bounded on purpose — an unbounded queue does not slow down under overload, it absorbs the excess silently while the dashboard still looks fine, and it dies all at once once memory runs out, which is a worse failure than one that shows itself early. When the bounded queue fills it has to push back: backpressure propagates the constraint upstream to the producer, so the producer slows down rather than the consumer silently accumulating work it will never finish, and if the producer genuinely cannot slow down I shed load deliberately, on my own terms, rather than let the system choose for me. Work is partitioned by a key I can defend, and I assume that key is skewed, because real usage follows a power law, so one partition ends up carrying far more than an even share, and I plan for that hot partition from day one instead of discovering it under load. At this scale a one-in-a-million failure happens roughly a hundred times a day, so partial failure is the normal operating condition and not an edge case: networks partition, machines die mid-task, and calls time out without telling you whether the work actually happened. Retries are necessary and dangerous at the same time, because a naive retry lands more load on a service that is already struggling and can finish it off entirely, so retries carry exponential backoff with jitter, and the operation being retried has to be idempotent, because at-least-once delivery plus idempotency is how you get exactly-once effects without ever promising exactly-once delivery, which barely exists. I size everything from the tail, p99 rather than the mean, because the mean is pulled around by the bulk of fast requests while the slowest one percent are disproportionately your heaviest users, and they are the ones who retry and make the tail worse. None of this is free, and cost is not a separate line item bolted on afterwards — a bigger queue buys time at the cost of memory, more partitions buy parallelism at the cost of coordination, and more generous retries buy resilience at the cost of the very capacity they are meant to protect, so the whole design is one continuous tradeoff between how much failure I am willing to absorb and how much I am willing to pay to absorb it. Nothing in any of that names a vendor, a specific database or a specific queue product, because the same primitives — rate, bound, backpressure, partition key, retry policy, tail latency, and the cost each one carries — hold underneath whichever technology is actually running it." },
             { t: "Listen back and write three things you would say differently",
+              close: [
+                { k: "why", q: "Why does trimming the cost section to one line matter more than keeping three separate examples?", a: "Because five minutes is the budget, and a long cost section either pushes something else out or runs the whole answer past the mark; one line stating the tradeoff plainly does the same job as three examples in a fraction of the time." },
+                { k: "pick", q: "Listening back, partitioning is mentioned only after backpressure, but a skewed key is often the actual reason the queue was saturating in the first place. What is the fix?",
+                  o: ["Leave the order — sequence does not matter as long as everything gets said", "Move partitioning earlier, so the order matches how the failure actually happens", "Cut partitioning altogether to save time"], a: 1,
+                  why: "The order should track cause and effect: a hot partition is often the reason the queue saturates, so naming it before describing the queue's response makes the delivery mirror the real failure sequence rather than just a list of topics." },
+                { k: "blank", q: "The filler word to cut first was ___, because it is the one that shows up most under pressure.", a: "so" },
+                { k: "short", q: "One sentence: what is the difference between listening back for content and listening back for delivery?", a: "Content asks whether every primitive got said; delivery asks how it was said — filler words, ordering, pacing — on a recording whose content is already built." },
+                { k: "word", q: "What should a listener be able to name back to you after the five minutes, if the delivery actually worked?", a: "The constraint you were optimising for" }
+              ],
               m: 15,
               out: "three written sentences naming exactly what to change next time — a filler word to cut, a primitive to name earlier, a place the answer ran long",
               ans: "First, cut the number of times I say 'so' as a connector between sentences — it is the filler that shows up most under pressure. Second, name partitioning earlier: I currently reach it only after backpressure, but skew is often the actual root cause of the saturation I describe first, so naming the partition key up front would match the answer's order to how the failure actually happens. Third, the cost section ran long relative to the rest — trim it to the one line about the tradeoff between resilience and capacity rather than three separate examples, so the whole answer lands closer to five minutes rather than past it." }
@@ -2305,6 +2455,15 @@
           diagrams: ["bayes"],
           steps: [
             { t: "Random variables, distributions, conditional probability",
+              close: [
+                { k: "word", q: "What is the general term for a rule that assigns a number to each outcome of a random process?", a: "A random variable" },
+                { k: "blank", q: "P(A given B) restricts attention to only the outcomes where ___ has already happened.", a: "B" },
+                { k: "why", q: "Why is treating P(A given B) as the same thing as P(B given A) a fallacy rather than a rounding error?", a: "Because the two condition on different populations — one restricts to outcomes where B already happened, the other to where A already happened — and confusing them ignores how common each condition is on its own, which is exactly the mistake Bayes' theorem corrects." },
+                { k: "pick", q: "You know P(positive test given ill) is ninety-nine percent. Someone assumes P(ill given positive test) is the same number. What is wrong with that?",
+                  o: ["Nothing — conditional probability is symmetric", "It swaps two different conditionals and ignores how rare being ill is in the first place", "It is only wrong if the test itself is inaccurate"], a: 1,
+                  why: "P(A given B) and P(B given A) condition on different populations; treating them as interchangeable throws away the base rate entirely, which is precisely the error Bayes' theorem exists to fix." },
+                { k: "short", q: "One sentence: what can Bayes' theorem give you that P(B given A) alone cannot?", a: "It flips a conditional probability around, computing P(A given B) from P(B given A), P(A) and P(B), when only the reverse direction is known." }
+              ],
               d: "Enough to be fluent with the notation. The goal is not measure theory, it is reading a paper's probability line without skipping it.",
               m: 20,
               where: "Khan Academy, AP Statistics, Probability, the conditional probability lessons through the 'Conditional probability with Bayes' Theorem' video (about five minutes)",
@@ -2320,12 +2479,30 @@
                 "Fluent notation means reading P(A|B) as the probability of A given B, without pausing to decode it"
               ] },
             { t: "Requeued Q9 — set up and solve the disease problem",
+              close: [
+                { k: "num", q: "P(ill given a positive test) works out to roughly what percentage?", a: "About 2 percent" },
+                { k: "figure", q: "In the Bayes figure, how many false positives come from the 99,900 healthy people?", a: "4,995" },
+                { k: "pick", q: "The test is 99 percent sensitive and only 5 percent false-positive — both look excellent. Why is a positive result still mostly wrong?",
+                  o: ["The test's numbers must have been entered incorrectly", "The healthy population is so much larger that its 5 percent false-positive slice outnumbers the true positives from the tiny ill population", "Sensitivity and false-positive rate cannot both be trusted at the same time"], a: 1,
+                  why: "99,900 healthy people at a 5 percent false-positive rate produce 4,995 false positives — fifty times more than the 99 true positives drawn from the tiny ill population, purely from the size mismatch between the two groups." },
+                { k: "why", q: "Why does the disease being rare matter more here than the test being accurate?", a: "Because false positives are drawn from the much larger healthy population, so even a low false-positive rate applied to a huge pool outnumbers the true positives drawn from a tiny ill pool — accuracy alone cannot overcome a low base rate." },
+                { k: "word", q: "What is the name for judging P(ill given positive) from the test's sensitivity alone, ignoring how rare the illness is?", a: "The base-rate fallacy" }
+              ],
               d: "The diagram has the table. Build it yourself first, then check. Bayes was the right identification on the diagnostic; this is the table that goes with it.",
               m: 20,
               where: "No resource — build the hundred-thousand-person table on paper first, then check it against this session's Bayes diagram",
               out: "the full setup on paper and the number: roughly 2 percent, derived from the table, not recalled from the diagnostic",
               ans: "Out of a hundred thousand people, point one percent are ill, which is a hundred people, and the other 99,900 are healthy. The test is 99 percent sensitive, so of the hundred ill people about 99 test positive. The false positive rate is 5 percent, so of the 99,900 healthy people about 4,995 also test positive. Total positives are 99 plus 4,995, which is 5,094, and the people actually ill among them are 99, so the probability of being ill given a positive test is 99 divided by 5,094, which is a bit under 2 percent. The test looks excellent in isolation, but the disease is so rare that the false positives, drawn from a pool five hundred times larger than the ill population, swamp the true positives — that is what a low base rate does to an accurate test." },
             { t: "Three more base-rate problems until the shape stops being surprising",
+              close: [
+                { k: "blank", q: "The rarer the condition, the ___ the healthy pool is relative to the ill one, so the same false-positive rate produces even more false positives than true ones.", a: "bigger" },
+                { k: "pick", q: "A fraud-detection model flags a transaction. Fraud is rare overall, and the model is fairly accurate. Before trusting the flag, what do you actually want to know?",
+                  o: ["Nothing else — a flag from an accurate model is enough on its own", "How rare fraud is in this population, since that decides how many flags are false alarms", "Whether the model is a neural network or a simpler classifier"], a: 1,
+                  why: "Accuracy alone never says what a positive result means; the base rate decides whether false alarms from the enormous non-fraud majority swamp the true catches from the tiny fraud minority." },
+                { k: "why", q: "Why does the fix for the surprise stay the same whatever the story — disease, spam, fraud?", a: "Because the surprise always comes from the same source, a low base rate combined with an imperfect test, and the only reliable fix is building the population table of true and false positives and negatives rather than reasoning from the test's accuracy alone." },
+                { k: "short", q: "One sentence: after three more problems, what should no longer feel surprising?", a: "That a highly accurate test for a rare condition is still usually wrong on a positive result, because its false positives are drawn from a much larger healthy population." },
+                { k: "word", q: "What must you build, every time, rather than reasoning from a test's headline accuracy?", a: "The population table" }
+              ],
               d: "The shape: a very accurate test for a very rare thing is mostly wrong, because false positives are drawn from a much larger pool.",
               m: 20,
               where: "Khan Academy, 'Calculate conditional probability' practice exercise — three problems from the set",
@@ -2339,6 +2516,15 @@
                 "The fix for the surprise is always the same: build the population table of true and false positives and negatives, rather than reasoning from the test's accuracy alone"
               ] },
             { t: "Write why softmax outputs form a distribution, and why cross-entropy is its natural loss",
+              close: [
+                { k: "word", q: "What operation makes every softmax output strictly positive?", a: "Exponentiation" },
+                { k: "blank", q: "Softmax outputs are non-negative and sum to ___, which is the whole definition of a probability distribution.", a: "one" },
+                { k: "why", q: "Why does it matter that softmax's output is a genuine probability distribution, rather than just a set of positive scores?", a: "Because it licenses comparing the output directly against a true distribution with tools built for distributions, cross-entropy in particular, instead of needing some ad hoc distance measure for arbitrary positive numbers." },
+                { k: "pick", q: "Squared error and cross-entropy are both valid losses in principle. Why does cross-entropy win for a softmax classifier specifically?",
+                  o: ["It is cheaper to compute", "Its gradient does not carry the vanishing factor squared error's does when softmax saturates", "It only works when there are exactly two classes"], a: 1,
+                  why: "When softmax has saturated toward zero or one on a wrong answer, squared error's gradient picks up a factor from that saturated output and shrinks toward zero exactly when the model most needs correcting; cross-entropy's gradient does not carry that factor." },
+                { k: "short", q: "One sentence: what does calling softmax's output a distribution actually buy you?", a: "It licenses distribution-native tools — cross-entropy as the natural loss, the negative log of the true class's probability as the natural error signal — instead of treating classification scores as arbitrary numbers." }
+              ],
               d: "Softmax exponentiates and normalises, so outputs are non-negative and sum to one. Cross-entropy measures the distance between predicted and true distributions, and its gradient does not collapse when the output saturates.",
               m: 25,
               where: "Neural networks and deep learning (Nielsen), Chapter 3 — the 'Softmax' section for why the outputs form a distribution, the 'Introducing the cross-entropy cost function' section, earlier in the same chapter, for why cross-entropy is its natural loss",
@@ -2367,6 +2553,15 @@
           diagrams: ["source"],
           steps: [
             { t: "Work through source against filter",
+              close: [
+                { k: "figure", q: "In the source-filter figure, which side carries pitch and which carries identity?", a: "Pitch lives on the source side, the vocal folds' buzz at F0; identity lives on the filter side, the vocal tract's resonances." },
+                { k: "word", q: "What is the name for the frequency at which the vocal folds buzz?", a: "F0, the fundamental frequency" },
+                { k: "blank", q: "The frequencies the vocal tract's shape amplifies are called the ___.", a: "formants" },
+                { k: "why", q: "Why does changing the source leave a voice recognisably the same person, while changing the filter does not?", a: "The source only sets pitch, how fast the buzz repeats, while the filter — the shape of the resonant tube — determines which frequencies get amplified and therefore which sounds and which speaker come through; identity lives in the filter, not the pitch." },
+                { k: "pick", q: "Someone proposes measuring a speaker's identity from their average pitch alone. What does the source-filter split say about that?",
+                  o: ["Fine — pitch is a stable enough proxy for identity", "No — pitch is a source property, and identity lives in the filter, the vocal tract's resonances", "It works only for low-pitched voices"], a: 1,
+                  why: "F0 sits squarely on the source side; the split's whole point is that identity is carried by the filter, so an identity measure built on pitch alone is measuring the wrong side of it." }
+              ],
               d: "The vocal folds buzz at F0 — the source. The mouth and throat are a tube that resonates — the filter, and its resonances are the formants.",
               m: 15,
               where: "Oxford Phonetics, 'The Source-Filter Model of Speech Production' — the source and filter sections",
@@ -2381,12 +2576,30 @@
                 "Change the source and pitch changes; change the filter and which sounds — and which speaker — come through changes: that split is the whole model"
               ] },
             { t: "Map it onto the project's measurements",
+              close: [
+                { k: "word", q: "Which of this project's measurements sits entirely on the source side?", a: "f0_mean" },
+                { k: "blank", q: "Vocal-tract length and the ___ sit on the filter side, because they describe the resonant tube rather than the buzz rate.", a: "formants" },
+                { k: "why", q: "Spectral tilt was designed to measure the source's spectral shape. Why does it partly measure the buzz rate instead, as S21 found?", a: "Because it is fit as a straight line across log-frequency bins, and a large share of that fit's leverage sits on the first few harmonics — so when f0 changes, where those harmonics land changes too, moving the fitted tilt even though the true filter envelope never moved." },
+                { k: "pick", q: "A colleague argues spectral tilt is a pure filter measurement, describing overall spectral shape the same way the formants do. What does S21's result say about that?",
+                  o: ["The colleague is right — tilt and the formants measure the same thing", "The colleague is wrong — tilt partly leaks the source's buzz rate into what should be a filter-only measurement", "It depends only on which vowel is being measured"], a: 1,
+                  why: "S21 found that a large share of the tilt fit's leverage sits on the first few harmonics, so a change in f0, a source property, moves the fitted tilt even when the true filter envelope has not changed — that is a source leak into a measurement meant to describe only the filter." },
+                { k: "short", q: "One sentence: why does a measurement that leaks across the source-filter split fail at its job?", a: "Because the whole point of the split is that source and filter vary independently, so a measurement that mixes them can no longer tell you which of the two actually changed." }
+              ],
               d: "f0_mean measures the source. Vocal-tract length and the formants measure the filter. Spectral tilt is meant to measure the source's spectral shape and partly measures the buzz rate instead, which is exactly how an axis fails to separate.",
               m: 15,
               where: "Alaap study guide, E:/VoiceForge TTV Pipeine/v3/learning/01-STUDY-GUIDE.md, section 2.3 The source-filter model, then the estimator table in 2.4. Apply the split to f0_mean, vocal-tract length, the formants and spectral tilt",
               out: "one written line per measurement naming which side of the split it sits on, plus the one sentence on why spectral tilt partly leaks across it",
               ans: "f0_mean sits entirely on the source side — it is the buzz rate of the vocal folds, and it is what carries pitch. Vocal-tract length and the formants sit on the filter side — they describe the resonant tube the buzz passes through, and that is where speaker identity lives. Spectral tilt was meant to measure the source's spectral shape, but it partly measures the buzz rate instead, because it is fit as a straight line across log-frequency bins and a large share of that fit's leverage sits on the first few harmonics, so a change in f0 changes how those harmonics land even when the true filter envelope has not moved — the axis leaks across the split it was supposed to respect." },
             { t: "Answer: why would a 250 Hz voice read a flatter spectral tilt than a 90 Hz voice with the same envelope",
+              close: [
+                { k: "num", q: "Roughly how many times fewer harmonics does a 250 Hz voice have across the same band as a 90 Hz voice sampling the same envelope?", a: "About 2.8 times fewer" },
+                { k: "why", q: "Why does having fewer harmonics make the fitted spectral tilt read flatter, even though the true envelope has not changed?", a: "With fewer harmonic peaks, more of the bins the tilt is fit over fall in the low-energy floor between harmonics rather than on a peak, and that pulls the fitted slope toward flat regardless of what the true envelope looks like." },
+                { k: "blank", q: "A higher f0 spaces the harmonics further apart, so ___ of them sample the same frequency band.", a: "fewer" },
+                { k: "pick", q: "Two speakers have identical vocal-tract shapes but different pitches, one at 90 Hz and one at 250 Hz. Their measured spectral tilt values come out different. What does that difference actually reflect?",
+                  o: ["A real difference in the two speakers' vocal-tract filters", "An artefact of pitch changing how densely harmonics sample the same envelope, not a filter difference", "A measurement error that should be discarded"], a: 1,
+                  why: "The filters are identical by construction here, so the entire difference in measured tilt is the source-driven artefact: pitch changes harmonic spacing, and that changes what the tilt fit sees, even though nothing about the filter differs." },
+                { k: "short", q: "One sentence: what is actually being measured when spectral tilt differs between a high- and low-pitched voice sharing an envelope?", a: "How densely the harmonics happen to sample the envelope at that pitch, not a real difference in the envelope itself." }
+              ],
               m: 15,
               out: "one or two sentences connecting f0 to harmonic spacing: a higher f0 means fewer, more widely spaced harmonics sampling the same envelope, which reads as flatter tilt even though the true envelope has not changed",
               ans: "A higher f0 spaces the harmonics further apart, so a 250 Hz voice has about 2.8 times fewer harmonics across the same band than a 90 Hz voice sampling the identical envelope. Spectral tilt is fit from those harmonic peaks, and with fewer of them more of the fitted bins fall in the flat, low-energy floor between harmonics rather than on a peak, which drags the fitted slope toward flat — so the tilt reads flatter for the higher voice even though the true spectral envelope, the filter, has not changed at all." }
