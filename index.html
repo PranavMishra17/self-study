@@ -464,7 +464,50 @@
     cursor: pointer; padding: 3px 0 0; display: block; }
   .stepdo .xp:hover { color: var(--ink); }
   .stepdo .xp.has { color: var(--mark); }  .abox .amodel ul { margin: 0; padding-left: 17px; }
-  .abox .amodel li { font-size: 13px; line-height: 1.5; color: var(--ink); padding: 1px 0; }
+  .abox .amodel li { font-size: 13px; line-height: 1.5; color: var(--ink); padding: 1px 0; }  /* -------- the closer -------- */
+  .closerwrap { margin: 9px 0 3px; }
+  .closerbtn { background: var(--sheet); border: 1px solid var(--line); font-size: 11.5px;
+    padding: 4px 11px; cursor: pointer; color: var(--mid); }
+  .closerbtn:hover { border-color: var(--ink); color: var(--ink); }
+  .closerbtn.full { border-color: var(--math); color: var(--math); }
+  .closer { border: 1px solid var(--mark); background: var(--live); padding: 12px 15px 14px;
+    max-width: 78ch; }
+  .closerh { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--hair); margin-bottom: 10px; }
+  .closerh b { font-size: 13px; }
+  .closerh .xp { margin-left: auto; background: none; border: none; color: var(--dim);
+    font-size: 11.5px; cursor: pointer; }
+  .cq { padding: 9px 0; border-top: 1px dotted var(--hair); }
+  .cq:first-of-type { border-top: none; padding-top: 0; }
+  .cqh { display: flex; gap: 8px; align-items: baseline; }
+  .cqn { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .cqk { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mark); }
+  .cqq { font-size: 13.5px; line-height: 1.45; margin: 3px 0 6px; }
+  .cta { width: 100%; background: var(--sheet); font-size: 13px; min-height: 0; }
+  .corder { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+  .cchip { font-size: 12px; padding: 4px 10px; border: 1px solid var(--line);
+    background: var(--sheet); cursor: pointer; color: var(--ink); }
+  .cchip.on { border-color: var(--ink); background: var(--board); font-weight: 600; }
+  .copts { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+  .copt { text-align: left; font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--line);
+    background: var(--sheet); cursor: pointer; color: var(--ink); }
+  .copt.sel { box-shadow: inset 3px 0 0 var(--ink); }
+  .copt.yes { border-color: var(--math); box-shadow: inset 3px 0 0 var(--math); }
+  .copt.no { border-color: var(--mark); box-shadow: inset 3px 0 0 var(--mark); }
+  .cq .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
+    cursor: pointer; padding: 3px 0 0; }
+  .cq .xp:hover { color: var(--ink); }
+  .cans { border-left: 3px solid var(--math); padding: 5px 11px; margin-top: 6px;
+    font-size: 13px; line-height: 1.5; background: var(--sheet); }
+  .cwhy { font-size: 11.5px; color: var(--dim); margin-top: 4px; }
+  .crate { display: flex; gap: 7px; margin-top: 7px; }
+  .crb { font-size: 11.5px; padding: 3px 10px; border: 1px solid var(--line);
+    background: none; cursor: pointer; color: var(--mid); }
+  .crb.got.on { border-color: var(--math); color: var(--math); font-weight: 600; }
+  .crb.no.on { border-color: var(--mark); color: var(--mark); font-weight: 600; }
+  .carry { border: 1px solid var(--mark); background: var(--sheet); padding: 11px 14px; margin-bottom: 14px; }
+  .carry .ch { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--mark); margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -1230,7 +1273,13 @@
               where: "DDIA 2e - index: percentiles; response time; tail latency amplification. Sections 'Describing Performance', 'Latency and Response Time', 'Average, Median, and Percentiles'. Not in 2e chapter 1, which is Trade-Offs in Data Systems Architecture; the nonfunctional-requirements chapter carries it",
               out: "p50, p95 and p99 defined in your own words, and one sentence on why an average hides the tail",
               skip: "The rest of chapter 1. Reliability and maintainability are not what this week is about.",
-              links: [ddia("2e - look up: percentiles")] },
+              links: [ddia("2e - look up: percentiles")],
+              ans: [
+                "p50 (the median): half of all requests finish faster than this",
+                "p95 and p99: the latency that 95 or 99 percent of requests beat — where the slow tail lives",
+                "The mean is dominated by the bulk of fast requests, so it hides the tail entirely",
+                "The slowest requests are disproportionately the heaviest users, and retries make the tail worse"
+              ] },
             { t: "Write one-line definitions in your own words: throughput, latency, p50, p99, bounded queue, unbounded queue, backpressure, load shedding",
               d: "Your own words is the whole instruction. A definition you can only recite is one you lose under pressure. If a line runs past about fifteen words, it is not understood yet." ,
               m: 25,
@@ -1285,7 +1334,13 @@
               url: "https://www.youtube.com/watch?v=WUvTyaaNkzM",
               out: "one sentence on what a derivative is, before doing any calculation",
               skip: "The rest of the series for now. Chapters 2 through 4 are next week's session.",
-              links: [L.calc] },
+              links: [L.calc],
+              ans: [
+                "Calculus works by approximating a hard, curved problem with something simple (constant or straight), then studying how the error shrinks as the approximation gets finer",
+                "Worked example: a circle's area formula falls out of slicing it into thin rings and treating each ring as a straightened-out rectangle",
+                "A derivative is what that approximation converges to as the slice width goes to zero — a limit, not a jump straight to an instant",
+                "The chapter previews this approach for the whole series before any differentiation rules appear"
+              ] },
             { t: "Work through logarithms as the inverse of exponentiation until it is obvious rather than remembered",
               d: "The property to internalise is that log turns products into sums. That single fact is why likelihoods are logged, why log-loss exists, and why paper plots have log axes.",
               m: 25,
@@ -1332,12 +1387,24 @@
               d: "Actually listen. No number in that repo substitutes for hearing it, and the study guide says so for a reason.",
               m: 10,
               where: "VoiceForge TTV Pipeline v3 (E:\\VoiceForge TTV Pipeine\\v3) - run scripts/demo_script_render.py with envs/qwen3/Scripts/python.exe from the repo root, then listen to demo_out/audio/",
-              out: "the rendered lines actually heard, not just generated" },
+              out: "the rendered lines actually heard, not just generated",
+              ans: [
+                "The demo mints an identity from a text description through the mapper, then renders scripted lines through the frozen TTS using that fixed identity",
+                "The gates that already passed — drift, consistency, uniqueness, CER — check identity and intelligibility, not whether the voice sounds natural",
+                "No gate in the stack currently rejects on naturalness: the floor is proposed, never enforced, so listening is the only check that catches synthetic-sounding audio"
+              ] },
             { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict",
               m: 22,
               where: "Same repo, learning/architecture.html sections 1 through 5 (System context, The two-tower thesis, The mint pipeline in full, The render pipeline, The gate stack), then RESEARCH/00-EXECUTIVE-VERDICT.md, section 1 (THE VERDICT ON THE ARCHITECTURE)",
               out: "the two-tower shape in one sentence - a trained mapper into a frozen TTS's voice-identity input - and one component that has since changed",
-              skip: "Diagrams 6 through 14, and sections 2 through 8 of the executive verdict. Orientation only; the per-component detail is for when the rebuilt mathematics makes it worth reading." },
+              skip: "Diagrams 6 through 14, and sections 2 through 8 of the executive verdict. Orientation only; the per-component detail is for when the rebuilt mathematics makes it worth reading.",
+              ans: [
+                "Tower A (learned): a text encoder plus a trained mapper turns a free-text description into a speaker vector — the only channel between the two towers",
+                "Tower B (frozen): an acoustic LM whose weights are never updated turns that vector plus text into audio",
+                "The render pipeline keeps identity fixed and per-line direction (emotion, rate) separate — identity never carries performance",
+                "Five gates run before an identity is stored: drift, consistency, uniqueness, CER, and a naturalness gate that has never actually rejected anything",
+                "What has changed since the original scope: the renderer, from the now-dead and licence-poisoned Zonos-v0.1 to Qwen3-TTS-1.7B"
+              ] },
             { t: "Answer in writing: why is the TTS model never trained, and what breaks if it is",
               d: "The study guide's own check for Part 0. Write it rather than think it.",
               m: 13,
@@ -1365,7 +1432,13 @@
               m: 45,
               where: "DDIA 2e chapter 7, 'Sharding' (confirmed) - index: sharding; partitioning; hot spots; skewed workload; rebalancing. Read the key-value sharding sections, then skewed workloads and relieving hot spots, then request routing. Secondary Indexes, Rebalancing Partitions, Request Routing",
               out: "key-range versus hash partitioning distinguished in your own words, plus what a rebalancing strategy must avoid",
-              links: [ddia("2e chapter 7, Sharding")] },
+              links: [ddia("2e chapter 7, Sharding")],
+              ans: [
+                "Key-range partitioning: each partition owns a contiguous range of keys, which keeps range queries efficient but concentrates load if access is skewed toward one range",
+                "Hash partitioning: a hash of the key picks the partition, which spreads load evenly but destroys the ability to do efficient range scans",
+                "A rebalancing strategy must avoid moving far more data than the change in partition count requires",
+                "It must also avoid tying a key's partition to the total partition count, since that forces almost everything to move whenever the count changes"
+              ] },
             { t: "Understand hot partitions as a key-choice problem",
               d: "A key that looks uniform in the abstract is rarely uniform in production, because real usage is power-law. See the diagram: hashing spreads keys, not traffic.",
               m: 15,
@@ -1418,7 +1491,13 @@
               url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr",
               out: "the chain rule stated in your own words before rewatching chapter 4 a second time",
               skip: "Chapter 5 onward. Euler's number and later are not this week.",
-              links: [L.calc] },
+              links: [L.calc],
+              ans: [
+                "Chapter 2 establishes a derivative as an instantaneous rate of change — the slope of the tangent line, not an average over an interval",
+                "Chapter 3 shows the standard derivative rules (power rule, sine, exponential) falling out of geometric reasoning about a tiny nudge, rather than symbol-pushing",
+                "Chapter 4 shows the product and chain rules as descriptions of how two tiny nudges combine when functions are multiplied or nested",
+                "The chain rule specifically: the nudge from a composed function is the product of the two local rates, one from each layer of the composition"
+              ] },
             { t: "Drill the power, product and quotient rules until automatic",
               d: "Fifteen or twenty by hand. Not interesting, and the alphabet.",
               m: 20,
@@ -1492,7 +1571,13 @@
               where: "DDIA 2e - index: LSM-tree; B-tree; hash index; log-structured storage. The storage-and-retrieval chapter, from hash indexes through the B-tree and LSM-tree comparison, plus the short other-indexing sectructures after it",
               out: "your own sentence on why writes are cheap in an LSM-tree and reads can span layers, and the reverse for a B-tree",
               skip: "From 'Transaction Processing or Analytics?' onward — column-oriented storage and OLAP schemas are a different session",
-              links: [ddia("2e - look up: LSM-tree, B-tree")] },
+              links: [ddia("2e - look up: LSM-tree, B-tree")],
+              ans: [
+                "A basic hash index keeps an in-memory map from key to byte offset in an append-only log — fast point lookups, but it must fit in memory and cannot do range queries",
+                "An LSM-tree makes writes cheap because they are sequential appends to an in-memory structure, flushed to sorted files and merged later by background compaction",
+                "An LSM-tree read can be slower because the key might live in several of those sorted files, so a lookup may have to check more than one layer",
+                "A B-tree makes writes expensive because updating a key means finding and rewriting its exact page on disk — random I/O — but a read is cheap: one direct traversal, no layers to check"
+              ] },
             { t: "Get orders of magnitude into your hands",
               d: "What a million and a billion of something cost in bytes, dollars and seconds. Memory against SSD against network against object storage. One significant figure is enough, and it is the difference between reasoning and guessing.",
               m: 20,
@@ -1546,7 +1631,14 @@
               url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab",
               out: "able to say what a linear transformation does to a basis vector, and what an eigenvector is, without notes",
               skip: "Chapters 5 to 12 — three-dimensional transformations, the determinant, inverse matrices, non-square matrices, dot products and duality, cross products, Cramer's rule, change of basis. None needed for this milestone",
-              links: [L.lin] },
+              links: [L.lin],
+              ans: [
+                "A vector is fundamentally something you can scale and add — not an arrow or a list of numbers first",
+                "Span is the set of every vector reachable by scaling and adding a given set of vectors",
+                "A matrix is a linear transformation: a rule for where the basis vectors land, which by linearity determines where every other vector lands too",
+                "Multiplying two matrices means applying one transformation after another — composition, not a row-times-column recipe",
+                "An eigenvector is a vector whose direction survives a transformation unchanged, only its length scaled, by the eigenvalue"
+              ] },
             { t: "Derive why cosine similarity is the dot product of normalised vectors",
               d: "See the diagram. The dot product is the product of magnitudes times the cosine of the angle; divide the magnitudes out and the cosine is what remains. That is why it suits embeddings, where length often encodes frequency rather than meaning.",
               m: 10,
@@ -1635,21 +1727,42 @@
               out: "one sentence each on what makes networks, clocks and 'truth' unreliable in a distributed system",
               skip: "In chapter 11: Transmitting Event Streams, Databases and Streams, and the rest of Processing Streams — only Fault Tolerance is this session's target",
               nlm: "Does the timeout-versus-failure distinction in chapter 8 depend on the network protocol, or does it hold for any unreliable network? Does 'Fault Tolerance' in chapter 11 assume idempotent processing, or does it also cover the non-idempotent case?",
-              links: [ddia("2e chapter 9, plus idempotence")] },
+              links: [ddia("2e chapter 9, plus idempotence")],
+              ans: [
+                "Networks are unreliable: packets can be delayed, dropped, reordered or duplicated, and a timeout cannot tell a slow response from a lost one",
+                "Clocks are unreliable: they drift and can jump during resynchronisation, so wall-clock timestamps cannot be trusted to order events across machines",
+                "A node cannot fully trust its own state either — a long pause can make it believe it still holds a lock it has actually lost, which is why a fencing token exists to reject stale writes",
+                "Partial failure is the defining problem: part of a distributed operation can succeed while another part fails, with no single point where the whole thing visibly breaks",
+                "Exactly-once delivery is not achievable from the network alone; the achievable guarantee is at-least-once delivery combined with idempotent processing, giving an exactly-once effect"
+              ] },
             { t: "Learn why naive retries make an outage worse, and the standard fix",
               d: "See the diagram. Backoff reduces pressure; jitter stops every client returning in the same synchronised wave and recreating the spike.",
               m: 15,
               where: "AWS Architecture Blog, 'Exponential Backoff And Jitter', full post",
               url: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/",
               out: "the retry storm in your own words, and why jitter is needed on top of backoff",
-              links: [L.jitter] },
+              links: [L.jitter],
+              ans: [
+                "Naive, uncoordinated retries create a retry storm — every failed client retries at once, adding load exactly when the service has least capacity to spare",
+                "Without spacing, retries can force roughly N-squared total work across N contending clients, because they keep re-colliding with each other every round",
+                "Exponential backoff alone only helps a little: it slows individual clients down, but they still return in synchronised clusters, so spikes keep reforming",
+                "Jitter randomises the wait inside each backoff window, spreading those clusters into something close to a constant rate",
+                "With a hundred contending clients, backoff plus jitter cut call counts by more than half compared with backoff alone — jitter is what makes backoff actually work"
+              ] },
             { t: "Generalise idempotency beyond payments",
               d: "You already had this for payment endpoints. The general form is an operation safe to apply more than once, which is what makes at-least-once delivery survivable. Since exactly-once delivery is mostly a marketing claim, at-least-once plus idempotency is how real systems get exactly-once effects.",
               m: 20,
               where: "AWS Builders' Library, 'Making retries safe with idempotent APIs'",
               url: "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
               out: "idempotency defined in general form, plus why at-least-once plus idempotency substitutes for exactly-once",
-              links: [L.aws] },
+              links: [L.aws],
+              ans: [
+                "Idempotent means a request can be retransmitted or retried with no additional side effects — the result happens once, however many times the call is made",
+                "The general mechanism is a unique, caller-provided request token, not one derived from the request's parameters, because identical parameters can still represent genuinely different intents",
+                "A retry carrying the same token gets back the same response as the original call, making the retry transparent to the caller",
+                "A retry with the same token but different parameters is rejected as an error rather than silently applied, since that signals a mismatched intent, not a true retry",
+                "This is why at-least-once delivery plus idempotency substitutes for exactly-once delivery: retries are guaranteed to happen, and idempotency guarantees they are harmless once they do"
+              ] },
             { t: "Design the retry and deduplication path for three percent of a hundred million replays failing mid-run",
               d: "Say explicitly what happens to a scenario that fails deterministically every time, against one that fails on a coin flip. Conflating them is the common mistake: dead-letter the first, retry the second.",
               m: 45,
@@ -1687,14 +1800,28 @@
               where: "3Blue1Brown, Neural networks — But what is a neural network? (18:40), Gradient descent, how neural networks learn (20:33), Backpropagation, intuitively (12:47), Backpropagation calculus (10:17)",
               url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi",
               out: "backprop's plain-English form stated before opening the calculus chapter's maths",
-              links: [L.nn] },
+              links: [L.nn],
+              ans: [
+                "A network is a function with many tunable numbers (weights and biases); training adjusts those numbers to make its output match what is wanted",
+                "The cost function measures how wrong the network is on the training data, and gradient descent nudges every parameter to lower that cost",
+                "Backpropagation is how the gradient gets computed efficiently — it asks, for each weight, how much a small change to it would move the final cost",
+                "It works backward from the output because an early weight's effect on the cost passes through every layer after it, so each layer's sensitivity feeds into the previous one's",
+                "In plain English: backprop is how much blame each weight carries for the error, assigned layer by layer from the output back to the input"
+              ] },
             { t: "Partial derivatives, and the gradient as the vector of them",
               d: "A partial derivative asks how the output moves if you nudge one input and hold the rest still. Collect them all and you have the gradient, pointing in the direction of steepest increase. Descent walks the other way.",
               m: 15,
               where: "Khan Academy, Multivariable Calculus, partial derivatives and the gradient",
               url: "https://www.khanacademy.org/math/multivariable-calculus",
               out: "a partial derivative and the gradient each defined in one sentence, your own words",
-              links: [L.ka_multi] },
+              links: [L.ka_multi],
+              ans: [
+                "A partial derivative asks how a multivariable function's output changes when one input is nudged and every other input is held fixed",
+                "The gradient collects all of a function's partial derivatives into one vector, one entry per input variable",
+                "The gradient vector points in the direction of steepest increase of the function at that point",
+                "Its magnitude gives how steep that increase is — a larger magnitude means faster change in that direction",
+                "Descent moves opposite to the gradient, since that is the direction of steepest decrease"
+              ] },
             { t: "Requeued Q10 — write the gradient descent update rule from memory",
               d: "Parameter minus learning rate times the gradient of the loss with respect to that parameter. The learning rate is a step size on the direction the gradient gives you, and the minus sign is the entire reason it is descent.",
               m: 6,
@@ -1775,7 +1902,14 @@
               where: "DDIA 2e - index: replication lag; read-your-writes consistency; eventual consistency. The problems-with-replication-lag sections, read-your-writes in particular",
               out: "one sentence: what a client can see immediately after its own write, and why that is a staleness problem before it is ever a caching problem",
               skip: "Leader election, multi-leader conflict resolution and leaderless replication — this pass only needs the staleness argument, not the rest of the chapter",
-              links: [ddia("2e - look up: replication lag")] },
+              links: [ddia("2e - look up: replication lag")],
+              ans: [
+                "Replication lag is the delay between a write landing on the leader and that write becoming visible on a follower",
+                "Read-your-writes consistency guarantees a user immediately sees their own write, even when reads are served from a lagging replica",
+                "Eventual consistency only promises that replicas converge given enough time with no new writes — it makes no promise about how long that takes",
+                "Immediately after your own write, a read from a replica can return stale data purely from replication lag, which is a staleness problem that exists before any cache is involved",
+                "Caching sits on top of an already-imperfect consistency picture: the underlying data can be stale even before a TTL or an invalidation rule is added on top"
+              ] },
             { t: "Cache placement, keys, TTL against explicit invalidation",
               d: "A TTL is a bet that staleness is tolerable for a bounded window. Explicit invalidation is a promise you must keep on every write path, and missing one is how caches serve wrong answers for days.",
               m: 15,
@@ -1825,7 +1959,14 @@
               url: "https://www.khanacademy.org/math/ap-statistics/probability-ap/stats-conditional-probability/v/bayes-theorem-visualized",
               out: "conditional probability notation read without pausing, and Bayes' theorem stated once in your own words before the worked problem",
               skip: "The rest of the AP Statistics probability unit — random variables and independence beyond what conditional probability needs are not this session's job",
-              links: [L.ka_prob] },
+              links: [L.ka_prob],
+              ans: [
+                "A random variable assigns a number to each outcome of a random process; its distribution says which values are possible and how likely each one is",
+                "Conditional probability P(A given B) is the probability of A once B is already known, restricted to the outcomes where B happened",
+                "P(A given B) is not the same as P(B given A) in general — treating them as equal is the base-rate fallacy",
+                "Bayes' theorem rewrites P(A given B) in terms of P(B given A), P(A) and P(B), letting a conditional probability be flipped when only the reverse direction is known",
+                "Fluent notation means reading P(A|B) as the probability of A given B, without pausing to decode it"
+              ] },
             { t: "Requeued Q9 — set up and solve the disease problem",
               d: "The diagram has the table. Build it yourself first, then check. Bayes was the right identification on the diagnostic; this is the table that goes with it.",
               m: 20,
@@ -1838,7 +1979,13 @@
               where: "Khan Academy, 'Calculate conditional probability' practice exercise — three problems from the set",
               url: "https://www.khanacademy.org/math/ap-statistics/probability-ap/stats-conditional-probability/e/calculating-conditional-probability",
               out: "three worked problems on paper, each ending in a number, until a low base rate swamping a good test stops feeling surprising",
-              skip: "The rest of the exercise set beyond three problems — the shape is the point, not the set" },
+              skip: "The rest of the exercise set beyond three problems — the shape is the point, not the set",
+              ans: [
+                "A highly accurate test for a rare condition is still usually wrong on a positive result, because false positives are drawn from the much larger healthy population",
+                "The rarer the condition, the bigger that healthy pool is relative to the ill one, so the same false-positive rate produces even more false positives than true ones",
+                "The shape holds regardless of the story — disease, spam filter, fraud check — whenever prevalence is low and the test is imperfect",
+                "The fix for the surprise is always the same: build the population table of true and false positives and negatives, rather than reasoning from the test's accuracy alone"
+              ] },
             { t: "Write why softmax outputs form a distribution, and why cross-entropy is its natural loss",
               d: "Softmax exponentiates and normalises, so outputs are non-negative and sum to one. Cross-entropy measures the distance between predicted and true distributions, and its gradient does not collapse when the output saturates.",
               m: 25,
@@ -1873,7 +2020,14 @@
               where: "Oxford Phonetics, 'The Source-Filter Model of Speech Production' — the source and filter sections",
               url: "https://www.phon.ox.ac.uk/source_filter_model",
               out: "the split stated in one sentence: the vocal folds buzz at F0 as the source, the vocal tract's resonances are the filter",
-              skip: "The transfer-function mathematics further down the page — the concept is this session's job, not the equations" },
+              skip: "The transfer-function mathematics further down the page — the concept is this session's job, not the equations",
+              ans: [
+                "The source is the raw sound before shaping: vocal-fold vibration for vowels and nasals, or turbulence noise for sounds like [s], [f], [sh]",
+                "Vocal-fold vibration is what produces F0, the buzz rate — roughly 125 Hz upward for adult males, higher for children",
+                "The filter is the vocal tract: its cross-sectional area at each point along its length determines which frequencies get amplified and which get damped",
+                "Formants are the peaks in the resulting spectrum — the frequencies the vocal tract's shape resonates at and boosts",
+                "Change the source and pitch changes; change the filter and which sounds — and which speaker — come through changes: that split is the whole model"
+              ] },
             { t: "Map it onto the project's measurements",
               d: "f0_mean measures the source. Vocal-tract length and the formants measure the filter. Spectral tilt is meant to measure the source's spectral shape and partly measures the buzz rate instead, which is exactly how an axis fails to separate.",
               m: 15,
@@ -2088,14 +2242,36 @@
         intro: "Round two was a backend engineer checking whether your claims survive how exactly and how big. Round three is Hamza, who co-founded ZenML and decides where Kitaru goes, and Alex, who writes, demos, ships the Claude Code skills that drive Kitaru's guided tour, and has a research background. They will test judgement about the product and whether you can explain it.",
         steps: [
           { t: "Re-drill the two-minute bench story until the headline comes first every time",
-            d: "From the round-two critique file. We run the real agent against a frozen snapshot of the user's world; only the outbound provider call is swapped. Headline, then mechanism, then the snapshot design, then the outcome." },
+            d: "From the round-two critique file. We run the real agent against a frozen snapshot of the user's world; only the outbound provider call is swapped. Headline, then mechanism, then the snapshot design, then the outcome.",
+            ans: [
+              "Headline first, every time: we run the real agent against a frozen snapshot of the user's world, and only the outbound provider call is swapped",
+              "Then in order: mechanism, the snapshot design, the outcome"
+            ] },
           { t: "Fix the two weakest items from the mock: the critique and your questions",
-            d: "Memorise the provenance critique word for word. Then prepare questions by person. For Hamza, strategy he actually owns: where Kitaru sits against observability tools long term, and whether replay is the wedge or the product. For Alex, what he has learned about onboarding, and how multi-turn replay is going. One question at a time, and wait." },
+            d: "Memorise the provenance critique word for word. Then prepare questions by person. For Hamza, strategy he actually owns: where Kitaru sits against observability tools long term, and whether replay is the wedge or the product. For Alex, what he has learned about onboarding, and how multi-turn replay is going. One question at a time, and wait.",
+            ans: [
+              "The provenance critique: a passthrough call to the live provider is not marked on the node, so a reader cannot tell a recorded result from a live one",
+              "For Hamza: where Kitaru sits against observability tools long term, and whether replay is the wedge or the product",
+              "For Alex: what he has learned about onboarding, and how multi-turn replay is going",
+              "One question at a time, then wait"
+            ] },
           { t: "Install Kitaru and run the guided tour on the example agent",
             d: "The tour is driven by Claude Code skills, and you use Claude Code with hooks and subagents daily, so you are precisely the intended user. Note three concrete friction points as you go. That is your DevEx material for Alex, and it is proof you used the product.",
+            ans: [
+              "Install is one line: curl -fsSL https://kitaru.ai/install | bash, or uv add kitaru with the cli, worker and mcp extras",
+              "The tour runs on a checked-in example agent with real Langfuse traces already recorded, not a live import",
+              "It is invoked as a Claude Code skill, kitaru-guided-tour, walking that example agent",
+              "The three friction points and the DevEx material for Alex come from your own run, not from this note"
+            ],
             links: [{ label: "Kitaru on GitHub", url: "https://github.com/zenml-io/kitaru" }] },
           { t: "Read the launch post and the deterministic evaluators page",
             d: "The new Kitaru imports traces from Langfuse, LangSmith, Braintrust, Logfire and Arize Phoenix, replays with tool calls answered from the recording, and organises cases into immutable, versioned cohorts. The deterministic evaluators read stored session evidence only; they never run the agent or call a live tool.",
+            ans: [
+              "Kitaru imports traces from Langfuse, LangSmith, Braintrust and Logfire, plus plain JSONL or anything OpenTelemetry-shaped",
+              "A replay answers tool calls from the recorded session instead of hitting the live tool",
+              "Sessions sit in cohorts: pinned, versioned groups; cohort versions are immutable, so a result stays reproducible",
+              "Deterministic evaluators never run the agent, call a model provider, or invoke a live tool — they only read stored session evidence"
+            ],
             links: [{ label: "Introducing the new Kitaru", url: "https://www.zenml.io/blog/introducing-the-new-kitaru" },
                     { label: "Deterministic evaluations", url: "https://docs.zenml.io/kitaru/guides/deterministic-evaluations" }] }
         ],
@@ -2120,19 +2296,59 @@
         diagrams: ["zenEffects"],
         steps: [
           { t: "Classify tool calls by what they do to the world",
-            d: "Pure reads. Idempotent writes, which are safe to repeat. Non-idempotent writes. Calls with an external effect, like sending an email or issuing a refund. Each class wants a different replay policy, and most confusion in replay design comes from treating them as one thing." },
+            d: "Pure reads. Idempotent writes, which are safe to repeat. Non-idempotent writes. Calls with an external effect, like sending an email or issuing a refund. Each class wants a different replay policy, and most confusion in replay design comes from treating them as one thing.",
+            ans: [
+              "Pure reads",
+              "Idempotent writes — safe to repeat",
+              "Non-idempotent writes",
+              "Calls with an external effect, like an email or a refund",
+              "Each class wants a different replay policy"
+            ] },
           { t: "State Kitaru's current answer precisely",
-            d: "By default a replay answers tool calls from the recording, which is how no card gets refunded twice. A call the recording never saw is handled by an explicit on_miss choice. A specific safe tool can be routed to pass through while everything else stays on history, and a tool can be pinned to a static result. Where it gets hard: a forked agent issues a new write the recording has no answer for." },
+            d: "By default a replay answers tool calls from the recording, which is how no card gets refunded twice. A call the recording never saw is handled by an explicit on_miss choice. A specific safe tool can be routed to pass through while everything else stays on history, and a tool can be pinned to a static result. Where it gets hard: a forked agent issues a new write the recording has no answer for.",
+            ans: [
+              "Default: a replay answers a tool call from the recorded session",
+              "A miss is handled by on_miss, which takes exactly three values: fail (stop before touching a live tool), error_result (hand back a tool error and continue), or passthrough (execute the live tool)",
+              "Per-tool overrides are a separate knob: a tool can be pinned to a static result, or set to passthrough on its own, regardless of the global on_miss setting",
+              "The hard case: a forked agent issues a new write the recording never saw"
+            ] },
           { t: "State your bench's answer, and its cost",
-            d: "In your bench, writes land in the case's SQLite snapshot, so a write is safe because the world it writes to is fake, and a later read sees it. The cost is that someone had to build that world, which is the authoring cost you estimated at forty-five minutes to four hours per case." },
+            d: "In your bench, writes land in the case's SQLite snapshot, so a write is safe because the world it writes to is fake, and a later read sees it. The cost is that someone had to build that world, which is the authoring cost you estimated at forty-five minutes to four hours per case.",
+            ans: [
+              "Writes land in the case's own SQLite snapshot, so the world being written to is fake and a write is safe",
+              "A later read in the same case sees that write",
+              "Cost: someone has to build that snapshot — forty-five minutes to four hours per case"
+            ] },
           { t: "Design an effect ledger",
-            d: "Every side-effecting call records an idempotency key built from session, step and a hash of canonical arguments, plus the result. A replay consults the ledger first; a repeat returns the stored result. An unmatched external effect on a forked replay goes to a dry-run adapter that returns a plausible shape without acting, or fails loudly. It never passes through by default, because a silent live call is both a real side effect and a hidden false pass." },
+            d: "Every side-effecting call records an idempotency key built from session, step and a hash of canonical arguments, plus the result. A replay consults the ledger first; a repeat returns the stored result. An unmatched external effect on a forked replay goes to a dry-run adapter that returns a plausible shape without acting, or fails loudly. It never passes through by default, because a silent live call is both a real side effect and a hidden false pass.",
+            ans: [
+              "Idempotency key per side-effecting call: session, step and a hash of canonical arguments, plus the stored result",
+              "A replay checks the ledger first; a repeat returns the stored result",
+              "An unmatched external effect on a forked replay goes to a dry-run adapter, or fails loudly",
+              "Never a silent passthrough by default — that would be a real side effect and a hidden false pass"
+            ] },
           { t: "Work the send-succeeded-but-response-timed-out case",
-            d: "Record the intent before the call, then reconcile after. With an idempotency key at the provider, a retry is safe. Without one, you query the provider for the effect before retrying. Your INTERVIEW-PREP file has the concrete version from alfred_, where Gmail and Outlook fail differently — use that detail, since it is real." },
+            d: "Record the intent before the call, then reconcile after. With an idempotency key at the provider, a retry is safe. Without one, you query the provider for the effect before retrying. Your INTERVIEW-PREP file has the concrete version from alfred_, where Gmail and Outlook fail differently — use that detail, since it is real.",
+            ans: [
+              "Record the intent before the call, reconcile after",
+              "With a provider-side idempotency key, a retry is safe",
+              "Without one, query the provider for the effect before retrying",
+              "Gmail and Outlook fail differently on this path — the concrete version lives in your INTERVIEW-PREP file"
+            ] },
           { t: "Connect it to durable execution",
-            d: "Kitaru began as a durable runtime for agents, so Hamza will think in these terms. Deterministic replay of a workflow requires every effect to be recorded in an event history, which is the Temporal model you studied for the Backbone loop. Replay-based evals are the same idea pointed at a different goal: instead of resuming a crashed run, you rerun a finished one with one thing changed." },
+            d: "Kitaru began as a durable runtime for agents, so Hamza will think in these terms. Deterministic replay of a workflow requires every effect to be recorded in an event history, which is the Temporal model you studied for the Backbone loop. Replay-based evals are the same idea pointed at a different goal: instead of resuming a crashed run, you rerun a finished one with one thing changed.",
+            ans: [
+              "Kitaru began as a durable runtime for agents, which is the ground Hamza thinks from",
+              "Deterministic replay of a workflow needs every effect recorded in an event history — the Temporal model",
+              "Replay-based evals point the same idea at a different goal: rerunning a finished run with one thing changed, instead of resuming a crashed one"
+            ] },
           { t: "Say the whole design out loud, then write what it does not solve",
-            d: "Use the Answer field. Likely honest gaps: effects whose correctness depends on real external state, like whether an email actually reached a person, and the cost of maintaining dry-run adapters per provider." }
+            d: "Use the Answer field. Likely honest gaps: effects whose correctness depends on real external state, like whether an email actually reached a person, and the cost of maintaining dry-run adapters per provider.",
+            ans: [
+              "The design in one breath: classify the call, answer from history by default, on_miss covers a genuine miss, an effect ledger makes idempotent writes safe, dry-run or fail loud for a new external effect",
+              "Honest gap: correctness that depends on real external state, like whether an email actually reached a person",
+              "Honest gap: the cost of maintaining a dry-run adapter per provider"
+            ] }
         ],
         quiz: [
           { q: "A forked replay issues a refund the recording never saw. What should happen by default?",
@@ -2155,17 +2371,45 @@
         diagrams: ["passk", "multiturn"],
         steps: [
           { t: "State the problem in one sentence",
-            d: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer make sense, so replaying the recording verbatim stops being a test of the agent." },
+            d: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer make sense, so replaying the recording verbatim stops being a test of the agent.",
+            ans: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer fit, so replaying it verbatim stops testing the agent." },
           { t: "Lay out the three options and the trade in each",
-            d: "Truncate at the first divergence and score only up to there: cheap and honest, but it loses everything after the change, which is often where the change mattered. Replace the user with a simulator conditioned on the goal extracted from the recorded session: full counterfactual, but now there are two models in the loop. A hybrid: replay recorded user turns while the agent's replies stay equivalent to the recording, and hand over to the simulator only at real divergence." },
+            d: "Truncate at the first divergence and score only up to there: cheap and honest, but it loses everything after the change, which is often where the change mattered. Replace the user with a simulator conditioned on the goal extracted from the recorded session: full counterfactual, but now there are two models in the loop. A hybrid: replay recorded user turns while the agent's replies stay equivalent to the recording, and hand over to the simulator only at real divergence.",
+            ans: [
+              "Truncate at the first divergence, score only up to there: cheap and honest, but loses everything after the change",
+              "Replace the user with a simulator conditioned on the session's goal: a full counterfactual, but now two models are in the loop",
+              "Hybrid: replay recorded user turns while the agent stays equivalent to the recording, and hand off to the simulator only at real divergence"
+            ] },
           { t: "Design the simulated user properly",
-            d: "Extract the user's goal, constraints and persona from the original session. Define stop conditions: goal achieved, user gives up, turn budget reached. Add a judge for whether the goal was achieved. Crucially, hold the simulator fixed across baseline and fork — same model, same prompt, same seed where possible — so it is a controlled variable rather than a second thing that changed." },
+            d: "Extract the user's goal, constraints and persona from the original session. Define stop conditions: goal achieved, user gives up, turn budget reached. Add a judge for whether the goal was achieved. Crucially, hold the simulator fixed across baseline and fork — same model, same prompt, same seed where possible — so it is a controlled variable rather than a second thing that changed.",
+            ans: [
+              "Extract the user's goal, constraints and persona from the original session",
+              "Define stop conditions: goal achieved, user gives up, turn budget reached",
+              "Add a judge for whether the goal was achieved",
+              "Hold the simulator fixed across baseline and fork — same model, same prompt, same seed where possible"
+            ] },
           { t: "Name the risks and the calibration that answers them",
-            d: "Simulators tend to be too cooperative, which inflates scores. They drift. They cost money on every turn. The calibration: run the simulator against the unchanged baseline and check how closely it reproduces the recorded user turns. If it cannot reproduce what real users did on the old agent, its behaviour on the new one means little." },
+            d: "Simulators tend to be too cooperative, which inflates scores. They drift. They cost money on every turn. The calibration: run the simulator against the unchanged baseline and check how closely it reproduces the recorded user turns. If it cannot reproduce what real users did on the old agent, its behaviour on the new one means little.",
+            ans: [
+              "Risk: simulators are too cooperative, which inflates scores",
+              "Risk: they drift, and they cost money on every turn",
+              "Calibration: run the simulator against the unchanged baseline and check it reproduces the recorded user turns",
+              "If it cannot reproduce old user behaviour, its behaviour on the new agent is not evidence"
+            ] },
           { t: "Connect it to promoting a session into a world",
-            d: "Your idea from round two: when a user forks a session and hits misses, upgrade that one session into a small queryable world built from its recorded results and other sessions with the same intent. Combined with a calibrated simulator, that is a full counterfactual for exactly the sessions people care about, while imports stay free for everything else." },
+            d: "Your idea from round two: when a user forks a session and hits misses, upgrade that one session into a small queryable world built from its recorded results and other sessions with the same intent. Combined with a calibrated simulator, that is a full counterfactual for exactly the sessions people care about, while imports stay free for everything else.",
+            ans: [
+              "When a forked session hits misses, upgrade that one session into a small queryable world built from its own recorded results and other sessions with the same intent",
+              "Paired with a calibrated simulator, that is a full counterfactual for exactly the sessions people care about",
+              "Imports stay free for everything else"
+            ] },
           { t: "Say it out loud in six minutes, then write the open questions",
-            d: "Use the Answer field. Good open questions: how to define equivalence between two agent replies, how to budget simulator cost, and how to present a simulated turn to a reviewer so it is never mistaken for a real one — which is the provenance critique again." }
+            d: "Use the Answer field. Good open questions: how to define equivalence between two agent replies, how to budget simulator cost, and how to present a simulated turn to a reviewer so it is never mistaken for a real one — which is the provenance critique again.",
+            ans: [
+              "Open question: how to define equivalence between two agent replies",
+              "Open question: how to budget simulator cost",
+              "Open question: how to present a simulated turn to a reviewer so it is never mistaken for a real one — the provenance critique again"
+            ] }
         ],
         quiz: [
           { q: "Why hold the simulated user fixed across baseline and fork?",
@@ -2187,13 +2431,35 @@
         intro: "Alex rebuilt ZenML's site with Claude Code, writes a great deal, came to engineering from a long research career, and ships the skills that let a coding agent drive Kitaru's tour. Expect questions about how you would explain something, what the first ten minutes should feel like, and what you would write.",
         steps: [
           { t: "Describe the first ten minutes as you actually experienced them",
-            d: "From installing it to the first meaningful signal. Where you got stuck, where you understood something, and the one change that would have saved you the most time. Concrete beats general every time with a DevEx interviewer." },
+            d: "From installing it to the first meaningful signal. Where you got stuck, where you understood something, and the one change that would have saved you the most time. Concrete beats general every time with a DevEx interviewer.",
+            ans: [
+              "The tour runs against a checked-in example agent with real traces already recorded, so nothing needs importing first",
+              "The signal comes from a Claude Code skill, kitaru-guided-tour, walking that session",
+              "The specific stuck point, the moment of understanding, and the one time-saving change are yours from the actual run — not prewritten here"
+            ] },
           { t: "Write a hundred-and-fifty-word explanation of replay-based evals for a developer who already uses Langfuse",
-            d: "They know traces. They do not know why re-executing their own code against recorded tool results is different from reading traces. Use the Answer field, then read it aloud. If it needs the word essentially, rewrite it." },
+            d: "They know traces. They do not know why re-executing their own code against recorded tool results is different from reading traces. Use the Answer field, then read it aloud. If it needs the word essentially, rewrite it.",
+            ans: [
+              "Langfuse already gives a trace: a readable record of what the agent did",
+              "Kitaru re-executes the real agent code, answering tool calls from that recorded session, so it produces a new run rather than a static log",
+              "One line of contrast: reading a trace tells you what happened, replaying it tells you what a change would have done",
+              "If the word essentially shows up, that is the signal to rewrite the sentence"
+            ] },
           { t: "Prepare your view on agent-driven onboarding",
-            d: "What makes a skill good: it shows recorded evidence before asking for judgement, asks before anything paid or live, and leaves the user understanding the product rather than merely having run it. Connect it to your own Claude Code setup: parallel sessions via worktrees, hooks, subagents, the daily-report command you built." },
+            d: "What makes a skill good: it shows recorded evidence before asking for judgement, asks before anything paid or live, and leaves the user understanding the product rather than merely having run it. Connect it to your own Claude Code setup: parallel sessions via worktrees, hooks, subagents, the daily-report command you built.",
+            ans: [
+              "A good skill shows recorded evidence before asking for judgement",
+              "It asks before anything paid or live",
+              "It leaves the user understanding the product, not just having run it",
+              "Tie it to your own setup: parallel sessions via worktrees, hooks, subagents, the daily-report command you built"
+            ] },
           { t: "Rehearse your first-post pitch",
-            d: "From round two: a walkthrough of importing real traces, finding a failure, and proving the fix with a replay, because that is the loop you already live in. Now add one sentence on the second post: the difference between freezing the transcript and freezing the world." }
+            d: "From round two: a walkthrough of importing real traces, finding a failure, and proving the fix with a replay, because that is the loop you already live in. Now add one sentence on the second post: the difference between freezing the transcript and freezing the world.",
+            ans: [
+              "First post: a walkthrough of importing real traces, finding a failure, and proving the fix with a replay",
+              "That is the loop you already live in",
+              "Second post, one added line: the difference between freezing the transcript and freezing the world"
+            ] }
         ],
         quiz: [
           { q: "What is the best evidence of DevEx judgement you can bring?",
@@ -2215,11 +2481,30 @@
         intro: "Hamza co-founded ZenML. Being able to explain why ZenML built Kitaru, and where you would take it, is the product-engineer half of this seat.",
         steps: [
           { t: "Know ZenML's core vocabulary at a working level",
-            d: "Pipelines made of steps, stacks that bind them to infrastructure, orchestrators that run them, artifact stores and lineage that make runs reproducible. Kitaru began as a durable runtime for agents and became replay-based evals: the same instinct, reproducible execution, pointed at a new kind of workload." },
+            d: "Pipelines made of steps, stacks that bind them to infrastructure, orchestrators that run them, artifact stores and lineage that make runs reproducible. Kitaru began as a durable runtime for agents and became replay-based evals: the same instinct, reproducible execution, pointed at a new kind of workload.",
+            ans: [
+              "Pipeline: a series of steps run in whatever order the use case needs",
+              "Step: a single decorated function with typed inputs and outputs",
+              "Stack: the infrastructure components a pipeline runs against, swappable between local and cloud",
+              "Orchestrator: coordinates a pipeline's steps and their run order",
+              "Artifact store: holds every input and output that passes through the pipeline, versioned automatically",
+              "Kitaru's throughline: it began as a durable agent runtime and became replay-based evals — reproducible execution, pointed at a new workload"
+            ] },
           { t: "Form your own view of the strategic bet",
-            d: "Traces are becoming the most valuable data an agent team has, and observability tools let you read them. The bet is that making them runnable closes the loop from production to change. Have a view on where the moat is, and whether replay is the wedge or the whole product." },
+            d: "Traces are becoming the most valuable data an agent team has, and observability tools let you read them. The bet is that making them runnable closes the loop from production to change. Have a view on where the moat is, and whether replay is the wedge or the whole product.",
+            ans: [
+              "The bet: traces are becoming the most valuable data an agent team has",
+              "Observability tools let you read them; Kitaru makes them runnable, closing the loop from production to change",
+              "Have a position on where the moat is, and whether replay is the wedge or the whole product"
+            ] },
           { t: "Answer: if you ran Kitaru for a quarter, what would you ship first",
-            d: "Provenance on every node first, because it is small and everything else depends on users knowing where a result came from. Then productive misses: show recorded against attempted arguments, one command to accept a variant. Then multi-turn with a calibrated simulator. Use the Answer field and say why that order." }
+            d: "Provenance on every node first, because it is small and everything else depends on users knowing where a result came from. Then productive misses: show recorded against attempted arguments, one command to accept a variant. Then multi-turn with a calibrated simulator. Use the Answer field and say why that order.",
+            ans: [
+              "First: provenance on every node — small, and everything else depends on a reader trusting where a result came from",
+              "Second: productive misses — show recorded against attempted arguments, one command to accept a variant",
+              "Third: multi-turn with a calibrated simulator",
+              "The order follows dependency: trust first, then the cheaper feature, then the hardest open problem"
+            ] }
         ],
         quiz: [
           { q: "What connects ZenML's pipeline heritage to Kitaru?",
@@ -2289,6 +2574,18 @@
   var STUDY = {
     wc1: [
       { t: "The system design delivery flow",
+        close: [
+          { k: "order", q: "Put the five phases in the order you would run them.",
+            items: ["Deep dive on the hard part", "Requirements", "Happy path end to end", "Core entities and the API", "Failure and evaluation"],
+            a: "Requirements, core entities and the API, happy path end to end, deep dive on the hard part, failure and evaluation." },
+          { k: "word", q: "Which phase decides which deep dive is worth twelve minutes?", a: "Requirements." },
+          { k: "blank", q: "In audit software the ___ requirements are the product, not background polish.", a: "non-functional" },
+          { k: "pick", q: "She cuts in three minutes into your happy path with a question about tenancy. What do you do?",
+            o: ["Finish the happy path, then take the question", "Follow her, and come back to the shape only if she stops", "Ask her to hold it until the deep dive"], a: 1,
+            why: "The shape is for when she does not cut in. An interviewer who interrupts is telling you what she cares about." },
+          { k: "short", q: "One sentence: why draw no boxes until requirements are stated?",
+            a: "Because the requirements decide which part of the system is the hard part, and the hard part is what the design has to be about." }
+        ],
         say: "Requirements, then core entities and the API, then a high-level design, then deep dives. And why requirements come first: they decide which deep dive matters.",
         res: [R.hello, R.primer],
         do: [
@@ -3464,7 +3761,7 @@
     return {
       steps: {}, done: {}, quiz: {}, quizHistory: {}, life: {}, notes: {},
       visits: {}, answers: {}, folded: {}, recall: {}, declared: {},
-      clock: {}, floor: {}, exports: {},
+      clock: {}, floor: {}, exports: {}, closer: {},
       requeue: { read: null, answered: {}, added: [] }
     };
   }
@@ -3497,6 +3794,7 @@
           state.requeue = p.requeue || { read: null, answered: {}, added: [] };
           state.clock = p.clock || {};
           state.floor = p.floor || {};
+          state.closer = p.closer || {};
           state.quizHistory = p.quizHistory || {};
           Object.keys(state.quiz).forEach(function (qid) {
             if (!state.quizHistory[qid] && state.quiz[qid]) { state.quizHistory[qid] = [state.quiz[qid]]; }
@@ -3828,6 +4126,199 @@
      cannot give it: somewhere to put your own attempt, and the actual answer to
      check it against. Same pedagogy as the practice steps, so the model answer
      stays shut until something is written or it is asked for outright. */
+  /* ------------------------------------------------------- the closer
+
+     A pointer you have just finished is the only moment you can cheaply find
+     out whether you actually got it. So closing one opens a short set of
+     questions: one word, one sentence, a blank, an ordering, a figure read.
+     Two minutes, not a test.
+
+     They stay hidden until the pointer is closed, because seeing the questions
+     first turns the reading into a hunt for answers. After that they sit behind
+     a small button and can be reopened. Anything marked missed carries forward
+     into the session's own closing quiz. */
+
+  var CLOSEKIND = {
+    word: "one word",
+    short: "one sentence",
+    blank: "fill the blank",
+    num: "a number",
+    why: "say why",
+    figure: "from the figure",
+    order: "put in order",
+    pick: "spot it"
+  };
+
+  function closeRec(key) {
+    if (!state.closer[key]) { state.closer[key] = { resp: {}, rated: {} }; }
+    return state.closer[key];
+  }
+  function closeScore(key, list) {
+    var r = state.closer[key];
+    if (!r) { return null; }
+    var got = 0, n = 0, i;
+    for (i = 0; i < list.length; i++) {
+      if (r.rated[i]) { n += 1; if (r.rated[i] === "got") { got += 1; } }
+    }
+    return n ? { got: got, of: n, all: list.length } : null;
+  }
+  function missedCarry() {
+    var out = [];
+    function walk(s) {
+      (s.study || []).forEach(function (it, i) {
+        if (!it.close) { return; }
+        var k = s.id + ":s" + i;
+        var r = state.closer[k];
+        if (!r) { return; }
+        it.close.forEach(function (q, qi) {
+          if (r.rated[qi] === "no") { out.push({ q: q, from: it.t }); }
+        });
+      });
+      (s.steps || []).forEach(function (st, i) {
+        if (!st.close) { return; }
+        var k = sKey(s.id, i);
+        var r = state.closer[k];
+        if (!r) { return; }
+        st.close.forEach(function (q, qi) {
+          if (r.rated[qi] === "no") { out.push({ q: q, from: st.t }); }
+        });
+      });
+    }
+    return out;
+  }
+  function missedIn(s) {
+    var out = [];
+    function collect(list, keyfor) {
+      (list || []).forEach(function (x, i) {
+        if (!x.close) { return; }
+        var r = state.closer[keyfor(i)];
+        if (!r) { return; }
+        x.close.forEach(function (q, qi) {
+          if (r.rated[qi] === "no") { out.push({ q: q, from: x.t }); }
+        });
+      });
+    }
+    collect(s.study, function (i) { return s.id + ":s" + i; });
+    collect(s.steps, function (i) { return sKey(s.id, i); });
+    return out;
+  }
+
+  /* one question, rendered by kind */
+  function closeQuestion(key, q, qi, rec) {
+    var box = el("div", "cq");
+    var head = el("div", "cqh");
+    head.appendChild(el("span", "cqn", String(qi + 1)));
+    head.appendChild(el("span", "cqk", CLOSEKIND[q.k] || "answer"));
+    box.appendChild(head);
+    box.appendChild(el("div", "cqq", q.q));
+
+    var shownKey = key + ":" + qi + ":show";
+
+    if (q.k === "order" && q.items) {
+      var picked = rec.resp[qi] ? String(rec.resp[qi]).split("|") : [];
+      var chips = el("div", "corder");
+      q.items.forEach(function (item) {
+        var on = picked.indexOf(item) >= 0;
+        var b = el("button", "cchip" + (on ? " on" : ""),
+          (on ? (picked.indexOf(item) + 1) + ". " : "") + item);
+        b.addEventListener("click", function () {
+          var cur = rec.resp[qi] ? String(rec.resp[qi]).split("|") : [];
+          var at = cur.indexOf(item);
+          if (at >= 0) { cur.splice(at, 1); } else { cur.push(item); }
+          rec.resp[qi] = cur.join("|");
+          save(); draw();
+        });
+        chips.appendChild(b);
+      });
+      box.appendChild(chips);
+    } else if (q.k === "pick" && q.o) {
+      var opts = el("div", "copts");
+      q.o.forEach(function (text, oi) {
+        var chosen = rec.resp[qi] === oi;
+        var cls = "copt" + (chosen ? " sel" : "");
+        if (open[shownKey]) {
+          if (oi === q.a) { cls += " yes"; }
+          else if (chosen) { cls += " no"; }
+        }
+        var b = el("button", cls, text);
+        b.addEventListener("click", function () {
+          if (open[shownKey]) { return; }
+          rec.resp[qi] = oi; save(); draw();
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts);
+    } else {
+      var ta = document.createElement("textarea");
+      ta.className = "cta";
+      ta.rows = q.k === "short" || q.k === "why" ? 2 : 1;
+      ta.value = rec.resp[qi] || "";
+      ta.placeholder = q.k === "word" ? "one word" : q.k === "num" ? "a number" : "say it, then type it";
+      ta.addEventListener("input", function () {
+        rec.resp[qi] = ta.value; save();
+      });
+      box.appendChild(ta);
+    }
+
+    if (!open[shownKey]) {
+      var rv = el("button", "xp", "Check");
+      rv.addEventListener("click", function () { open[shownKey] = true; draw(); });
+      box.appendChild(rv);
+    } else {
+      var ansText = q.k === "pick" ? (q.o ? q.o[q.a] : "") : q.a;
+      var ab = el("div", "cans");
+      ab.appendChild(el("span", "", ansText));
+      if (q.why) { ab.appendChild(el("div", "cwhy", q.why)); }
+      box.appendChild(ab);
+      var rate = el("div", "crate");
+      [["got", "Had it"], ["no", "Missed it"]].forEach(function (r) {
+        var b = el("button", "crb " + r[0] + (rec.rated[qi] === r[0] ? " on" : ""), r[1]);
+        b.addEventListener("click", function () {
+          rec.rated[qi] = r[0]; rec.at = stampNow(); save(); draw();
+        });
+        rate.appendChild(b);
+      });
+      box.appendChild(rate);
+    }
+    return box;
+  }
+
+  /* the whole closer for one pointer */
+  function closerPanel(key, list) {
+    var rec = closeRec(key);
+    var box = el("div", "closer");
+    var sc = closeScore(key, list);
+    var h = el("div", "closerh");
+    h.appendChild(el("b", "", "Closer"));
+    h.appendChild(el("span", "sm dim", list.length + " questions, about two minutes" +
+      (sc ? "   \u00b7   " + sc.got + " of " + sc.of + " had" : "")));
+    var shut = el("button", "xp", "Close");
+    shut.addEventListener("click", function () { open[key + ":closer"] = false; draw(); });
+    h.appendChild(shut);
+    box.appendChild(h);
+    list.forEach(function (q, qi) { box.appendChild(closeQuestion(key, q, qi, rec)); });
+    return box;
+  }
+
+  /* the button, and the auto-open on first completion */
+  function closerFor(key, list, isDone) {
+    if (!list || !list.length) { return null; }
+    var rec = state.closer[key];
+    if (isDone && !rec) { closeRec(key).opened = stampNow(); open[key + ":closer"] = true; }
+    if (!isDone && !open[key + ":closer"]) { return null; }
+    var wrap = el("div", "closerwrap");
+    if (open[key + ":closer"]) {
+      wrap.appendChild(closerPanel(key, list));
+    } else {
+      var sc = closeScore(key, list);
+      var b = el("button", "closerbtn" + (sc && sc.got === sc.all ? " full" : ""),
+        sc ? "Closer, " + sc.got + " of " + sc.all + " had" : "Closer, " + list.length + " questions");
+      b.addEventListener("click", function () { open[key + ":closer"] = true; draw(); });
+      wrap.appendChild(b);
+    }
+    return wrap;
+  }
+
   function answerBox(key, model, placeholder) {
     var wrap = el("div", "abox");
     var rec = state.answers[key];
@@ -4579,6 +5070,8 @@
         }
         var acts = doList(s, it, i);
         if (acts) { tx.appendChild(acts); }
+        var itClose = closerFor(key, it.close, !!state.steps[key]);
+        if (itClose) { tx.appendChild(itClose); }
         row.appendChild(tx);
         row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
         row.appendChild(el("span", "", ""));
@@ -4638,6 +5131,8 @@
       tcell.appendChild(thead);
       var sdo = stepDo(s, st);
       if (sdo) { tcell.appendChild(sdo); }
+      var stClose = closerFor(key, st.close, !!state.steps[key]);
+      if (stClose) { tcell.appendChild(stClose); }
       row.appendChild(tcell);
       row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
       var compareMode = !!(s.study && (st.d || st.links));
@@ -4904,6 +5399,29 @@
 
     var box = el("div", "quiz");
     box.appendChild(el("h2", "", "Close off this session"));
+
+    /* Anything marked missed in a pointer's closer comes back here. It is the
+       cheapest question set in the file, because you already wrote it off once. */
+    var carried = missedIn(s);
+    if (carried.length) {
+      var cb = el("div", "carry");
+      cb.appendChild(el("div", "ch", "You marked these missed, earlier in this session"));
+      var cul = document.createElement("ul");
+      carried.forEach(function (c) {
+        var li = document.createElement("li");
+        li.textContent = c.q.q;
+        var em = document.createElement("em");
+        em.textContent = "  " + c.from;
+        em.style.color = "var(--faint)";
+        em.style.fontStyle = "normal";
+        em.style.fontSize = "11px";
+        li.appendChild(em);
+        cul.appendChild(li);
+      });
+      cb.appendChild(cul);
+      cb.appendChild(el("p", "sm dim", "Answer these out loud before you take the quiz. They are the ones you already know you did not have."));
+      box.appendChild(cb);
+    }
 
     if (rec && rec.passed && !submitted) {
       box.appendChild(el("div", "score ok", "Passed, " + rec.score + " of " + s.quiz.length));
