@@ -947,6 +947,61 @@
     }
   };
 
+  DIA.eigen = {
+    title: "Most vectors get turned. An eigenvector only gets stretched.",
+    cap: "<b>The definition is geometric before it is algebraic.</b> Apply the transformation to any vector and it generally lands somewhere off its original line. An eigenvector is one of the rare vectors that stays on its own line: direction kept, length multiplied by the eigenvalue. That is the whole content of <i>Av = &#955;v</i>, and it is why the null-space answer, although it is a true fact about <i>A - &#955;I</i>, is the answer to a different question.",
+    svg: function () {
+      var b = "";
+      b += S.tag(0, 14, "An ordinary vector");
+      b += S.axes(30, 24, 170, 130, "", "");
+      b += '<path d="M30,154 L140,64" class="d-str-flat" stroke-width="1.75"/>';
+      b += S.arrow(30, 154, 140, 64, {});
+      b += S.arrow(30, 154, 176, 116, { dash: true });
+      b += S.text(146, 60, "v", "d-t-b");
+      b += S.text(180, 114, "Av", "d-t-b");
+      b += S.text(30, 182, "Off its line. Turned.", "d-t-s");
+
+      b += S.tag(268, 14, "An eigenvector");
+      b += S.axes(298, 24, 170, 130, "", "");
+      b += S.arrow(298, 154, 368, 94, {});
+      b += S.arrow(298, 154, 438, 34, { dash: true });
+      b += S.text(360, 104, "v", "d-t-b");
+      b += S.text(444, 32, "Av = λv", "d-t-b");
+      b += S.text(298, 182, "Same line. Scaled by λ.", "d-t-s");
+      return S.frame(560, 196, b);
+    }
+  };
+
+  DIA.overfit = {
+    title: "The moment the two curves part is the whole diagnosis.",
+    cap: "<b>Training loss falling is not evidence of anything.</b> It falls for a model that is learning and for one that is memorising, and the two look identical until validation loss turns. Every intervention is a different way of delaying or detecting that turn: early stopping reads it off the chart, regularisation flattens the climb, more data moves it right, and a smaller model never gets there. Naming the intervention is easy. Saying which part of this picture it acts on is the answer.",
+    svg: function () {
+      var b = "", i, x, y;
+      b += S.axes(46, 20, 330, 150, "epochs", "loss");
+      var tr = "M46,44";
+      for (i = 1; i <= 33; i++) {
+        x = 46 + i * 10;
+        y = 44 + 110 * (1 - Math.exp(-i / 7));
+        tr += " L" + x.toFixed(0) + "," + y.toFixed(1);
+      }
+      b += S.path(tr, "sys");
+      var va = "M46,40";
+      for (i = 1; i <= 33; i++) {
+        x = 46 + i * 10;
+        y = 40 + 78 * (1 - Math.exp(-i / 6)) - Math.max(0, (i - 13)) * 2.6;
+        va += " L" + x.toFixed(0) + "," + y.toFixed(1);
+      }
+      b += S.path(va, "mark", true);
+      var bx = 46 + 13 * 10;
+      b += '<line x1="' + bx + '" y1="24" x2="' + bx + '" y2="170" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
+      b += S.text(bx + 6, 36, "stop here", "d-t-b");
+      b += S.text(390, 130, "training", "d-t-s");
+      b += S.text(390, 62, "validation", "d-t-s");
+      b += S.text(390, 78, "turns upward", "d-t-s");
+      return S.frame(500, 186, b);
+    }
+  };
+
   DIA.passk = {
     title: "One good run is not evidence. Eight are.",
     cap: "<b>pass@k asks whether the agent ever succeeds. pass^k asks whether it always does.</b> On tau-retail the paper reports its own result as bounds, and those bounds are the argument: under half the tasks pass a single trial, and under a quarter pass all eight. Nothing about the agent changed between the two bars. The only thing that changed is how many times it was asked, and that is the difference between a demo and a product. This is also the case for a replay bench: a recorded trajectory that passes once has told you almost nothing.",
@@ -1153,16 +1208,34 @@
           steps: [
             { t: "Read DDIA chapter 1, and sit properly on the percentiles section",
               d: "It is short. The argument that the mean hides everything and p99 is where users live is the most quotable thing in the book, and you will use it in interviews within the month.",
+              m: 25,
+              where: "DDIA (Kleppmann), Chapter 1, the 'Describing Performance' section through Tail Latency Amplification",
+              out: "p50, p95 and p99 defined in your own words, and one sentence on why an average hides the tail",
+              skip: "The rest of chapter 1. Reliability and maintainability are not what this week is about.",
               links: [ddia("chapter 1")] },
             { t: "Write one-line definitions in your own words: throughput, latency, p50, p99, bounded queue, unbounded queue, backpressure, load shedding",
-              d: "Your own words is the whole instruction. A definition you can only recite is one you lose under pressure. If a line runs past about fifteen words, it is not understood yet." },
+              d: "Your own words is the whole instruction. A definition you can only recite is one you lose under pressure. If a line runs past about fifteen words, it is not understood yet." ,
+              m: 25,
+              where: "No resource - your own words, checked against chapter 1 and the queue diagram above",
+              out: "eight one-line definitions, each under about fifteen words" },
             { t: "Answer in writing: what an unbounded queue does under sustained overload",
               d: "The diagram above is the short version. Write the long one, including what your dashboard shows while it happens, which is the part that makes this failure dangerous rather than merely bad.",
+              m: 25,
+              where: "System design primer README, the 'Asynchronism' section, the 'Message queues' and 'Back pressure' subsections",
+              url: "https://github.com/donnemartin/system-design-primer#asynchronism",
+              out: "a written paragraph covering what the dashboard shows during saturation, and why that is the dangerous part",
+              skip: "Task queues, and everything else in the primer outside this one section. It is a reference for the whole interview prep, not a reading list for this step.",
               links: [L.primer] },
             { t: "Rewrite the hundred-million answer with no product names at all",
-              d: "Same question you were asked. Supabase, edge function and every vendor word is banned. Primitives only: where the work is, what the ceiling is, what saturates first, what happens at the saturation point. Three hundred words, written, kept." },
+              d: "Same question you were asked. Supabase, edge function and every vendor word is banned. Primitives only: where the work is, what the ceiling is, what saturates first, what happens at the saturation point. Three hundred words, written, kept.",
+              m: 55,
+              where: "No resource - your own 14 September answer, rewritten from scratch in primitives",
+              out: "three hundred words, written and kept, with no vendor or product name anywhere in it" },
             { t: "Say it out loud once. Two minutes, no notes",
-              d: "A short rehearsal for the week five deliverable, so that week five is not the first attempt." }
+              d: "A short rehearsal for the week five deliverable, so that week five is not the first attempt.",
+              m: 20,
+              where: "No resource - spoken rehearsal, timed",
+              out: "two minutes accounted for, spoken once without notes" }
           ],
           quiz: [
             { q: "A queue in front of your workers is unbounded and load doubles past capacity. What does a user notice first?",
@@ -1185,14 +1258,32 @@
           steps: [
             { t: "Watch the first chapter of Essence of Calculus",
               d: "Twenty minutes, and it reframes what a derivative is before you ever compute one. Watch it without doing anything else.",
+              m: 20,
+              where: "3Blue1Brown, Essence of Calculus, Chapter 1 - 'The essence of calculus' (17:04)",
+              url: "https://www.youtube.com/watch?v=WUvTyaaNkzM",
+              out: "one sentence on what a derivative is, before doing any calculation",
+              skip: "The rest of the series for now. Chapters 2 through 4 are next week's session.",
               links: [L.calc] },
             { t: "Work through logarithms as the inverse of exponentiation until it is obvious rather than remembered",
               d: "The property to internalise is that log turns products into sums. That single fact is why likelihoods are logged, why log-loss exists, and why paper plots have log axes.",
+              m: 25,
+              where: "Khan Academy, Algebra 2, Unit 8 (Logarithms), Lesson 1 'Introduction to logarithms' - video 'Intro to logarithms' (7:02), then Lesson 3 'Properties of logarithms'",
+              url: "https://www.khanacademy.org/math/algebra2/x2ec2f6f830c9fb89:logs/x2ec2f6f830c9fb89:log-intro/v/logarithms",
+              out: "log(ab) = log a + log b stated from memory, and why it matters for likelihoods",
+              skip: "The advanced evaluating-logarithms exercises and anything on log or exponential graphs. That is week three territory.",
               links: [L.ka_alg] },
             { t: "Ten log and exponent manipulations by hand, on paper",
-              d: "Paper, not a screen, not a notebook cell. Ten is a small number and it will take less time than it sounds." },
+              d: "Paper, not a screen, not a notebook cell. Ten is a small number and it will take less time than it sounds.",
+              m: 30,
+              where: "Khan Academy, Algebra 2, Unit 8, Lesson 3 - 'Use the properties of logarithms' practice",
+              url: "https://www.khanacademy.org/math/algebra2/x2ec2f6f830c9fb89:logs/x2ec2f6f830c9fb89:log-prop/e/logarithms_2",
+              out: "ten worked manipulations on paper, kept",
+              skip: "The video walkthroughs on that page. Solve cold first, check after." },
             { t: "Write one line: why minimise negative log-likelihood rather than maximise likelihood",
-              d: "Two reasons, both practical. Products of many small probabilities underflow; sums do not. And optimisers are written to descend, not to climb." }
+              d: "Two reasons, both practical. Products of many small probabilities underflow; sums do not. And optimisers are written to descend, not to climb.",
+              m: 15,
+              where: "No resource - your own line, checked against the reasons above only after writing it",
+              out: "one written line giving both reasons: underflow avoided by summing rather than multiplying, and optimisers descend rather than climb" }
           ],
           quiz: [
             { q: "Why take the log of a likelihood?",
@@ -1213,10 +1304,20 @@
           intro: "Two of the four hours Alaap gets across the whole milestone. Orientation only, and no machine learning required.",
           steps: [
             { t: "Run the demo script and listen to the output",
-              d: "Actually listen. No number in that repo substitutes for hearing it, and the study guide says so for a reason." },
-            { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict" },
+              d: "Actually listen. No number in that repo substitutes for hearing it, and the study guide says so for a reason.",
+              m: 10,
+              where: "VoiceForge TTV Pipeline v3 (E:\\VoiceForge TTV Pipeine\\v3) - run scripts/demo_script_render.py with envs/qwen3/Scripts/python.exe from the repo root, then listen to demo_out/audio/",
+              out: "the rendered lines actually heard, not just generated" },
+            { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict",
+              m: 22,
+              where: "Same repo, learning/architecture.html sections 1 through 5 (System context, The two-tower thesis, The mint pipeline in full, The render pipeline, The gate stack), then RESEARCH/00-EXECUTIVE-VERDICT.md, section 1 (THE VERDICT ON THE ARCHITECTURE)",
+              out: "the two-tower shape in one sentence - a trained mapper into a frozen TTS's voice-identity input - and one component that has since changed",
+              skip: "Diagrams 6 through 14, and sections 2 through 8 of the executive verdict. Orientation only; the per-component detail is for when the rebuilt mathematics makes it worth reading." },
             { t: "Answer in writing: why is the TTS model never trained, and what breaks if it is",
-              d: "The study guide's own check for Part 0. Write it rather than think it." }
+              d: "The study guide's own check for Part 0. Write it rather than think it.",
+              m: 13,
+              where: "No resource - write it from what the reading above just gave you",
+              out: "a written paragraph: why the TTS model is never trained here, and what breaks if it is" }
           ]
         }
       ]
@@ -1235,16 +1336,31 @@
           steps: [
             { t: "Read DDIA chapter 6 in full",
               d: "Partitioning, partition keys, rebalancing and request routing. The chapter that pays for itself.",
+              m: 45,
+              where: "DDIA (Kleppmann), Chapter 6 in full - Partitioning of Key-Value Data (by key range, by hash, and Skewed Workloads and Relieving Hot Spots), Partitioning and Secondary Indexes, Rebalancing Partitions, Request Routing",
+              out: "key-range versus hash partitioning distinguished in your own words, plus what a rebalancing strategy must avoid",
               links: [ddia("chapter 6")] },
             { t: "Understand hot partitions as a key-choice problem",
-              d: "A key that looks uniform in the abstract is rarely uniform in production, because real usage is power-law. See the diagram: hashing spreads keys, not traffic." },
+              d: "A key that looks uniform in the abstract is rarely uniform in production, because real usage is power-law. See the diagram: hashing spreads keys, not traffic.",
+              m: 15,
+              where: "No separate resource - chapter 6's 'Skewed Workloads and Relieving Hot Spots' section and the skew diagram above",
+              out: "one sentence on why hashing spreads keys but not necessarily traffic" },
             { t: "Learn fan-out and tail-latency amplification",
               d: "The second diagram is the whole argument. It is also one of the most useful things you can say out loud in a systems interview, because it shows you think about systems rather than components.",
+              m: 20,
+              where: "DDIA (Kleppmann), Chapter 1, the 'Percentiles in Practice' box on tail latency amplification, plus the tail diagram above",
+              out: "the 63 percent number reproduced from 0.99 to the power 100, and one sentence on why a component's p99 becomes the system's typical case",
               links: [L.latency] },
             { t: "Design the sharding for your eval harness at a hundred million replays",
-              d: "Decide the partition key and defend it: scenario, user, time bucket or hash. Then find the skew. What happens when one scenario family is a thousand times more common than the rest? Write it as a design." },
+              d: "Decide the partition key and defend it: scenario, user, time bucket or hash. Then find the skew. What happens when one scenario family is a thousand times more common than the rest? Write it as a design.",
+              m: 45,
+              where: "No resource - your own design, on paper",
+              out: "a written design: partition key chosen and defended, plus the failure mode when one scenario family is a thousand times more common" },
             { t: "Answer the check: you partition by user id and one user is four percent of traffic",
-              d: "What breaks, and what do you change? More than one answer is reasonable. Pick one and say what it costs." }
+              d: "What breaks, and what do you change? More than one answer is reasonable. Pick one and say what it costs.",
+              m: 25,
+              where: "No resource - your own answer, on paper",
+              out: "one written fix for the four-percent user, with its cost stated" }
           ],
           quiz: [
             { q: "You shard by hash of user id. One user generates four percent of all events. What happens?",
@@ -1267,14 +1383,29 @@
           steps: [
             { t: "Watch Essence of Calculus chapters 2, 3 and 4",
               d: "Derivative as rate of change, then the rules, then the chain rule. Chapter 4 is the one to rewatch.",
+              m: 50,
+              where: "3Blue1Brown, Essence of Calculus - Chapter 2 'The paradox of the derivative' (16:50), Chapter 3 'Derivative formulas through geometry' (17:33), Chapter 4 'Visualizing the chain rule and product rule' (15:56)",
+              url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr",
+              out: "the chain rule stated in your own words before rewatching chapter 4 a second time",
+              skip: "Chapter 5 onward. Euler's number and later are not this week.",
               links: [L.calc] },
             { t: "Drill the power, product and quotient rules until automatic",
               d: "Fifteen or twenty by hand. Not interesting, and the alphabet.",
+              m: 20,
+              where: "Khan Academy, AP Calculus AB, Unit 3 (Differentiation: definition and basic derivative rules) - 'Power rule (positive integer powers)', 'Differentiate products' and 'Differentiate quotients' practice sets",
+              url: "https://www.khanacademy.org/math/ap-calculus-ab/ab-differentiation-1-new/ab-2-5/e/power-rule-intro",
+              out: "fifteen to twenty derivatives done on paper without checking the rule first",
               links: [L.ka_alg] },
             { t: "Requeued Q7 — derive the sigmoid's derivative in terms of itself",
-              d: "Do not look up the result. Write sigma as one over one plus e to the minus x and differentiate until you reach sigma times one minus sigma. Then sit with why that form is convenient: the forward pass has already computed sigma, so the gradient costs one multiplication." },
+              d: "Do not look up the result. Write sigma as one over one plus e to the minus x and differentiate until you reach sigma times one minus sigma. Then sit with why that form is convenient: the forward pass has already computed sigma, so the gradient costs one multiplication.",
+              m: 15,
+              where: "No resource - derive on paper from sigma(x) = 1 / (1 + e to the minus x); check only after you have an answer",
+              out: "sigma times one minus sigma reached by your own hand, without looking up the result first" },
             { t: "Write two sentences on what the chain rule lets you do that nothing else does",
-              d: "Rehearsal for requeued Q11 in week four. The answer is about composition: the derivative of a deeply nested function, from the derivatives of its parts." }
+              d: "Rehearsal for requeued Q11 in week four. The answer is about composition: the derivative of a deeply nested function, from the derivatives of its parts.",
+              m: 5,
+              where: "No resource - two sentences, written",
+              out: "two written sentences on what composition lets the chain rule compute that nothing else does" }
           ],
           quiz: [
             { q: "The sigmoid's derivative, in terms of the sigmoid itself, is:",
@@ -1293,10 +1424,17 @@
           name: "Overfitting, by mechanism",
           blurb: "Four interventions, each named by what it actually does.",
           intro: "Diagnostic Q1. Overfitting was named correctly; the interventions stayed vague. This pins them down.",
+          diagrams: ["overfit"],
           steps: [
             { t: "Write four interventions, each with its mechanism rather than its name",
-              d: "L2 penalises large weights and shrinks them toward zero without reaching it, limiting how sharply the model can respond to any one feature. L1 drives weights to exactly zero, which is selection rather than shrinkage. Early stopping halts before there is time to fit the noise. Dropout forces redundancy by removing units so no single path can be relied on. More or augmented data raises the amount of structure that must be explained before memorising becomes the easier option." },
-            { t: "Say which you would reach for first on your own work, and why" }
+              d: "L2 penalises large weights and shrinks them toward zero without reaching it, limiting how sharply the model can respond to any one feature. L1 drives weights to exactly zero, which is selection rather than shrinkage. Early stopping halts before there is time to fit the noise. Dropout forces redundancy by removing units so no single path can be relied on. More or augmented data raises the amount of structure that must be explained before memorising becomes the easier option.",
+              m: 30,
+              where: "No resource - write it from what you already know, then check against the mechanisms in the description above",
+              out: "four interventions written down: regularisation (both L1 and L2, by mechanism), early stopping, dropout, and more or augmented data" },
+            { t: "Say which you would reach for first on your own work, and why",
+              m: 15,
+              where: "No resource - spoken or written, about your own work",
+              out: "one intervention named as your first choice, with the reason stated" }
           ]
         }
       ]
@@ -1315,16 +1453,33 @@
           steps: [
             { t: "Read the first half of DDIA chapter 3",
               d: "LSM-trees against B-trees, at the level of why writes are cheap in one and reads in the other. Not the implementation.",
+              m: 40,
+              where: "DDIA (Kleppmann), Chapter 3, 'Data Structures That Power Your Database' — Hash Indexes through Comparing B-Trees and LSM-Trees, plus the short Other Indexing Structures after it",
+              out: "your own sentence on why writes are cheap in an LSM-tree and reads can span layers, and the reverse for a B-tree",
+              skip: "From 'Transaction Processing or Analytics?' onward — column-oriented storage and OLAP schemas are a different session",
               links: [ddia("chapter 3, first half")] },
             { t: "Get orders of magnitude into your hands",
               d: "What a million and a billion of something cost in bytes, dollars and seconds. Memory against SSD against network against object storage. One significant figure is enough, and it is the difference between reasoning and guessing.",
+              m: 20,
+              where: "Latency numbers, interactive, the full table",
+              url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html",
+              out: "one significant figure each for memory, SSD, network and object storage, without looking twice",
               links: [L.latency] },
             { t: "Learn when object storage beats a database, and when it is wrong",
-              d: "Traces are written once, read rarely, never updated, queried in bulk. That shape belongs in object storage — and the moment you need to ask questions of it in real time, it does not." },
+              d: "Traces are written once, read rarely, never updated, queried in bulk. That shape belongs in object storage — and the moment you need to ask questions of it in real time, it does not.",
+              m: 15,
+              where: "No resource — reason it from the access pattern above",
+              out: "one sentence naming the shape that belongs in object storage, one exception where it stops being right" },
             { t: "Size the eval harness: bytes per trace times a hundred million, to a real number",
-              d: "Then a day, then a month. Then choose where it lives and defend it on cost and access pattern. Then decide retention, because the real answer is usually not all in one place, and not forever." },
+              d: "Then a day, then a month. Then choose where it lives and defend it on cost and access pattern. Then decide retention, because the real answer is usually not all in one place, and not forever.",
+              m: 50,
+              where: "No resource — your own arithmetic, on paper",
+              out: "a bytes-per-trace figure, a hundred-million total, a day and a month figure, a storage choice defended on cost and access pattern, one retention decision" },
             { t: "Answer the check: ten kilobytes a trace, a hundred million a day",
-              d: "A day, a month, the storage cost, and what changes if you must query it rather than only keep it." }
+              d: "A day, a month, the storage cost, and what changes if you must query it rather than only keep it.",
+              m: 15,
+              where: "No resource — the check question above",
+              out: "written answer: daily and monthly volume at 10 KB times a hundred million a day, the storage cost, what changes if it must be queried" }
           ],
           quiz: [
             { q: "Ten kilobytes per trace, a hundred million traces a day. Roughly how much per day?",
@@ -1343,20 +1498,40 @@
           name: "Vectors and matrices",
           blurb: "Shapes, dot products, and the thing you use daily without deriving.",
           intro: "The highest-return session in the milestone. You use cosine similarity every day in the memory system without having derived it once, and you are about to write PyTorch, where half of all errors are shape errors.",
-          diagrams: ["vectors"],
+          diagrams: ["vectors", "eigen"],
           steps: [
-            { t: "Watch Essence of Linear Algebra chapters 1 to 4, then chapter 13",
+            { t: "Watch Essence of Linear Algebra chapters 1 to 4, then chapter 14",
               d: "Vectors, spans, linear transformations, matrix multiplication as composition. Then eigenvectors, which are worth the extra chapter.",
+              m: 58,
+              where: "3Blue1Brown, Essence of Linear Algebra — Vectors, what even are they? (9:51), Linear combinations, span, and basis vectors (9:59), Linear transformations and matrices (10:58), Matrix multiplication as composition (10:03), then chapter 14, Eigenvectors and eigenvalues (17:15)",
+              url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab",
+              out: "able to say what a linear transformation does to a basis vector, and what an eigenvector is, without notes",
+              skip: "Chapters 5 to 12 — three-dimensional transformations, the determinant, inverse matrices, non-square matrices, dot products and duality, cross products, Cramer's rule, change of basis. None needed for this milestone",
               links: [L.lin] },
             { t: "Derive why cosine similarity is the dot product of normalised vectors",
-              d: "See the diagram. The dot product is the product of magnitudes times the cosine of the angle; divide the magnitudes out and the cosine is what remains. That is why it suits embeddings, where length often encodes frequency rather than meaning." },
+              d: "See the diagram. The dot product is the product of magnitudes times the cosine of the angle; divide the magnitudes out and the cosine is what remains. That is why it suits embeddings, where length often encodes frequency rather than meaning.",
+              m: 10,
+              where: "No resource — work from the vectors diagram on this page",
+              out: "the one-line derivation in your own hand, plus one sentence on why length drops out for embeddings" },
             { t: "Requeued Q6 — get the shape of a transposed matrix product by hand",
               d: "A is 4 by 3, B is 3 by 5. Work out the shape of AB, then of its transpose, then convince yourself why transposing a product reverses the order of the factors.",
+              m: 12,
+              where: "Khan Academy, matrix multiplication dimensions",
+              url: "https://www.khanacademy.org/math/algebra-home/alg-matrices/alg-multiplying-matrices-by-matrices/a/multiplying-matrices",
+              out: "the shape of (AB)^T for A 4x3, B 3x5, plus one sentence proving the reversal",
               links: [L.ka_lin] },
             { t: "Requeued Q8 — write what an eigenvector is geometrically",
-              d: "A vector the transformation scales without rotating: direction kept, length multiplied by the eigenvalue. PCA and stability analysis both rest on that one sentence." },
+              d: "A vector the transformation scales without rotating: direction kept, length multiplied by the eigenvalue. PCA and stability analysis both rest on that one sentence.",
+              m: 8,
+              where: "No resource — write it from chapter 14 above",
+              out: "the one-sentence geometric definition, written cold" },
             { t: "Ten shape problems until shapes are automatic",
-              d: "Half of all PyTorch errors are shape errors, and you are about to write PyTorch." }
+              d: "Half of all PyTorch errors are shape errors, and you are about to write PyTorch.",
+              m: 15,
+              where: "Khan Academy, matrix operations practice — any ten shape-only problems",
+              url: "https://www.khanacademy.org/math/algebra-home/alg-matrices/alg-multiplying-matrices-by-matrices/a/multiplying-matrices",
+              skip: "Problems that ask for the actual entries — shape only, for speed",
+              out: "ten shapes answered in a row without re-deriving the rule" }
           ],
           quiz: [
             { q: "A is 4 by 3, B is 3 by 5. What shape is the transpose of AB?",
@@ -1378,10 +1553,19 @@
           diagrams: ["nyquist"],
           steps: [
             { t: "Work through sample rate, Nyquist and bit depth",
-              d: "A waveform is a very long list of air-pressure readings. Nyquist says a rate of N represents frequencies up to N/2 and nothing above." },
+              d: "A waveform is a very long list of air-pressure readings. Nyquist says a rate of N represents frequencies up to N/2 and nothing above.",
+              m: 15,
+              where: "VoiceForge v3 study guide, learning/01-STUDY-GUIDE.md, section 2.1 'Sampling and the time domain'",
+              out: "Nyquist in one sentence: a rate of N represents frequencies up to N/2 and nothing above" },
             { t: "Understand why this project juggles four sample rates, and what it cost",
-              d: "Corpus at 24k, WavLM at 16k, MioCodec at 44.1k, Sarvam at 22.05k. Analysing at the wrong one shifts every frequency you measure by that ratio." },
-            { t: "Load a clip, resample it, plot both spectra, find the cliff" }
+              d: "Corpus at 24k, WavLM at 16k, MioCodec at 44.1k, Sarvam at 22.05k. Analysing at the wrong one shifts every frequency you measure by that ratio.",
+              m: 10,
+              where: "Same file, section 2.1, the 'Why it matters' paragraph",
+              out: "one sentence on what analysing at the wrong rate does to every frequency measured" },
+            { t: "Load a clip, resample it, plot both spectra, find the cliff",
+              m: 18,
+              where: "VoiceForge v3, data/audio — any .wav file there, for example seed_1732e258dce3.wav",
+              out: "the cliff visible at the new Nyquist frequency in the resampled spectrum" }
           ]
         }
       ]
@@ -1400,16 +1584,35 @@
           steps: [
             { t: "Read DDIA chapter 8, then skim chapter 11's delivery guarantees",
               d: "Unreliable networks, unreliable clocks, and why partial failure is the defining problem of distributed systems.",
+              m: 50,
+              where: "DDIA (Kleppmann), Chapter 8 in full — Faults and Partial Failures, Unreliable Networks, Unreliable Clocks, Knowledge, Truth, and Lies. Then Chapter 11, the 'Fault Tolerance' section under Processing Streams, skimmed",
+              out: "one sentence each on what makes networks, clocks and 'truth' unreliable in a distributed system",
+              skip: "In chapter 11: Transmitting Event Streams, Databases and Streams, and the rest of Processing Streams — only Fault Tolerance is this session's target",
+              nlm: "Does the timeout-versus-failure distinction in chapter 8 depend on the network protocol, or does it hold for any unreliable network? Does 'Fault Tolerance' in chapter 11 assume idempotent processing, or does it also cover the non-idempotent case?",
               links: [ddia("chapter 8, then chapter 11 in part")] },
             { t: "Learn why naive retries make an outage worse, and the standard fix",
               d: "See the diagram. Backoff reduces pressure; jitter stops every client returning in the same synchronised wave and recreating the spike.",
+              m: 15,
+              where: "AWS Architecture Blog, 'Exponential Backoff And Jitter', full post",
+              url: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/",
+              out: "the retry storm in your own words, and why jitter is needed on top of backoff",
               links: [L.jitter] },
             { t: "Generalise idempotency beyond payments",
               d: "You already had this for payment endpoints. The general form is an operation safe to apply more than once, which is what makes at-least-once delivery survivable. Since exactly-once delivery is mostly a marketing claim, at-least-once plus idempotency is how real systems get exactly-once effects.",
+              m: 20,
+              where: "AWS Builders' Library, 'Making retries safe with idempotent APIs'",
+              url: "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+              out: "idempotency defined in general form, plus why at-least-once plus idempotency substitutes for exactly-once",
               links: [L.aws] },
             { t: "Design the retry and deduplication path for three percent of a hundred million replays failing mid-run",
-              d: "Say explicitly what happens to a scenario that fails deterministically every time, against one that fails on a coin flip. Conflating them is the common mistake: dead-letter the first, retry the second." },
-            { t: "Answer the check: why do retries sometimes finish off a struggling service" }
+              d: "Say explicitly what happens to a scenario that fails deterministically every time, against one that fails on a coin flip. Conflating them is the common mistake: dead-letter the first, retry the second.",
+              m: 45,
+              where: "No resource — design exercise, written",
+              out: "a retry policy, a deduplication key, and an explicit split: dead-letter the deterministic failure, retry the coin-flip one" },
+            { t: "Answer the check: why do retries sometimes finish off a struggling service",
+              m: 15,
+              where: "No resource — the check question above",
+              out: "why retries can finish off a struggling service, and the standard fix, named" }
           ],
           quiz: [
             { q: "A service is overloaded and slow. Clients time out and retry immediately. What happens?",
@@ -1432,16 +1635,33 @@
           steps: [
             { t: "Watch the neural networks series, chapters 1 to 4",
               d: "Chapter 4 is backpropagation calculus, and it is the payoff for everything since week two.",
+              m: 62,
+              where: "3Blue1Brown, Neural networks — But what is a neural network? (18:40), Gradient descent, how neural networks learn (20:33), Backpropagation, intuitively (12:47), Backpropagation calculus (10:17)",
+              url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi",
+              out: "backprop's plain-English form stated before opening the calculus chapter's maths",
               links: [L.nn] },
             { t: "Partial derivatives, and the gradient as the vector of them",
               d: "A partial derivative asks how the output moves if you nudge one input and hold the rest still. Collect them all and you have the gradient, pointing in the direction of steepest increase. Descent walks the other way.",
+              m: 15,
+              where: "Khan Academy, Multivariable Calculus, partial derivatives and the gradient",
+              url: "https://www.khanacademy.org/math/multivariable-calculus",
+              out: "a partial derivative and the gradient each defined in one sentence, your own words",
               links: [L.ka_multi] },
             { t: "Requeued Q10 — write the gradient descent update rule from memory",
-              d: "Parameter minus learning rate times the gradient of the loss with respect to that parameter. The learning rate is a step size on the direction the gradient gives you, and the minus sign is the entire reason it is descent." },
+              d: "Parameter minus learning rate times the gradient of the loss with respect to that parameter. The learning rate is a step size on the direction the gradient gives you, and the minus sign is the entire reason it is descent.",
+              m: 6,
+              where: "No resource — from memory, per chapter 2 above",
+              out: "theta <- theta - eta * gradient(L), written cold, plus one sentence on what eta multiplies" },
             { t: "Requeued Q11 — backpropagate a tiny composed function by hand, on paper",
-              d: "Two or three layers, scalar, no matrices. Forward pass, record the intermediates, walk backward multiplying local derivatives. Once. Tedious, and the single most clarifying hour in this milestone." },
+              d: "Two or three layers, scalar, no matrices. Forward pass, record the intermediates, walk backward multiplying local derivatives. Once. Tedious, and the single most clarifying hour in this milestone.",
+              m: 25,
+              where: "No resource — paper, a two- or three-layer scalar composed function",
+              out: "a completed forward-then-backward pass on paper, kept" },
             { t: "Write the two-sentence explanation of why the chain rule makes backprop possible",
-              d: "For a strong engineer who has never trained a model. Compression is the skill being tested." }
+              d: "For a strong engineer who has never trained a model. Compression is the skill being tested.",
+              m: 8,
+              where: "No resource — write it for a strong engineer who has never trained a model",
+              out: "two sentences, written down" }
           ],
           quiz: [
             { q: "In the update rule, the learning rate multiplies what?",
@@ -1463,11 +1683,22 @@
           diagrams: ["embed", "attention"],
           steps: [
             { t: "Write where embedding numbers physically come from",
-              d: "They start as a table of random numbers, one row per token, and they are parameters like any other. Gradient descent on a task objective drags rows that behave similarly toward similar positions. The meaning is not put in — it falls out of the objective." },
+              d: "They start as a table of random numbers, one row per token, and they are parameters like any other. Gradient descent on a task objective drags rows that behave similarly toward similar positions. The meaning is not put in — it falls out of the objective.",
+              m: 10,
+              where: "No resource — write it from the embed diagram on this page",
+              out: "two sentences: random initialisation, then gradient descent drags similar rows together" },
             { t: "Write what Q, K and V are, correctly",
-              d: "Value, not vector. Three learned projections of the same input: the query asks what am I looking for, the key advertises what each position offers, and the value is what gets carried forward when a match is found." },
+              d: "Value, not vector. Three learned projections of the same input: the query asks what am I looking for, the key advertises what each position offers, and the value is what gets carried forward when a match is found.",
+              m: 8,
+              where: "No resource — write it from the definitions on this page",
+              out: "one sentence per letter: query, key, value, and what each does" },
             { t: "Work out why the dot product is divided by the square root of d_k",
-              d: "A variance argument, and it connects straight back to dot products from week three. Summing over d_k dimensions makes the variance grow with d_k, so raw scores get large, softmax saturates, and gradients vanish." }
+              d: "A variance argument, and it connects straight back to dot products from week three. Summing over d_k dimensions makes the variance grow with d_k, so raw scores get large, softmax saturates, and gradients vanish.",
+              m: 27,
+              where: "Karpathy, 'Let's build GPT: from scratch, in code, spelled out', the 'Scaled' self-attention aside, roughly 1:16:00 to 1:20:00",
+              url: "https://www.youtube.com/watch?v=kCc8FmEb1nY&t=4600s",
+              out: "the variance argument written down: dot-product variance grows with d_k, softmax saturates, dividing by the square root of d_k holds it near 1",
+              skip: "The rest of the video — it builds a full GPT; only the scaled-attention aside is this session's target" }
           ]
         }
       ]
@@ -1586,7 +1817,7 @@
             { t: "Map it onto the project's measurements",
               d: "f0_mean measures the source. Vocal-tract length and the formants measure the filter. Spectral tilt is meant to measure the source's spectral shape and partly measures the buzz rate instead, which is exactly how an axis fails to separate.",
               m: 15,
-              where: "No resource — no Alaap codebase or study guide was found on this machine to cite (see NOTES.md); apply the split from memory to f0_mean, vocal-tract length, the formants and spectral tilt",
+              where: "Alaap study guide, E:/VoiceForge TTV Pipeine/v3/learning/01-STUDY-GUIDE.md, section 2.3 The source-filter model, then the estimator table in 2.4. Apply the split to f0_mean, vocal-tract length, the formants and spectral tilt",
               out: "one written line per measurement naming which side of the split it sits on, plus the one sentence on why spectral tilt partly leaks across it" },
             { t: "Answer: why would a 250 Hz voice read a flatter spectral tilt than a 90 Hz voice with the same envelope",
               m: 15,

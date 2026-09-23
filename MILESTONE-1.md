@@ -167,7 +167,7 @@ multiplication as composition of transformations; shapes and why they must line 
 transpose; and eigenvectors geometrically.
 
 **Watch.** 3Blue1Brown, *Essence of Linear Algebra*, chapters 1 through 4, then
-chapter 13 on eigenvectors. This series is the single highest-return thing on this
+chapter 14 on eigenvectors. This series is the single highest-return thing on this
 page.
 
 **Do.** Requeued: A is 4×3, B is 3×5. Work out the shape of `(AB)ᵀ` by hand, then

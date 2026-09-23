@@ -58,16 +58,11 @@ anywhere. So the number cannot currently be produced. `diagnostics/baseline-diag
 is the precedent to build from. None of the twenty-one items in `IMPROVEMENTS.md`
 owns this, which is how it stayed invisible.
 
-**2026-09-22 — Alaap does not exist on this machine.**
-Three of the fifteen planned sessions are Alaap — `w1c` Part 0 orientation, `w3c`
-sampling and the frequency domain, `w5c` the source-filter model — and the charter
-budgets four hours of milestone 1 to it. The sessions reference `architecture.html`,
-diagrams 1 to 5, an executive verdict, and a demo to run and listen to. A search of
-the whole of `E:\_Resume-Curator` by filename and by content, and a sweep of every
-top-level folder on `E:`, found nothing named Alaap and no `architecture.html`.
-
-It is presumably on another drive, in a repository not cloned here, or not yet built.
-Until its location is known, those three sessions cannot be done as written, and the
-public-source substitutes now in `w5c` cover the idea but not the project. This is
-not a failure of the plan; it is a missing pointer, and it costs four hours of the
-milestone if it stays missing.
+**2026-09-22 — Alaap found, and the three sessions now point at it.**
+Briefly recorded here as missing, which was wrong. Alaap lives at
+`E:/VoiceForge TTV Pipeine/v3/` — a sibling project, not under `_Resume-Curator`,
+which is why a search for a folder named Alaap found nothing. `learning/architecture.html`
+and `learning/01-STUDY-GUIDE.md` are both there, the study guide's parts line up exactly
+with what the sessions reference, and `demo_out/` holds the rendered audio the Part 0
+session asks you to listen to. Cleared the same day it was opened. Kept rather than
+deleted, because the lesson is that searching by folder name is not searching.
