@@ -594,6 +594,15 @@
     .hero h1.next { font-size: 28px; }
     .traj .wl, .traj .wpl { display: none; }
   }
+  .sdrow { margin: 9px 0 3px; padding: 3px 0 3px 11px; border-left: 2px solid var(--flight); max-width: 78ch; }
+  .sdrow .sdh { font-family: var(--display); font-stretch: 87.5%; font-size: 12px; color: var(--dim); margin-bottom: 3px; }
+  .sdrow .sdp { font-size: 12.5px; line-height: 1.45; margin: 3px 0; }
+  .sdrow .sdp a { color: var(--flight); font-weight: 600; text-decoration: none; margin-right: 6px; }
+  .sdrow .sdp a:hover, .sdrow .sdp a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+  .sdrow .sdp .why { color: var(--mid); }
+  .side .foot a.sdnav { display: block; padding: 4px 0; color: var(--flight); font-size: 13px; text-decoration: none; }
+  .side .foot a.sdnav:hover { text-decoration: underline; }
+  .hero a.go-link { display: inline-block; }
 </style>
 </head>
 <body>
@@ -1395,6 +1404,7 @@
               out: "eight one-line definitions, each under about fifteen words",
               ans: "Throughput is requests completed per second. Latency is how long one request takes end to end. P50 is the median latency: half of requests are faster. P99 is the latency the slowest one percent cross, where the pain lives. A bounded queue has a fixed capacity and refuses work once full. An unbounded queue has no capacity limit, so it keeps absorbing work instead of refusing it. Backpressure pushes the overload signal back to the producer so it slows down. Load shedding deliberately drops some work so the rest stays fast." },
             { t: "Answer in writing: what an unbounded queue does under sustained overload",
+              sd: [{ v: "overview", a: "pattern-scaling-writes", why: "Queue buffers and load shedding: the named responses to sustained overload." }, { v: "overview", a: "pattern-reliability", why: "Rate limiting and graceful degradation, for when a queue alone is not enough." }],
               close: [
                 { k: "figure", q: "In the backpressure figure, what does the dashed arrow running back to the producer carry?", a: "The 'full — stop sending' signal: the refusal that tells the producer to slow down." },
                 { k: "pick", q: "Which would you rather have fail loudly: a bounded queue rejecting work when full, or an unbounded queue silently growing until the process runs out of memory?",
@@ -1413,6 +1423,7 @@
               links: [L.primer],
               ans: "Under sustained overload an unbounded queue does not slow down, it absorbs. Every request is still accepted, so throughput on the dashboard looks unchanged and no error rate rises, which is the dangerous part because nothing looks wrong yet. Latency climbs steadily as the backlog grows, memory climbs with the backlog since every queued item has to be held somewhere, and the graph everyone is watching shows nothing until memory runs out and the process dies all at once. A bounded queue fails loudly and early, by rejecting work; an unbounded one fails silently and late, by exhausting a resource nobody was watching. The dashboard should track queue depth, not just throughput, or this failure mode stays invisible until it is total." },
             { t: "Rewrite the hundred-million answer with no product names at all",
+              sd: [{ v: "overview", a: null, why: "The six steps give the answer its order: requirements first, then the one deep dive that matters." }],
               close: [
                 { k: "num", q: "How many words is the primitives-only rewrite capped at?", a: "300 words" },
                 { k: "figure", q: "In the backpressure figure's top row, what does the dashboard show while the unbounded queue is filling?", a: "Nothing wrong yet — throughput and error rate stay flat; only latency and memory quietly climb, until the process dies all at once." },
@@ -1647,6 +1658,7 @@
                 "It must also avoid tying a key's partition to the total partition count, since that forces almost everything to move whenever the count changes"
               ] },
             { t: "Understand hot partitions as a key-choice problem",
+              sd: [{ v: "overview", a: "pattern-scaling-writes", why: "Sharding, consistent hashing, and the hot partition as its own named technique." }],
               close: [
                 { k: "figure", q: "In the skew figure, what does the one tall bar represent, and what happens to the other seven?", a: "It is the one user carrying four percent of all events; the other seven partitions stay well under the capacity line, idle." },
                 { k: "blank", q: "Hashing spreads the space of possible ___ evenly across partitions; it does nothing about how much traffic each actual one carries.", a: "keys" },
@@ -1662,6 +1674,7 @@
               out: "one sentence on why hashing spreads keys but not necessarily traffic",
               ans: "A key that looks uniform in the abstract is rarely uniform in production, because real usage follows a power law rather than a flat distribution — one customer, one time window or one category dominates. Hashing spreads the space of possible keys evenly across partitions, but it does nothing about how much traffic each actual key carries, so a good hash function still lands every event for the one dominant key on a single partition, and that partition becomes the ceiling for the whole system." },
             { t: "Learn fan-out and tail-latency amplification",
+              sd: [{ v: "overview", a: "pattern-scaling-reads", why: "Replicas, caches and hot keys: the read side of the same problem." }],
               close: [
                 { k: "num", q: "0.99 to the power 100 comes out to roughly what percentage?", a: "About 37 percent" },
                 { k: "figure", q: "In the tail figure, how many of the twelve drawn shards are shown slow?", a: "Two of the twelve, standing in for each real shard's one-in-a-hundred chance of being slow at any moment." },
@@ -1678,6 +1691,7 @@
               links: [L.latency],
               ans: "If a request fans out to 100 shards and waits for all of them, the request is fast only when every one of the 100 shards is fast. Each shard is slow one percent of the time, so each is fast with probability 0.99, and the chance all 100 are independently fast is 0.99 to the power 100. Using natural logs, the natural log of 0.99 is about minus 0.01, multiplied by 100 gives about minus 1.005, and e to the power minus 1.005 is about 0.366 — so there is roughly a 37 percent chance every shard is fast, and about 63 percent of requests hit at least one slow shard and are themselves slow. A component's one-percent-slow tail becomes the system's typical case, because fan-out multiplies the chance of hitting that tail by the number of things being fanned out to." },
             { t: "Design the sharding for your eval harness at a hundred million replays",
+              sd: [{ v: "ticketmaster", a: "deepdives", why: "Surges for popular events: sharding and load under a spike, worked through." }],
               close: [
                 { k: "word", q: "What key does the design choose to partition the eval harness by?", a: "Scenario id" },
                 { k: "why", q: "Why partition by scenario id rather than by a hash of the whole request?", a: "The eval harness's natural unit of comparison is the scenario, so keeping all of one scenario's replays on the same shard keeps aggregation for it local instead of scattered across the cluster." },
@@ -1867,6 +1881,7 @@
           diagrams: ["storage"],
           steps: [
             { t: "Read the first half of DDIA chapter 3",
+              sd: [{ v: "overview", a: "pattern-scaling-writes", why: "Write-optimised storage: where LSM-trees show up as an interview technique." }, { v: "overview", a: "pattern-search", why: "Inverted indexes and full-text search, the other structures that chapter covers." }],
               close: [
                 { k: "figure", q: "In the storage figure, which structure is drawn updating a page directly in place: the LSM-tree or the B-tree?", a: "The B-tree. The LSM-tree appends to an in-memory memtable and flushes to sorted files merged later, rather than updating a page in place." },
                 { k: "order", q: "Put the LSM-tree's write path in order.",
@@ -1908,6 +1923,7 @@
               links: [L.latency],
               ans: "One significant figure each, from memory: a memory reference is about 100 nanoseconds. A random read from SSD is about 100 microseconds, a thousand times slower. A round trip across the network within the same data centre is about half a millisecond, another five to ten times slower again. A request to object storage, such as a GET call, is tens of milliseconds — call it 50 — because it is a full network round trip plus the storage service's own work, not a raw disk access. Each step up costs roughly two to three orders of magnitude over the one before it, and that ladder is the whole point: it tells you what a design can and cannot get away with before a single vendor's number gets involved." },
             { t: "Learn when object storage beats a database, and when it is wrong",
+              sd: [{ v: "overview", a: "pattern-large-blobs", why: "Presigned URLs, multipart uploads and a metadata split: object storage as a design pattern." }],
               close: [
                 { k: "word", q: "What kind of engine does object storage lack, which is why real-time filtering breaks on it?", a: "A query engine" },
                 { k: "blank", q: "Data belongs in object storage when it is written once, read rarely or in bulk, and never ___.", a: "updated" },
@@ -1923,6 +1939,7 @@
               out: "one sentence naming the shape that belongs in object storage, one exception where it stops being right",
               ans: "Data that is written once, never updated afterward, and read rarely or in bulk belongs in object storage — that is exactly the shape of an eval trace. The moment that stops being true, when the access pattern needs to filter, join or query the data in real time rather than fetch a known object by its key, object storage is the wrong answer, because it has no query engine underneath it, and a database or a data warehouse earns its cost back." },
             { t: "Size the eval harness: bytes per trace times a hundred million, to a real number",
+              sd: [{ v: "notebooklm", a: "requirements", why: "Capacity math that changes the design, as a worked example." }],
               close: [
                 { k: "num", q: "At ten kilobytes per trace, roughly how many terabytes does a hundred million traces a day come to per day?", a: "About 1 terabyte" },
                 { k: "num", q: "Roughly how many terabytes does that come to across a month?", a: "About 30 terabytes" },
@@ -2141,6 +2158,7 @@
           diagrams: ["retry"],
           steps: [
             { t: "Read DDIA chapter 8, then skim chapter 11's delivery guarantees",
+              sd: [{ v: "overview", a: "pattern-reliability", why: "Replication, timeouts, circuit breakers and bulkheads: the chapter as a toolkit." }],
               close: [
                 { k: "pick", q: "A node comes back from a long pause still believing it holds a lock it actually lost. What stops its stale write from corrupting data?",
                   o: ["Nothing — the node's own belief is trusted", "A fencing token, checked on write and rejected if it is stale", "A retry from the original client"], a: 1,
@@ -2167,6 +2185,7 @@
                 "Exactly-once delivery is not achievable from the network alone; the achievable guarantee is at-least-once delivery combined with idempotent processing, giving an exactly-once effect"
               ] },
             { t: "Learn why naive retries make an outage worse, and the standard fix",
+              sd: [{ v: "overview", a: "pattern-long-running", why: "Retries with a dead-letter queue and leases, so a failing job cannot retry forever." }],
               close: [
                 { k: "figure", q: "In the retry-storm figure, what makes the backoff-with-jitter scenario's spike never re-form, where the naive one's does?", a: "Jitter staggers when each client's backoff actually returns, so clients stop arriving in the same synchronised wave that recreates the spike." },
                 { k: "pick", q: "A thousand clients all time out at the same instant and all back off for exactly the same interval before retrying. What reassembles the exact spike that just took the service down?",
@@ -2190,6 +2209,7 @@
                 "With a hundred contending clients, backoff plus jitter cut call counts by more than half compared with backoff alone — jitter is what makes backoff actually work"
               ] },
             { t: "Generalise idempotency beyond payments",
+              sd: [{ v: "overview", a: "pattern-multi-step", why: "Idempotency and the outbox, named techniques for any side effect." }, { v: "email-agent", a: "deepdives", why: "Exactly-once side effects, where the side effect is an email." }],
               close: [
                 { k: "pick", q: "A retry arrives carrying the same idempotency key as an earlier call, but with different parameters. What should happen?",
                   o: ["Apply it as a new operation alongside the first", "Return the original response, ignoring the new parameters", "Reject it as an error, since the mismatch signals a different intent"], a: 2,
@@ -2215,6 +2235,7 @@
                 "This is why at-least-once delivery plus idempotency substitutes for exactly-once delivery: retries are guaranteed to happen, and idempotency guarantees they are harmless once they do"
               ] },
             { t: "Design the retry and deduplication path for three percent of a hundred million replays failing mid-run",
+              sd: [{ v: "alfred", a: "deepdives", why: "No double action across retries: your own system's answer to this exact question." }],
               close: [
                 { k: "pick", q: "A replay fails the exact same way on every attempt — a malformed payload the harness can never construct correctly. What do you do with it?",
                   o: ["Retry it with backoff and jitter", "Dead-letter it immediately — retrying just burns capacity on a guaranteed failure", "Drop it silently with no record"], a: 1,
@@ -2442,6 +2463,7 @@
           diagrams: ["cache"],
           steps: [
             { t: "Read DDIA chapter 5 on replication, lightly",
+              sd: [{ v: "overview", a: "pattern-consistency", why: "Read-your-writes and quorums, the replication ideas that come up in interviews." }],
               close: [
                 { k: "word", q: "What is the delay between a write landing on the leader and that write becoming visible on a follower called?", a: "Replication lag" },
                 { k: "blank", q: "___ consistency guarantees a user immediately sees their own write, even from a lagging replica.", a: "Read-your-writes" },
@@ -2465,6 +2487,7 @@
                 "Caching sits on top of an already-imperfect consistency picture: the underlying data can be stale even before a TTL or an invalidation rule is added on top"
               ] },
             { t: "Cache placement, keys, TTL against explicit invalidation",
+              sd: [{ v: "overview", a: "pattern-scaling-reads", why: "Cache-aside, invalidation and hot keys: the techniques this step chooses between." }],
               close: [
                 { k: "figure", q: "In the cache figure, what is the cache keyed on?", a: "The user plus the query, so one user's cached results never leak into another's." },
                 { k: "order", q: "Put these in the order you would settle them when designing a cache for a new lookup.",
@@ -2482,6 +2505,7 @@
               out: "one paragraph, written, that states placement, key, and TTL against explicit invalidation as a tradeoff rather than a list",
               ans: "The cache sits between the request path and whatever is expensive to recompute, keyed on exactly what makes a result reusable — the user plus the query — so unrelated requests never collide on the same entry. A TTL is a bet: it says staleness up to some bounded window is acceptable, and it costs nothing on the write path, only patience. Explicit invalidation is the opposite bet — a promise, made on every write path that changes the underlying data, that it will actively clear the entries that write affects — more expensive to build, but the only option where staleness has to be bounded tighter than a TTL can honestly promise." },
             { t: "Answer the memory-system cache question properly",
+              sd: [{ v: "overview", a: "pattern-consistency", why: "Read-your-writes: the guarantee a stale memory cache quietly breaks." }],
               close: [
                 { k: "pick", q: "Right after a user writes a new memory, they immediately search, and the cache still holds results from before the write. What do you do?",
                   o: ["Serve the cached results — one write is unlikely to have changed anything relevant", "Invalidate that user's cached search on the write, and accept a guaranteed miss on this search even though it costs load", "Extend the TTL slightly so the case resolves itself without extra work"], a: 1,
@@ -2497,6 +2521,7 @@
               out: "a written answer covering all four parts: where the cache sits, what the key is, the invalidation rule, and what you give up — the fourth part is the one Q16 was missing",
               ans: "The cache sits in front of the vector search step, keyed on the user id plus the query, so one user's cached results never leak into another's. The invalidation rule is explicit, not TTL-based: any write that adds or changes a memory for that user invalidates that user's cached search results immediately, because a TTL window would let the assistant keep answering from a world that no longer exists. What I give up is cache effectiveness right after every write — a user who writes and immediately searches gets a guaranteed miss — and the operational cost of a rule that has to be honoured on every write path in the system, including ones written later by someone who does not know the cache exists. That tradeoff, not the existence of the cache, is the actual answer, because the product's whole promise is that it remembers, and a stale cached search is the one way it can quietly stop keeping that promise." },
             { t: "Record yourself answering the hundred-million question out loud. Five minutes, no notes",
+              sd: [{ v: "overview", a: null, why: "Six steps: the running order of a five-minute answer." }, { v: "ticketmaster", a: "requirements", why: "A classic design walked from the first step, to hear the shape of a complete answer." }],
               close: [
                 { k: "pick", q: "Listening back, you hear yourself say a vendor's product name once, out of habit, in an otherwise clean five minutes. What does that mean for this take?",
                   o: ["Nothing — it is one word out of five minutes", "The take does not clear Q12 as recorded, since Q12's bar is primitives with no product names", "Fix it by writing the product name down as a footnote afterwards"], a: 1,
@@ -2745,20 +2770,25 @@
         diagrams: ["oxusControl"],
         steps: [
           { t: "Walk the pipeline end to end, naming which stages are code and which are the model",
+            sd: [{ v: "prior-auth", a: "hld", why: "The closest worked design to this one: coverage criteria checked against a clinical record, uncertain cases routed to a clinician." }, { v: "prior-auth", a: "dataflow", why: "Its case pipeline, stage by stage, to set beside yours." }],
             d: "Control definition, then a test plan with the attributes to check, then the population pulled by a query, then a sample, then evidence retrieved for each sampled item, then attribute testing, then citation verification, then exceptions, then a drafted conclusion, then the reviewer queue. Only attribute testing and the drafted narrative are the model. Everything that decides a fact is code. Say that split out loud; it is the whole design in one sentence." },
           { t: "Design sample selection as seeded code",
             d: "Random sampling with a stored seed, or judgmental sampling where a human records the reason. The seed, the population query and its row count all go into the workpaper, so anyone can rerun the selection and get the same items. Sample size comes from the firm's methodology table, not from a prompt. The general argument underneath is that a deterministic, side-effect-free step can simply be re-run, which is why it belongs in code and not in a model call.",
             links: [bk("DDIA 2e - index: MapReduce; fault tolerance. The batch-processing chapter")] },
           { t: "Design citation as constrained selection, not generation",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Citations, structured output and refusal: the pattern this design is one instance of." }],
             d: "Evidence is chunked with its coordinates: document, page, bounding box, character span. The model sees chunks labelled E1 to En and must cite handles. It never writes a document name or page number. Code resolves each handle to coordinates and renders the red box. Then a verifier checks that the cited span actually contains the extracted value, by exact match for amounts, dates and IDs, and fails closed if it does not. That is the same structure as the opaque handles in your memory system, and you should say so." },
           { t: "Make attribute results three-valued, with insufficient as a first-class answer",
+            sd: [{ v: "prior-auth", a: "deepdives", why: "Calibrating the auto-approve gate: when the system decides and when it hands the case to a person." }],
             d: "Each sampled item gets a structured result per attribute: pass, fail, or insufficient, plus the cited handles, the extracted value and a short rationale. Insufficient is not an error. It is the honest answer when the evidence is thin, and it routes to a human. This is your WheelPrice coverage-score story in a new domain: a partial answer stated as partial beats a confident wrong one." },
           { t: "Compute exceptions and constrain the conclusion",
             d: "Exceptions are derived by code from attribute results. The conclusion's verdict comes from a rule over the exception count and severity; the model drafts the narrative around a verdict it cannot change. So the model can never write that a control is operating effectively when code has recorded an exception." },
           { t: "Design the reviewer loop and the audit log",
+            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop and least privilege, for a system whose output someone signs." }, { v: "overview", a: "pattern-consistency", why: "Event sourcing: the audit log as the source of truth and the workpaper as a view of it." }],
             d: "Every model call is logged with the handles it saw, its output, model version and prompt version. Every reviewer decision is logged too, including overrides. Overrides are the most valuable data the company has: they are labelled examples of exactly where the system is wrong, and they feed evaluation directly. The systems name for this is event sourcing: an append-only log of immutable facts, with the workpaper as a derived view that can be rebuilt from it. Say that sentence and the audit log stops sounding like logging.",
             links: [bk("DDIA 2e - index: event sourcing; immutability. The stream-processing chapter")] },
           { t: "Answer the evaluation question before she asks it",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: how a quality bar is enforced on every change." }],
             d: "Build a gold set from past signed workpapers. Track attribute-level agreement with reviewers, not just end verdicts. Citation precision is fully deterministic — does the cited span contain the value — so it can gate releases. Watch the insufficient rate: rising means evidence retrieval got worse, falling suddenly may mean the model started guessing. Replay the gold set on every model or prompt change, which is your eval harness." },
           { t: "Say the whole design out loud in eight minutes, then write its three weakest points",
             d: "Use the Answer field for the weak points. Likely candidates: retrieval missing the right evidence entirely, which no verifier can catch; OCR errors on scanned evidence; and controls whose attributes are judgment calls rather than checkable facts." }
@@ -2784,16 +2814,20 @@
         diagrams: ["oxusIngest"],
         steps: [
           { t: "Lay out the ingestion path by source type",
+            sd: [{ v: "notebooklm", a: "dataflow", why: "NotebookLM's ingestion pipeline: pdf, url, video and text in, chunks and embeddings out." }, { v: "overview", a: "pattern-large-blobs", why: "Presigned uploads, multipart and a metadata split, for documents too big to pass through the API." }],
             d: "Upload, then type detection, then a parser per type. Native PDFs use the text layer. Scans and ERP screenshots go through OCR with layout analysis. Spreadsheets are read as cells, never flattened into text. Walkthrough recordings become transcripts with timestamps. Everything lands in one normalised document model." },
           { t: "Make coordinates the core of the data model, and say why",
+            sd: [{ v: "prior-auth", a: "deepdives", why: "Evidence in three-hundred-page records: the same need to point at the exact passage." }],
             d: "Every span carries document, page, bounding box, and for recordings a timestamp. Derived artifacts keep a pointer back to their source spans. This is the single most important decision in the whole system: if coordinates are dropped at parse time, citations become impossible later, and no amount of cleverness downstream recovers them." },
           { t: "Handle tables and screenshots as structure, not text",
             d: "Fixed-size chunking cuts tables in half and separates a value from its column header. Keep tables as structured objects with cell coordinates, so an extracted amount can be cited to an exact cell. MetaRAG is useful context here: you found chunking and metadata interact, and the right choice is corpus-dependent." },
           { t: "Carry parser confidence forward",
             d: "OCR gives per-region confidence. A low-confidence value that an attribute test depends on should push the result to insufficient or force a human check, rather than being quietly trusted. Then say the honest line: you have not run OCR in production, you have built the layers on both sides of it, and you would expect to be slow on the OCR specifics for a couple of weeks and fast on everything around them." },
           { t: "Design retrieval per tenant, and hybrid",
+            sd: [{ v: "overview", a: "pattern-search", why: "Lexical, vector, and hybrid with a rerank: the techniques this step chooses between." }, { v: "notebooklm", a: "patterns", why: "Hybrid retrieval filtered by notebook and reranked from about forty candidates to twelve." }],
             d: "One index per client engagement, never shared. Hybrid lexical and dense, because invoice numbers, dates and amounts must match exactly, which is what lexical search is good at and dense embeddings are bad at. The MetaRAG finding transfers: prefix metadata into the text before encoding rather than blending sparse and dense vectors that do not share a space." },
           { t: "Cover isolation under VPC deployment",
+            sd: [{ v: "notebooklm", a: "deepdives", why: "Isolation, and prompt injection arriving inside a user's own sources." }],
             d: "Per-tenant storage and encryption keys, no cross-tenant index or cache, and model calls either inside the tenant boundary or to a provider with zero data retention. Point out the consequence: isolation constrains which models you can use, which is one of the questions in your prep file worth asking her." },
           { t: "Do one back-of-envelope out loud",
             d: "An engagement might mean tens of thousands of pages. Estimate OCR cost and time per page, storage per page with coordinates, and note that latency barely matters here because it is batch work, while correctness matters absolutely. Saying which constraint does not matter is as useful as saying which does." }
@@ -2821,8 +2855,10 @@
           { t: "Turn a walkthrough transcript into a process graph",
             d: "Extract steps, actors, systems and controls as structured nodes, each cited to a timestamp in the recording. The graph itself is assembled by code; the model proposes nodes and edges with evidence, and anything without evidence is not added. The flowchart is rendered from the graph, never drawn by the model." },
           { t: "Map controls to risks with the model proposing and a human confirming",
+            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop as a design element rather than an apology for the model." }],
             d: "Use the firm's risk taxonomy as the fixed vocabulary. The model suggests a mapping with its reasoning; a human confirms it. The confirmation is logged, and confirmed mappings become next year's starting point." },
           { t: "Version the graph and diff it year over year",
+            sd: [{ v: "overview", a: "pattern-consistency", why: "Event sourcing and change data capture: history you can diff instead of rows you overwrite." }],
             d: "The diff is the valuable output. A new approver, a system swapped out, a manual step appearing where there used to be an automated one — these are where an auditor should look first, and surfacing them automatically is a real product, not a feature." },
           { t: "Connect reviewer feedback to your memory system",
             d: "Last year's reviewer comments are retrieved into this year's test of the same control. The lesson from your memory system applies directly: store facts with provenance and never let the model rewrite them, so memory accumulates rather than drifting." }
@@ -2847,10 +2883,13 @@
         intro: "The intro stayed behavioural, so the experience half of tomorrow is a fresh technical examination. Christine will likely pick one system and keep asking how it works until she finds the edge of what you know. Have the edges prepared.",
         steps: [
           { t: "Memory system: two minutes, then the follow-ups",
+            sd: [{ v: "alfred", a: "hld", why: "Your own system, drawn: the stores and paths the follow-ups will probe." }],
             d: "Two-minute version from your prep, section F question 1. Then the follow-ups: how candidates are generated for the menu; what an opaque handle actually is; what happens when the right candidate is not in the menu, which should be an abstention rather than a best guess; how the ground-truth audit loop graded briefs against live inboxes. Number to use: fabricated-recall and false-confirmation incidents down eighty percent." },
           { t: "Decision layer: why deterministic risk scoring",
+            sd: [{ v: "email-agent", a: "deepdives", why: "Verdicts from deterministic risk scoring, argued as a deep dive." }, { v: "alfred", a: "deepdives", why: "How alfred_ does action safety without a risk score: the contrast to have ready." }],
             d: "What the features are, how the five verdicts map to thresholds, and which error is worse — a false silent, where the agent acted and should have asked, or a false confirm, where it asked needlessly. The answer is that false silent is worse because it is a side effect the user did not approve, and the thresholds are tuned asymmetrically for that reason. Then the line from your prep: a model asked to judge itself gives you a plausible explanation, not the actual reason." },
           { t: "Eval harness, reframed for audit",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: the vocabulary to frame the harness in." }],
             d: "Use the two-minute bench story from the ZenML critique, and end on completeness: because you own the snapshot, a case can assert that every event in a window appears in the output. That is checking against ground truth you hold, which is exactly what a control test is." },
           { t: "MetaRAG, at the depth an AI degree will ask",
             d: "Why prefix injection beat blending sparse and dense vectors: the two spaces are not aligned, so a weighted sum mixes incomparable quantities. What NDCG at ten measures and why you reported relative comparisons. How your silver standard is biased, and why relative claims survive that bias while absolute ones would not." },
@@ -2911,6 +2950,7 @@
               "One question at a time, then wait"
             ] },
           { t: "Install Kitaru and run the guided tour on the example agent",
+            sd: [{ v: "coding-agent", a: "hld", why: "A cloud coding agent designed end to end, the kind of agent the tour is driving." }],
             d: "The tour is driven by Claude Code skills, and you use Claude Code with hooks and subagents daily, so you are precisely the intended user. Note three concrete friction points as you go. That is your DevEx material for Alex, and it is proof you used the product.",
             ans: [
               "Install is one line: curl -fsSL https://kitaru.ai/install | bash, or uv add kitaru with the cli, worker and mcp extras",
@@ -2920,6 +2960,7 @@
             ],
             links: [{ label: "Kitaru on GitHub", url: "https://github.com/zenml-io/kitaru" }] },
           { t: "Read the launch post and the deterministic evaluators page",
+            sd: [{ v: "overview", a: "pattern-agent-durability", why: "Transcripts, checkpoints and unknown results: the ideas replay is built from." }],
             d: "The new Kitaru imports traces from Langfuse, LangSmith, Braintrust, Logfire and Arize Phoenix, replays with tool calls answered from the recording, and organises cases into immutable, versioned cohorts. The deterministic evaluators read stored session evidence only; they never run the agent or call a live tool.",
             ans: [
               "Kitaru imports traces from Langfuse, LangSmith, Braintrust and Logfire, plus plain JSONL or anything OpenTelemetry-shaped",
@@ -2951,6 +2992,7 @@
         diagrams: ["zenEffects"],
         steps: [
           { t: "Classify tool calls by what they do to the world",
+            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Effect classes: sorting tools by what they do to the world is a named technique here." }],
             d: "Pure reads. Idempotent writes, which are safe to repeat. Non-idempotent writes. Calls with an external effect, like sending an email or issuing a refund. Each class wants a different replay policy, and most confusion in replay design comes from treating them as one thing.",
             ans: [
               "Pure reads",
@@ -2975,6 +3017,7 @@
               "Cost: someone has to build that snapshot — forty-five minutes to four hours per case"
             ] },
           { t: "Design an effect ledger",
+            sd: [{ v: "overview", a: "pattern-multi-step", why: "Outbox and idempotency, the two techniques an effect ledger combines." }, { v: "email-agent", a: "deepdives", why: "Exactly-once side effects, for an agent whose side effect is an email." }],
             d: "Every side-effecting call records an idempotency key built from session, step and a hash of canonical arguments, plus the result. A replay consults the ledger first; a repeat returns the stored result. An unmatched external effect on a forked replay goes to a dry-run adapter that returns a plausible shape without acting, or fails loudly. It never passes through by default, because a silent live call is both a real side effect and a hidden false pass.",
             ans: [
               "Idempotency key per side-effecting call: session, step and a hash of canonical arguments, plus the stored result",
@@ -2983,6 +3026,7 @@
               "Never a silent passthrough by default — that would be a real side effect and a hidden false pass"
             ] },
           { t: "Work the send-succeeded-but-response-timed-out case",
+            sd: [{ v: "overview", a: "pattern-agent-durability", why: "Unknown results: the named case for a call whose outcome you never learned." }, { v: "alfred", a: "deepdives", why: "No double action across retries and isolates, in your own code." }],
             d: "Record the intent before the call, then reconcile after. With an idempotency key at the provider, a retry is safe. Without one, you query the provider for the effect before retrying. Your INTERVIEW-PREP file has the concrete version from alfred_, where Gmail and Outlook fail differently — use that detail, since it is real.",
             ans: [
               "Record the intent before the call, reconcile after",
@@ -2991,6 +3035,7 @@
               "Gmail and Outlook fail differently on this path — the concrete version lives in your INTERVIEW-PREP file"
             ] },
           { t: "Connect it to durable execution",
+            sd: [{ v: "overview", a: "pattern-multi-step", why: "Workflow engines and sagas: where durable execution sits in the pattern." }],
             d: "Kitaru began as a durable runtime for agents, so Hamza will think in these terms. Deterministic replay of a workflow requires every effect to be recorded in an event history, which is the Temporal model you studied for the Backbone loop. Replay-based evals are the same idea pointed at a different goal: instead of resuming a crashed run, you rerun a finished one with one thing changed.",
             ans: [
               "Kitaru began as a durable runtime for agents, which is the ground Hamza thinks from",
@@ -3029,6 +3074,7 @@
             d: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer make sense, so replaying the recording verbatim stops being a test of the agent.",
             ans: "When the agent's reply changes at turn two, the recorded user message at turn three may no longer fit, so replaying it verbatim stops testing the agent." },
           { t: "Lay out the three options and the trade in each",
+            sd: [{ v: "email-agent", a: "deepdives", why: "Evaluating an action agent: the hardest version of this problem in the guide." }],
             d: "Truncate at the first divergence and score only up to there: cheap and honest, but it loses everything after the change, which is often where the change mattered. Replace the user with a simulator conditioned on the goal extracted from the recorded session: full counterfactual, but now there are two models in the loop. A hybrid: replay recorded user turns while the agent's replies stay equivalent to the recording, and hand over to the simulator only at real divergence.",
             ans: [
               "Truncate at the first divergence, score only up to there: cheap and honest, but loses everything after the change",
@@ -3044,6 +3090,7 @@
               "Hold the simulator fixed across baseline and fork — same model, same prompt, same seed where possible"
             ] },
           { t: "Name the risks and the calibration that answers them",
+            sd: [{ v: "coding-agent", a: "deepdives", why: "Knowing the agent is good, when one run tells you very little." }],
             d: "Simulators tend to be too cooperative, which inflates scores. They drift. They cost money on every turn. The calibration: run the simulator against the unchanged baseline and check how closely it reproduces the recorded user turns. If it cannot reproduce what real users did on the old agent, its behaviour on the new one means little.",
             ans: [
               "Risk: simulators are too cooperative, which inflates scores",
@@ -3190,6 +3237,7 @@
     ]
   };
   var R = {
+    sdguide: { label: "Your system design guide", url: "SYSTEM%20DESIGN.html" },
     stripeApi: { label: "Stripe API, idempotent requests", url: "https://docs.stripe.com/api/idempotent_requests" },
     auditboard: { label: "AuditBoard, SOX testing best practices (PDF)", url: "https://go.auditboard.com/rs/961-ZQV-184/images/AB-AR-Best-Practices-Effective-SOX-Testing.pdf" },
     skill: { label: "Anthropic audit-support skill, SOX 404 primer", url: "https://skillselion.com/skills/anthropics/knowledge-work-plugins/audit-support" },
@@ -3229,6 +3277,7 @@
   var STUDY = {
     wc1: [
       { t: "The system design delivery flow",
+        sd: [{ v: "overview", a: null, why: "Your own version of this flow: six steps with timings, and the two loops back to requirements." }],
         close: [
           { k: "order", q: "Put the five phases in the order you would run them.",
             items: ["Deep dive on the hard part", "Requirements", "Happy path end to end", "Core entities and the API", "Failure and evaluation"],
@@ -3271,6 +3320,7 @@
             ans: "Clarify, requirements, happy path end to end, the one hard part, failure and evaluation, then what I would build first. Requirements come first because they decide which deep dive earns the twelve minutes. In audit the non-functional ones are the product, so if traceability is the binding requirement the deep dive is grounding, and if isolation is, it is tenancy. Pick the deep dive before the requirements and you are guessing at what the company cares about." }
         ] },
       { t: "Functional against non-functional requirements",
+        sd: [{ v: "overview", a: "requirements", why: "Top three functional, then quantified non-functionals: the rule this item teaches." }, { v: "prior-auth", a: "requirements", why: "Non-functionals for a regulated decision system, the nearest thing in the guide to audit software." }],
         close: [
           { k: "word", q: "What is the one word for requirements about what the system does, not how well?", a: "Functional." },
           { k: "blank", q: "A requirement about how well the system performs, under what guarantee, is a ___ requirement.", a: "non-functional" },
@@ -3300,6 +3350,7 @@
             ans: "Compliance and durability are the two that bite hardest for audit software. Compliance, because SOX and PCAOB rules define exactly what has to be recorded and how a sample has to be defensible — for audit, that requirement is not background polish, it is the product itself. Durability, because a signed workpaper is the record of the audit for years afterwards; if it can be lost or altered after the fact, the traceability the whole system exists for stops meaning anything." }
         ] },
       { t: "Back-of-envelope estimation",
+        sd: [{ v: "prior-auth", a: "requirements", why: "Capacity math kept to only what changes the design, which is the discipline this item asks for." }],
         close: [
           { k: "num", q: "To one significant figure, about how many times more expensive is a cross-region round trip than a same-datacenter one?", a: "About 300 times." },
           { k: "pick", q: "The interviewer asks about p99 latency for the ingestion batch pipeline. What do you say?",
@@ -4104,6 +4155,7 @@
             ans: "Label a sample by hand, measure agreement between the judge and those labels, iterate the rubric where they disagree, and re-check periodically as the product itself changes and drifts the distribution of cases. That loop is how the production-failure scanner's judge got to the point where roughly three in four of its flags were genuine failures rather than expected behaviour misread as a bug." }
         ] },
       { t: "Evals when there is no ground truth",
+        sd: [{ v: "email-agent", a: "deepdives", why: "Evaluating an action agent, where no single right answer exists." }, { v: "coding-agent", a: "deepdives", why: "Knowing the agent is good, for runs too long to label by hand." }],
         close: [
           { k: "word", q: "In MetaRAG, what stood in for human relevance judgments?", a: "A cross-encoder-reranked silver standard." },
           { k: "blank", q: "In production, the eval harness replays real traces against ___ scenarios.", a: "fixture-driven" },
@@ -4300,6 +4352,7 @@
             ans: "on_miss controls what happens when a tool call has no match in the recording, and it takes three values: fail, error_result, or passthrough to the live tool. Separately, and this is the part people conflate, a single tool can be overridden — pinned to a static result, or routed to pass through live — while every other call still answers from history. Those are two different knobs: one for the unmatched case, one for a deliberate per-tool exception." }
         ] },
       { t: "Deterministic evaluators",
+        sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates: the job a deterministic evaluator does in a release process." }],
         close: [
           { k: "pick", q: "A teammate wants evaluation to run automatically the moment a session is imported. Is that how deterministic evaluators work?",
             o: ["Yes, that is the fastest feedback loop", "No — evaluation has to be started explicitly, never fired automatically on import", "Yes, as long as it is a deterministic evaluator"], a: 1,
@@ -4376,6 +4429,7 @@
             ans: "Kitaru's key is built from session, step and a hash of the canonical arguments — it is derived, not supplied. Stripe's is a client-supplied key, typically a UUID, sent with the request. Both do the same job: a repeat with the same key gets the stored result back instead of the operation running again. The difference is just who generates the key and what it is scoped to." }
         ] },
       { t: "Idempotence in stream processing",
+        sd: [{ v: "overview", a: "pattern-consistency", why: "Exactly-once as a consistency technique, next to change data capture." }],
         close: [
           { k: "blank", q: "Exactly-once processing is really at-least-once ___ plus idempotent effects.", a: "delivery" },
           { k: "word", q: "Per the notes, which DDIA chapter is the canonical explanation of idempotence?", a: "Chapter 11." },
@@ -4468,6 +4522,7 @@
             ans: "Activities are to workflows what tools are to an agent. Both are the parts that touch the outside world, both get retried, and that is exactly why both have to be idempotent — the workflow, like the agent's own reasoning, stays deterministic, and the side effects are quarantined into the piece designed to be repeated safely." }
         ] },
       { t: "Retries with backoff and jitter",
+        sd: [{ v: "overview", a: "pattern-reliability", why: "Timeouts, retries and circuit breakers, as one reliability toolkit." }],
         close: [
           { k: "word", q: "Name the three jitter strategies compared in the AWS post.", a: "Full Jitter, Equal Jitter and Decorrelated Jitter." },
           { k: "blank", q: "Backoff alone delays a retry storm; jitter ___ it by adding randomness so retries spread out.", a: "breaks up" },
@@ -5891,6 +5946,66 @@
     return b;
   }
 
+  /* ------------------------------------------- your system design guide
+
+     SYSTEM DESIGN.html sits beside this file: a six-step delivery framework,
+     fifteen deep-dive patterns, and six designs worked end to end. Items that
+     the guide deepens carry an sd list of places in it, and every link opens
+     in a new tab so the session you are in stays where it is. */
+
+  var SD = {
+    file: "SYSTEM%20DESIGN.html",
+    views: {
+      overview: "The framework", notebooklm: "NotebookLM", "prior-auth": "Prior auth validator",
+      "email-agent": "Email and calendar agent", "coding-agent": "Cloud coding agent",
+      ticketmaster: "Ticketmaster", alfred: "alfred_"
+    },
+    anchors: {
+      requirements: "requirements", entities: "core entities", api: "API", dataflow: "data flow",
+      hld: "high-level design", deepdives: "deep dives", patterns: "the patterns it uses"
+    },
+    patterns: {
+      "scaling-reads": "Scaling reads", "scaling-writes": "Scaling writes", "real-time": "Real-time updates",
+      contention: "Dealing with contention", "multi-step": "Multi-step processes",
+      "long-running": "Managing long-running tasks", "large-blobs": "Handling large blobs",
+      geo: "Proximity and geo search", reliability: "Reliability and fault tolerance",
+      consistency: "Consistency and data integrity", search: "Search and indexing",
+      "llm-cost": "LLM latency and cost", grounding: "Grounding and output quality",
+      "agent-safety": "Agent safety and control", "agent-durability": "Agent durability"
+    }
+  };
+
+  function sdHref(p) {
+    return SD.file + "#/" + encodeURIComponent(p.v) + (p.a ? "/" + encodeURIComponent(p.a) : "");
+  }
+  function sdLabel(p) {
+    if (p.a && p.a.indexOf("pattern-") === 0) {
+      return "Pattern: " + (SD.patterns[p.a.slice(8)] || p.a.slice(8));
+    }
+    if (p.v === "overview") {
+      return p.a ? "The framework, " + (SD.anchors[p.a] || p.a) : "The six-step framework";
+    }
+    return (SD.views[p.v] || p.v) + (p.a ? ", " + (SD.anchors[p.a] || p.a) : "");
+  }
+  function sdRow(s, list) {
+    if (!list || !list.length) { return null; }
+    var box = el("div", "sdrow");
+    box.appendChild(el("div", "sdh", "In your system design guide"));
+    list.forEach(function (p) {
+      var line = el("div", "sdp");
+      var a = document.createElement("a");
+      a.href = sdHref(p);
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = sdLabel(p);
+      a.addEventListener("click", function () { logVisit(s.id, "System design: " + sdLabel(p), a.href); });
+      line.appendChild(a);
+      if (p.why) { line.appendChild(el("span", "why", p.why)); }
+      box.appendChild(line);
+    });
+    return box;
+  }
+
   function tone(track) { return TRACK[track] || "flat"; }
   function logVisit(sid, label, url) {
     if (!state.visits[sid]) { state.visits[sid] = []; }
@@ -6059,6 +6174,13 @@
       b.addEventListener("click", function () { go(t[0]); closeRail(); });
       foot.appendChild(b);
     });
+    var sdLink = document.createElement("a");
+    sdLink.href = SD.file;
+    sdLink.target = "_blank";
+    sdLink.rel = "noopener";
+    sdLink.className = "sdnav";
+    sdLink.textContent = "System design guide";
+    foot.appendChild(sdLink);
     side.appendChild(foot);
     side.appendChild(htm("div", "keys", "Left and right arrows move between sessions.<br>Escape goes up a level."));
   }
@@ -6314,6 +6436,13 @@
     var mp = el("button", "go-link", "See the whole map");
     mp.addEventListener("click", function () { go("map"); });
     acts.appendChild(mp);
+    var sdg = document.createElement("a");
+    sdg.href = SD.file;
+    sdg.target = "_blank";
+    sdg.rel = "noopener";
+    sdg.className = "go-link";
+    sdg.textContent = "System design guide";
+    acts.appendChild(sdg);
     hero.appendChild(acts);
 
     var traj = el("figure", "traj");
@@ -6769,6 +6898,8 @@
           });
           tx.appendChild(res);
         }
+        var sdIt = sdRow(s, it.sd);
+        if (sdIt) { tx.appendChild(sdIt); }
         var acts = doList(s, it, i);
         if (acts) { tx.appendChild(acts); }
         var itClose = closerFor(key, it.close, !!state.steps[key]);
@@ -6832,6 +6963,8 @@
       tcell.appendChild(thead);
       var sdo = stepDo(s, st);
       if (sdo) { tcell.appendChild(sdo); }
+      var sdSt = sdRow(s, st.sd);
+      if (sdSt) { tcell.appendChild(sdSt); }
       var stClose = closerFor(key, st.close, !!state.steps[key]);
       if (stClose) { tcell.appendChild(stClose); }
       row.appendChild(tcell);

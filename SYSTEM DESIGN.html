@@ -363,11 +363,18 @@ details.fold.mini .fold-body { padding: 6px 0 0; }
   .blk dd { margin-bottom: 8px; }
   .step-head h3 { font-size: 27px; }
 }
+.to-accelerate { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--blue);
+  text-decoration: none; margin-bottom: 14px; }
+.to-accelerate img { border-radius: 5px; }
+.to-accelerate:hover, .to-accelerate:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.pat-acc { font-size: 0.92em; color: var(--muted); margin: 14px 0 2px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.pat-acc a { color: var(--blue); }
 </style>
 </head>
 <body>
 <header class="masthead">
   <div class="wrap">
+    <a class="to-accelerate" href="index.html" target="_blank" rel="noopener"><img src="brand/accelerate.svg" width="22" height="22" alt="">Open Accelerate</a>
     <h1>System design delivery, worked end to end</h1>
     <p class="lede">Six designs run through the six-step delivery framework. Every step shows what should be on your whiteboard when the step ends, how to reason your way there, and what to say out loud. Four designs are agentic, Ticketmaster is the classic baseline for contrast, and alfred_ is a shipped agent read from its own code.</p>
     <figure class="framework" id="framework" aria-label="Delivery framework"></figure>
@@ -3005,6 +3012,145 @@ GUIDE.patternUsage = {
 /* Logging and safe execution                                          */
 /* ------------------------------------------------------------------ */
 
+/* Links back into Accelerate, the study tracker this guide sits beside. For each
+   pattern, the sessions whose items point at it. Written from the same table as
+   the tracker's pointers into this file, so the two directions agree. */
+GUIDE.accelerate = {
+  home: "index.html",
+  patterns: {
+    "agent-durability": [
+      {
+        "label": "ZenML: round three is a different room",
+        "href": "index.html#/w/7"
+      },
+      {
+        "label": "ZenML: side effects inside replay",
+        "href": "index.html#/w/8"
+      }
+    ],
+    "agent-safety": [
+      {
+        "label": "Oxus: an agent that tests a SOX control",
+        "href": "index.html#/w/2"
+      },
+      {
+        "label": "Oxus: walkthrough to flowchart",
+        "href": "index.html#/w/4"
+      },
+      {
+        "label": "ZenML: side effects inside replay",
+        "href": "index.html#/w/8"
+      }
+    ],
+    "consistency": [
+      {
+        "label": "Week 5: caching, then putting it together",
+        "href": "index.html#/s/5/1"
+      },
+      {
+        "label": "Oxus: an agent that tests a SOX control",
+        "href": "index.html#/w/2"
+      },
+      {
+        "label": "Oxus: walkthrough to flowchart",
+        "href": "index.html#/w/4"
+      },
+      {
+        "label": "ZenML: side effects inside replay",
+        "href": "index.html#/w/8"
+      }
+    ],
+    "grounding": [
+      {
+        "label": "Oxus: an agent that tests a SOX control",
+        "href": "index.html#/w/2"
+      },
+      {
+        "label": "Oxus: your past work at grilling depth",
+        "href": "index.html#/w/5"
+      },
+      {
+        "label": "ZenML: round three is a different room",
+        "href": "index.html#/w/7"
+      }
+    ],
+    "large-blobs": [
+      {
+        "label": "Week 3: where a hundred million things live",
+        "href": "index.html#/s/3/1"
+      },
+      {
+        "label": "Oxus: evidence ingestion from messy documents",
+        "href": "index.html#/w/3"
+      }
+    ],
+    "long-running": [
+      {
+        "label": "Week 4: things break at a hundred million",
+        "href": "index.html#/s/4/1"
+      }
+    ],
+    "multi-step": [
+      {
+        "label": "Week 4: things break at a hundred million",
+        "href": "index.html#/s/4/1"
+      },
+      {
+        "label": "ZenML: side effects inside replay",
+        "href": "index.html#/w/8"
+      }
+    ],
+    "reliability": [
+      {
+        "label": "Week 1: throughput, latency, queues, backpressure",
+        "href": "index.html#/s/1/1"
+      },
+      {
+        "label": "Week 4: things break at a hundred million",
+        "href": "index.html#/s/4/1"
+      },
+      {
+        "label": "ZenML: side effects inside replay",
+        "href": "index.html#/w/8"
+      }
+    ],
+    "scaling-reads": [
+      {
+        "label": "Week 2: how work splits",
+        "href": "index.html#/s/2/1"
+      },
+      {
+        "label": "Week 5: caching, then putting it together",
+        "href": "index.html#/s/5/1"
+      }
+    ],
+    "scaling-writes": [
+      {
+        "label": "Week 1: throughput, latency, queues, backpressure",
+        "href": "index.html#/s/1/1"
+      },
+      {
+        "label": "Week 2: how work splits",
+        "href": "index.html#/s/2/1"
+      },
+      {
+        "label": "Week 3: where a hundred million things live",
+        "href": "index.html#/s/3/1"
+      }
+    ],
+    "search": [
+      {
+        "label": "Week 3: where a hundred million things live",
+        "href": "index.html#/s/3/1"
+      },
+      {
+        "label": "Oxus: evidence ingestion from messy documents",
+        "href": "index.html#/w/3"
+      }
+    ]
+  }
+};
+
 function createLogger(prefix) {
   const emit = (method, level, message, detail) => {
     const line = `${new Date().toISOString()} ${prefix} ${level} ${message}`;
@@ -3489,7 +3635,21 @@ function renderPatternDetail(group) {
       renderPatternDiagram(group, `pattern ${group.id}`),
       ensureArray(group.techniques, `${group.id} techniques`).map((technique) =>
         safeRun(`render technique ${group.id}/${technique.id}`, () => renderTechnique(technique), () => errorPanel(LABELS.blockFailed))),
-      group.say ? h("div", { class: "say pat-say" }, h("p", null, h("strong", null, L.say), inline(group.say))) : null));
+      group.say ? h("div", { class: "say pat-say" }, h("p", null, h("strong", null, L.say), inline(group.say))) : null,
+      renderAccelerateLinks(group.id)));
+}
+
+/* Where this pattern is practised in Accelerate. New tab, so the guide keeps its place. */
+function renderAccelerateLinks(groupId) {
+  const map = GUIDE.accelerate && GUIDE.accelerate.patterns;
+  const links = (map && map[groupId]) || [];
+  if (!links.length) return null;
+  const parts = [];
+  links.forEach((link, i) => {
+    if (i) parts.push(document.createTextNode(", "));
+    parts.push(h("a", { href: link.href, target: "_blank", rel: "noopener" }, link.label));
+  });
+  return h("p", { class: "pat-acc" }, h("strong", null, "Practised in Accelerate: "), ...parts);
 }
 
 function renderPatternsOverview() {

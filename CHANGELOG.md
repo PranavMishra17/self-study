@@ -130,3 +130,19 @@ break before it had had a chance to be anything. And the next session stayed pin
 to Oxus the day after the Oxus interview, because an unfinished session in a loop
 that is already over still counted as next. Neither is a deviation from the charter;
 both were the code disagreeing with it.
+
+**2026-09-24 — The system design guide, woven in both directions.**
+`SYSTEM DESIGN.html` is committed as written first, then changed only additively. In
+the tracker, forty five study items and steps now point at the exact place in the
+guide that deepens them, fifty eight pointers across twenty eight distinct targets,
+each with one line on why, and each opening in a new tab so the session stays put.
+The strongest pairings are the prior authorization design against the SOX control
+agent, NotebookLM against evidence ingestion, and alfred_ against the past-work
+session, since the guide already contains the system being asked about.
+
+In the guide, each pattern now lists the sessions that practise it, written from the
+same table as the tracker's pointers so the two directions cannot disagree. Four
+patterns list nothing: real-time updates, contention, geo search and LLM cost are not
+taught by any session yet. That is a finding rather than a gap in the linking, and
+worth a thought at the milestone 2 re-plan. No actions were added and no session
+minutes changed.

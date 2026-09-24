@@ -36,6 +36,7 @@ the address the progress is actually at.
 | `WILDCARD.md` | The sixth slot for interview-driven sessions, the four-fold cap, the session shape, what is in it now. |
 | `STUDY-LIST.md` | The current wildcard study lists as a flat checklist, generated from the tracker. |
 | `REQUEUE.md` | Open items. Answered, never deleted. |
+| `SYSTEM DESIGN.html` | Your own system design guide: the six-step framework, fifteen deep-dive patterns, six designs worked end to end. Sessions point into it, and its patterns point back. |
 | `CHANGELOG.md` | Append only. Every re-plan and deviation, with reasons. |
 | `diagnostics/` | The baseline result, and `baseline-diagnostic.html`, the timed quiz used to take it. Gate results go here. |
 | `progress/` | Exported progress snapshots. Export from the Data page and commit them. |
