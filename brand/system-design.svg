@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>System design</title>
+  <!-- The Accelerate craft with its colours inverted, for the system design guide:
+       a pale whiteboard tile instead of deep space, a dark ship instead of a bright
+       one, and afterimages in the guide's teal. Same geometry, so the two read as
+       one family. -->
+  <defs>
+    <radialGradient id="board" cx="0.62" cy="0.36" r="0.85">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.6" stop-color="#E4F3EF"/>
+      <stop offset="1" stop-color="#C7E6DF"/>
+    </radialGradient>
+    <linearGradient id="lead" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B242A"/>
+      <stop offset="1" stop-color="#0B3B35"/>
+    </linearGradient>
+    <radialGradient id="spark" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFF4D6"/>
+      <stop offset="0.35" stop-color="#FFB02E"/>
+      <stop offset="1" stop-color="#E4572E" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="url(#board)"/>
+    <g fill="#0D7767" opacity="0.4">
+      <circle cx="46" cy="52" r="1.6"/>
+      <circle cx="196" cy="206" r="1.4"/>
+      <circle cx="220" cy="120" r="1.3"/>
+      <circle cx="120" cy="30" r="1.2"/>
+      <circle cx="30" cy="150" r="1.2"/>
+    </g>
+    <g transform="translate(156 98) rotate(45)">
+      <path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 112) scale(0.8)" fill="#0D7767" opacity="0.22"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 58) scale(0.9)" fill="#0D7767" opacity="0.46"/>
+      <circle cx="-11" cy="40" r="14" fill="url(#spark)"/>
+      <circle cx="11" cy="40" r="14" fill="url(#spark)"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 L -11 36 L -30 50 L -46 42 L -11 -24 Z" fill="url(#lead)"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 Z" fill="#FFFFFF" opacity="0.1"/>
+      <rect x="-1" y="-44" width="2" height="80" fill="#4FC4AE" opacity="0.7"/>
+      <ellipse cx="0" cy="-24" rx="5.6" ry="11.5" fill="#D5F0EA"/>
+      <ellipse cx="-1.6" cy="-28" rx="1.8" ry="4.2" fill="#0D7767" opacity="0.6"/>
+    </g>
+  </g>
+</svg>

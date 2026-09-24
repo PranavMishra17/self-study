@@ -14,7 +14,7 @@ There is an **Accelerate** shortcut on the desktop that runs `study.cmd` minimis
 That is the one to use day to day. If it is ever lost, it points at `study.cmd`
 in this folder and takes its picture from `brand/accelerate.ico`.
 
-`brand/` holds the icon. `accelerate.svg` is the source; `python brand/render.py`
+`brand/` holds the icons: `system-design.svg` (the craft inverted, for the system design guide) and `alaap.svg` (the craft in Alaap's palette) are tab icons. `accelerate.svg` is the source for the app icon; `python brand/render.py`
 rebuilds the `.ico` and the favicon from it through headless Edge. The fifteen
 directions it was chosen from, and the two gallery pages used to choose, are in
 `brand/concepts/`.
@@ -37,6 +37,8 @@ the address the progress is actually at.
 | `STUDY-LIST.md` | The current wildcard study lists as a flat checklist, generated from the tracker. |
 | `REQUEUE.md` | Open items. Answered, never deleted. |
 | `SYSTEM DESIGN.html` | Your own system design guide, in three tabs: Framework (the six steps), Patterns (fifteen deep-dive patterns, each technique with its own diagram), Designs (six worked end to end). Sessions point into it, and its patterns point back. |
+| `ALAAP.html` | The Alaap study guide, in the Alaap repo's own style: the study guide by part, where the project stands, the accent and rights research, and the fourteen architecture diagrams. Built from the Alaap repo by `python alaap/build.py`; rebuild when those documents change, never edit it by hand. Sessions point into it, and its parts point back. |
+| `fonts/` | The system design guide's three typefaces, so it looks the same offline. `python fonts/fetch.py` refetches them from `google.css`. |
 | `CHANGELOG.md` | Append only. Every re-plan and deviation, with reasons. |
 | `diagnostics/` | The baseline result, and `baseline-diagnostic.html`, the timed quiz used to take it. Gate results go here. |
 | `progress/` | Exported progress snapshots. Export from the Data page and commit them. |

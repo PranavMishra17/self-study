@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>System design delivery, worked end to end</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;500&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="icon" type="image/svg+xml" href="brand/system-design.svg">
 <style>
 :root {
   --page: #F4F7F8;
@@ -113,7 +112,9 @@ code {
 .brand {
   font-family: var(--font-hand); font-weight: 700; font-size: 22px; color: var(--ink);
   text-decoration: none; padding-bottom: 11px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 9px;
 }
+.brand img { border-radius: 6px; }
 .tabs { display: flex; gap: 2px; overflow-x: auto; align-items: flex-end; scrollbar-width: thin; flex: 1; min-width: 0; }
 .tab {
   appearance: none; border: 0; background: none; font: inherit; font-size: 16.5px;
@@ -472,7 +473,7 @@ details.fold > summary:hover .fold-title { color: var(--teal); }
 <body>
 <header class="topbar">
   <div class="wrap topbar-in">
-    <a class="brand" href="#/framework">System design</a>
+    <a class="brand" href="#/framework"><img src="brand/system-design.svg" width="24" height="24" alt="">System design</a>
     <div class="tabs" id="tabs" role="tablist" aria-label="Sections"></div>
     <a class="to-accelerate" href="index.html" target="_blank" rel="noopener"><img src="brand/accelerate.svg" width="22" height="22" alt=""><span>Open Accelerate</span></a>
   </div>

@@ -602,6 +602,8 @@
   .sdrow .sdp a { color: var(--flight); font-weight: 600; text-decoration: none; margin-right: 6px; }
   .sdrow .sdp a:hover, .sdrow .sdp a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
   .sdrow .sdp .why { color: var(--mid); }
+  .sdrow.alrow { border-left-color: var(--alaap); }
+  .sdrow.alrow .sdp a { color: var(--alaap); }
   .side .foot a.sdnav { display: block; padding: 4px 0; color: var(--dim); font-size: 13px; text-decoration: none; }
   .side .foot a.sdnav::after { content: " \2197"; color: var(--faint); }
   .side .foot a.sdnav:hover { text-decoration: underline; }
@@ -1534,7 +1536,7 @@
               out: "ten worked manipulations on paper, kept",
               skip: "The video walkthroughs on that page. Solve cold first, check after.",
               ans: "Working the properties by hand: log base 2 of 32 is 5, since 2 to the power 5 is 32. Log base 3 of 1 is 0, since anything to the power 0 is 1. Log(100) plus log(10) is log(1000), which is 3, using the product rule directly. Log base 2 of 8 minus log base 2 of 2 is log base 2 of 4, which is 2, using the quotient rule. 5 to the power 0 is 1, e to the power 1 is e, and 2 to the power minus 3 is one eighth, from the definitions of zero, one and negative exponents. Log base 5 of 25 cubed is 3 times log base 5 of 25, which is 3 times 2, or 6, using the power rule to pull the exponent out front. Ten of these, done cold on paper before checking, made the product-to-sum rule and pulling the exponent out front automatic rather than something to look up." },
-            { t: "Write one line: why minimise negative log-likelihood rather than maximise likelihood",
+            { t: "Write one line: why minimise negative log-likelihood rather than maximise likelihood", al: [{ p: "guide/s5-1", why: "A mixture density network is trained on exactly this loss." }],
               close: [
                 { k: "why", q: "Why minimise the negative log-likelihood rather than maximise the likelihood directly?", a: "The raw likelihood is a product of many small probabilities that underflows to zero, while its log is a stable sum; and standard optimisers are built to descend, so negating the log-likelihood turns maximisation into the descent they already do." },
                 { k: "blank", q: "Negating the log-likelihood turns a maximisation problem into the ___ optimisers are already built to do.", a: "descent" },
@@ -1568,7 +1570,7 @@
           blurb: "Run it, listen to it, understand the shape before the detail.",
           intro: "Two of the four hours Alaap gets across the whole milestone. Orientation only, and no machine learning required.",
           steps: [
-            { t: "Run the demo script and listen to the output",
+            { t: "Run the demo script and listen to the output", al: [{ p: "guide/part-0", why: "Part 0's Do step, with the exact command and what to listen for." }],
               close: [
                 { k: "why", q: "Why does the study guide insist on actually listening to demo_out/audio/ rather than trusting the gate numbers?", a: "None of the gates that pass — drift, consistency, uniqueness, CER — check whether the voice sounds natural; the naturalness floor is proposed but never enforced, so listening is the only check that catches synthetic-sounding audio." },
                 { k: "pick", q: "The demo's gates all pass on a rendered line. What does that tell you about how it sounds?",
@@ -1587,7 +1589,7 @@
                 "The gates that already passed — drift, consistency, uniqueness, CER — check identity and intelligibility, not whether the voice sounds natural",
                 "No gate in the stack currently rejects on naturalness: the floor is proposed, never enforced, so listening is the only check that catches synthetic-sounding audio"
               ] },
-            { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict",
+            { t: "Read architecture.html, diagrams 1 to 5, then the executive verdict", al: [{ p: "architecture/ctx", why: "Diagrams 1 to 5 start here: context, two towers, mint, render, gates." }, { p: "status", why: "Where the project actually is, stage by stage, for after the verdict." }],
               close: [
                 { k: "word", q: "What is the only channel between the learned tower (the mapper) and the frozen tower (the TTS)?", a: "The speaker vector" },
                 { k: "pick", q: "Someone proposes fine-tuning Tower B's weights to fix a rendering quirk. What does the two-tower design say about that?",
@@ -1608,7 +1610,7 @@
                 "Five gates run before an identity is stored: drift, consistency, uniqueness, CER, and a naturalness gate that has never actually rejected anything",
                 "What has changed since the original scope: the renderer, from the now-dead and licence-poisoned Zonos-v0.1 to Qwen3-TTS-1.7B"
               ] },
-            { t: "Answer in writing: why is the TTS model never trained, and what breaks if it is",
+            { t: "Answer in writing: why is the TTS model never trained, and what breaks if it is", al: [{ p: "architecture/tower", why: "The two-tower diagram is this answer drawn: the frozen box is the whole idea." }],
               close: [
                 { k: "why", q: "Why does keeping the TTS frozen turn training into a cheap, well-scoped job?", a: "The only thing that needs learning is the mapper, a small head mapping a text description into a speaker-vector space the frozen model already knows how to consume — far less data and risk than training the base acoustic model itself." },
                 { k: "pick", q: "Suppose the TTS model were fine-tuned instead of kept frozen. What is the most direct cost, given this project's own history?",
@@ -2016,7 +2018,7 @@
                 "Multiplying two matrices means applying one transformation after another — composition, not a row-times-column recipe",
                 "An eigenvector is a vector whose direction survives a transformation unchanged, only its length scaled, by the eigenvalue"
               ] },
-            { t: "Derive why cosine similarity is the dot product of normalised vectors",
+            { t: "Derive why cosine similarity is the dot product of normalised vectors", al: [{ p: "guide/s3-2", why: "Where cosine meets speaker verification: thresholds, EER, calibration." }],
               close: [
                 { k: "figure", q: "In the vectors figure, what expression is left once the magnitudes are divided out of a · b = |a||b|cosθ?", a: "cosθ alone — cosθ = (a · b) / (|a||b|)." },
                 { k: "why", q: "Why does dividing out the magnitudes matter specifically for embeddings, rather than being a purely mathematical nicety?", a: "An embedding's length often reflects something incidental, such as how frequent a token or document is, rather than its meaning, while its direction carries the meaning; dividing out length lets two embeddings that point the same way score as similar regardless of how long either one is." },
@@ -2048,7 +2050,7 @@
               out: "the shape of (AB)^T for A 4x3, B 3x5, plus one sentence proving the reversal",
               links: [L.ka_lin],
               ans: "A is 4 by 3 and B is 3 by 5, so AB is defined, because the inner dimensions match, and it has shape 4 by 5, the two outer dimensions. Its transpose, (AB) transpose, is therefore 5 by 4. For why (AB) transpose equals B transpose times A transpose: write out one entry. The entry in row i, column j of AB is the sum over k of A's entry (i,k) times B's entry (k,j), so the entry in row j, column i of (AB) transpose is that same sum. Now look at B transpose times A transpose: its entry in row j, column i is the sum over k of B transpose's entry (j,k) times A transpose's entry (k,i), which is B's entry (k,j) times A's entry (i,k) — the identical sum. The two matrices agree entry by entry, which is the proof. The shapes confirm it independently: B transpose is 5 by 3 and A transpose is 3 by 4, so B transpose times A transpose is 5 by 4, matching (AB) transpose exactly, while A transpose times B transpose would be 3 by 4 times 5 by 3, which does not even multiply — so the order has to reverse for the transpose of a product to be valid at all, let alone correct." },
-            { t: "Requeued Q8 — write what an eigenvector is geometrically",
+            { t: "Requeued Q8 — write what an eigenvector is geometrically", al: [{ p: "guide/s6-2", why: "The Vendi score is built from a similarity matrix's eigenvalues." }],
               close: [
                 { k: "figure", q: "In the eigenvectors figure, what is different about the transformed arrow in the right-hand panel compared with the left?", a: "In the left panel (an ordinary vector), Av lands off the original line — it is turned. In the right panel (an eigenvector), Av stays on the same line as v; only its length changes." },
                 { k: "why", q: "Why is the null-space definition of an eigenvector (a vector in the null space of A minus lambda times the identity) not itself the geometric meaning?", a: "The null-space equation is how you solve for an eigenvector algebraically, but it does not say what one is — the geometric fact is that its direction survives the transformation unchanged and only its length is scaled by the eigenvalue; the null-space equation is a computational route to that fact, not the fact itself." },
@@ -2100,7 +2102,7 @@
           intro: "Study guide section 2.1, and the reason a project that juggles four sample rates once produced a result that reversed when the rate was fixed.",
           diagrams: ["nyquist"],
           steps: [
-            { t: "Work through sample rate, Nyquist and bit depth",
+            { t: "Work through sample rate, Nyquist and bit depth", al: [{ p: "guide/s2-1", why: "Sample rate, Nyquist and bit depth, with the one-line intuition." }],
               close: [
                 { k: "word", q: "What is the name for a frequency above N/2 folding down and corrupting what is measured?", a: "Aliasing" },
                 { k: "num", q: "At a sample rate of 24 kHz, what is the highest frequency that can be represented, per Nyquist?", a: "12 kHz" },
@@ -2115,7 +2117,7 @@
               where: "VoiceForge v3 study guide, learning/01-STUDY-GUIDE.md, section 2.1 'Sampling and the time domain'",
               out: "Nyquist in one sentence: a rate of N represents frequencies up to N/2 and nothing above",
               ans: "A waveform is a very long list of air-pressure readings taken at a fixed rate. The sample rate is how many of those readings are taken per second, and Nyquist's result is that a sample rate of N can only represent frequencies up to N over 2 — anything higher folds down and corrupts what is measured, so a signal has to be sampled at more than twice its highest frequency of interest to be represented correctly. Bit depth is the separate question of how finely each individual reading is quantised, which sets the noise floor rather than the frequency ceiling." },
-            { t: "Understand why this project juggles four sample rates, and what it cost",
+            { t: "Understand why this project juggles four sample rates, and what it cost", al: [{ p: "guide/s2-1", why: "The four sample rates, and the S21 result that analysing at the wrong one reversed." }],
               close: [
                 { k: "num", q: "If 24 kHz corpus audio is mistakenly analysed as if it were 16 kHz, by what ratio is every measured frequency off?", a: "By 24/16, i.e. 1.5 times too high" },
                 { k: "pick", q: "You load a 22.05 kHz Sarvam clip but your analysis script assumes 44.1 kHz. What happens to every frequency you measure?",
@@ -2130,7 +2132,7 @@
               where: "Same file, section 2.1, the 'Why it matters' paragraph",
               out: "one sentence on what analysing at the wrong rate does to every frequency measured",
               ans: "This project's audio lives at four different sample rates depending on the stage — the corpus at 24 kHz, WavLM's own model at 16 kHz, MioCodec at 44.1 kHz, and Sarvam at 22.05 kHz — and analysing a clip while assuming the wrong one of those rates shifts every frequency measured by the ratio between the true rate and the assumed one, silently, because nothing errors when the input still loads fine. That is exactly what happened in S21 phase B, where analysing at the wrong assumed rate reversed a result rather than just adding noise to it." },
-            { t: "Load a clip, resample it, plot both spectra, find the cliff",
+            { t: "Load a clip, resample it, plot both spectra, find the cliff", al: [{ p: "guide/s2-2", why: "The STFT's time against frequency trade, which the plot will show you." }],
               close: [
                 { k: "num", q: "Resampling from 24 kHz down to 16 kHz moves the Nyquist frequency from 12 kHz down to what?", a: "8 kHz" },
                 { k: "blank", q: "In the resampled spectrum, content above the new Nyquist frequency does not roll off gradually — it stops at a hard ___.", a: "cliff" },
@@ -2365,7 +2367,7 @@
               where: "No resource — paper, a two- or three-layer scalar composed function",
               out: "a completed forward-then-backward pass on paper, kept",
               ans: "Take two layers, scalar: h = w1 times x, a = sigmoid(h), z = w2 times a, and loss L = (z minus y) squared. With x = 2, w1 = 0.5, w2 = 1.5, y = 1, the forward pass gives h = 1.0, a = sigmoid(1.0) which is about 0.731, z = 1.5 times 0.731 which is about 1.097, and L = (1.097 minus 1) squared, about 0.0093. The backward pass starts from dL/dz = 2 times (z minus y), about 0.193. dL/dw2 is dL/dz times dz/dw2, and dz/dw2 is just a, so dL/dw2 is about 0.193 times 0.731, roughly 0.141. To reach w1 I go one layer further back: dL/da is dL/dz times dz/da, and dz/da is w2, so dL/da is about 0.193 times 1.5, roughly 0.290; da/dh is the sigmoid derivative in its self-referential form, a times (1 minus a), about 0.197; and dh/dw1 is just x, 2 — so dL/dw1 is 0.290 times 0.197 times 2, roughly 0.114. Every one of those steps is a local derivative evaluated at the value that layer actually saw on the forward pass, multiplied along the chain back to the parameter, which is exactly the tape autograd keeps." },
-            { t: "Write the two-sentence explanation of why the chain rule makes backprop possible",
+            { t: "Write the two-sentence explanation of why the chain rule makes backprop possible", al: [{ p: "guide/s1-2", why: "Autograd is the recorded tape this backprop runs on." }],
               close: [
                 { k: "order", q: "Put these in the order a backward pass actually walks them.",
                   items: ["Multiply local derivatives back through each earlier layer", "Arrive at the derivative with respect to the earliest parameter", "Record what each layer saw during the forward pass", "Start from the derivative of the loss with respect to the final output"],
@@ -2402,7 +2404,7 @@
           intro: "Diagnostic Q3 and Q4, where the answers covered what these things do rather than how they work.",
           diagrams: ["embed", "attention"],
           steps: [
-            { t: "Write where embedding numbers physically come from",
+            { t: "Write where embedding numbers physically come from", al: [{ p: "guide/s3-1", why: "Train a network to tell speakers apart, drop the classifier: that layer is the embedding." }],
               close: [
                 { k: "pick", q: "Before training starts, what is in a given row of the embedding table?",
                   o: ["A vector chosen by hand to reflect that token's meaning", "A row of random numbers, no different from any other row", "A one-hot vector marking the token's identity"], a: 1,
@@ -2633,7 +2635,7 @@
                 "The shape holds regardless of the story — disease, spam filter, fraud check — whenever prevalence is low and the test is imperfect",
                 "The fix for the surprise is always the same: build the population table of true and false positives and negatives, rather than reasoning from the test's accuracy alone"
               ] },
-            { t: "Write why softmax outputs form a distribution, and why cross-entropy is its natural loss",
+            { t: "Write why softmax outputs form a distribution, and why cross-entropy is its natural loss", al: [{ p: "guide/s5-1", why: "The MDN's mixture weights are a softmax: one description, a family of voices." }],
               close: [
                 { k: "word", q: "What operation makes every softmax output strictly positive?", a: "Exponentiation" },
                 { k: "blank", q: "Softmax outputs are non-negative and sum to ___, which is the whole definition of a probability distribution.", a: "one" },
@@ -2670,7 +2672,7 @@
           intro: "Everything Alaap measures sits on this split, which is why a measure that leaks across it fails to separate anything.",
           diagrams: ["source"],
           steps: [
-            { t: "Work through source against filter",
+            { t: "Work through source against filter", al: [{ p: "guide/s2-3", why: "Source against filter: the single most important idea in Part 2." }],
               close: [
                 { k: "figure", q: "In the source-filter figure, which side carries pitch and which carries identity?", a: "Pitch lives on the source side, the vocal folds' buzz at F0; identity lives on the filter side, the vocal tract's resonances." },
                 { k: "word", q: "What is the name for the frequency at which the vocal folds buzz?", a: "F0, the fundamental frequency" },
@@ -2693,7 +2695,7 @@
                 "Formants are the peaks in the resulting spectrum — the frequencies the vocal tract's shape resonates at and boosts",
                 "Change the source and pitch changes; change the filter and which sounds — and which speaker — come through changes: that split is the whole model"
               ] },
-            { t: "Map it onto the project's measurements",
+            { t: "Map it onto the project's measurements", al: [{ p: "guide/s2-4", why: "Every estimator in acoustics.py, and the way each one lies." }],
               close: [
                 { k: "word", q: "Which of this project's measurements sits entirely on the source side?", a: "f0_mean" },
                 { k: "blank", q: "Vocal-tract length and the ___ sit on the filter side, because they describe the resonant tube rather than the buzz rate.", a: "formants" },
@@ -2708,7 +2710,7 @@
               where: "Alaap study guide, E:/VoiceForge TTV Pipeine/v3/learning/01-STUDY-GUIDE.md, section 2.3 The source-filter model, then the estimator table in 2.4. Apply the split to f0_mean, vocal-tract length, the formants and spectral tilt",
               out: "one written line per measurement naming which side of the split it sits on, plus the one sentence on why spectral tilt partly leaks across it",
               ans: "f0_mean sits entirely on the source side — it is the buzz rate of the vocal folds, and it is what carries pitch. Vocal-tract length and the formants sit on the filter side — they describe the resonant tube the buzz passes through, and that is where speaker identity lives. Spectral tilt was meant to measure the source's spectral shape, but it partly measures the buzz rate instead, because it is fit as a straight line across log-frequency bins and a large share of that fit's leverage sits on the first few harmonics, so a change in f0 changes how those harmonics land even when the true filter envelope has not moved — the axis leaks across the split it was supposed to respect." },
-            { t: "Answer: why would a 250 Hz voice read a flatter spectral tilt than a 90 Hz voice with the same envelope",
+            { t: "Answer: why would a 250 Hz voice read a flatter spectral tilt than a 90 Hz voice with the same envelope", al: [{ p: "guide/s2-4", why: "The spectral tilt trap, and which results file holds the answer." }],
               close: [
                 { k: "num", q: "Roughly how many times fewer harmonics does a 250 Hz voice have across the same band as a 90 Hz voice sampling the same envelope?", a: "About 2.8 times fewer" },
                 { k: "why", q: "Why does having fewer harmonics make the fitted spectral tilt read flatter, even though the true envelope has not changed?", a: "With fewer harmonic peaks, more of the bins the tilt is fit over fall in the low-energy floor between harmonics rather than on a peak, and that pulls the fitted slope toward flat regardless of what the true envelope looks like." },
@@ -3241,6 +3243,7 @@
   };
   var R = {
     sdguide: { label: "Your system design guide", url: "SYSTEM%20DESIGN.html" },
+    alaapguide: { label: "Your Alaap study guide", url: "ALAAP.html" },
     stripeApi: { label: "Stripe API, idempotent requests", url: "https://docs.stripe.com/api/idempotent_requests" },
     auditboard: { label: "AuditBoard, SOX testing best practices (PDF)", url: "https://go.auditboard.com/rs/961-ZQV-184/images/AB-AR-Best-Practices-Effective-SOX-Testing.pdf" },
     skill: { label: "Anthropic audit-support skill, SOX 404 primer", url: "https://skillselion.com/skills/anthropics/knowledge-work-plugins/audit-support" },
@@ -5052,13 +5055,13 @@
         why: "The one machine-learning question the diagnostic got right, now explainable rather than merely recognisable." },
 
       /* ---- Milestone 1, Alaap ---- */
-      { id: "alaap-orientation", label: "Part 0, orientation", col: "m1", lane: "alaap",
+      { id: "alaap-orientation", al: "guide/part-0", label: "Part 0, orientation", col: "m1", lane: "alaap",
         sessions: ["w1c"], needs: [],
         why: "Run it, listen to it, and hold the shape before any of the detail." },
-      { id: "nyquist", label: "Sampling and Nyquist", col: "m1", lane: "alaap",
+      { id: "nyquist", al: "guide/s2-1", label: "Sampling and Nyquist", col: "m1", lane: "alaap",
         sessions: ["w3c"], needs: ["alaap-orientation"],
         why: "Physics rather than machine learning, and the reason a result once reversed when the sample rate was corrected." },
-      { id: "sourcefilter", label: "The source-filter model", col: "m1", lane: "alaap",
+      { id: "sourcefilter", al: "guide/s2-3", label: "The source-filter model", col: "m1", lane: "alaap",
         sessions: ["w5c"], needs: ["alaap-orientation", "nyquist"],
         why: "Change the buzz and it is the same person, change the tube and it is not, and every measurement sits on that split." },
 
@@ -5144,13 +5147,13 @@
         sessions: [], needs: ["dsa-recursion"],
         why: "A first look only, because the pattern matters more than the problem count." },
 
-      { id: "alaap-p1", label: "Part 1's exit checklist", col: "m2", lane: "alaap",
+      { id: "alaap-p1", al: "guide/part-1", label: "Part 1's exit checklist", col: "m2", lane: "alaap",
         sessions: [], needs: ["sourcefilter", "trainloop"],
         why: "The checklist becomes checkable once TrenTorch has covered what it asks about." },
-      { id: "alaap-p3", label: "Part 3, speaker identity", col: "m2", lane: "alaap",
+      { id: "alaap-p3", al: "guide/part-3", label: "Part 3, speaker identity", col: "m2", lane: "alaap",
         sessions: [], needs: ["sourcefilter", "cosine"],
         why: "Readable once the mathematics is there, rather than read as vocabulary, which is the trap milestone 1 exists to break." },
-      { id: "alaap-nav", label: "The navigability papers", col: "m2", lane: "alaap",
+      { id: "alaap-nav", al: "guide/s3-3", label: "The navigability papers", col: "m2", lane: "alaap",
         sessions: [], needs: ["alaap-p3", "eigen"],
         why: "The intellectual core of the project, and the reward for the work of milestone 1." },
 
@@ -5161,7 +5164,7 @@
       { id: "alaap-scratch", label: "Alaap, from scratch", col: "m3", lane: "alaap",
         sessions: [], needs: ["trainloop", "alaap-p1", "alaap-nav"],
         why: "Alaap becomes something you trained rather than an assembly of other people's models." },
-      { id: "alaap-p46", label: "Parts 4 to 6", col: "m3", lane: "alaap",
+      { id: "alaap-p46", al: "guide/part-4", label: "Parts 4 to 6", col: "m3", lane: "alaap",
         sessions: [], needs: ["alaap-p3", "math-applied"],
         why: "Codecs, flow matching and the evaluation traps, which carry the highest ratio of hard-won knowledge to published literature." },
       { id: "dsa-maint", label: "DSA maintenance", col: "m3", lane: "iv",
@@ -5978,6 +5981,25 @@
     }
   };
 
+  /* The Alaap study guide, built from the Alaap repo by alaap/build.py. Pointers are
+     { p: "<tab>/<anchor>", why } on steps, and al: "<tab>/<anchor>" on map nodes. */
+  var AL = {
+    file: "ALAAP.html",
+    labels: {
+      "status": "Where it stands", "accent": "Accent and rights",
+      "architecture/ctx": "Architecture, diagrams 1 to 5", "architecture/tower": "Architecture, the two-tower thesis",
+      "guide/part-0": "Part 0, orientation", "guide/part-1": "Part 1, PyTorch and tensors",
+      "guide/part-3": "Part 3, speaker identity", "guide/part-4": "Parts 4 to 6",
+      "guide/s1-2": "1.2 Autograd", "guide/s2-1": "2.1 Sampling and the time domain",
+      "guide/s2-2": "2.2 The frequency domain", "guide/s2-3": "2.3 The source-filter model",
+      "guide/s2-4": "2.4 The estimators, and how each one lies", "guide/s3-1": "3.1 From i-vectors to ECAPA",
+      "guide/s3-2": "3.2 Cosine, EER, and calibration", "guide/s3-3": "3.3 Is the space navigable?",
+      "guide/s5-1": "5.1 Mixture Density Networks", "guide/s6-2": "6.2 Diversity: the Vendi score"
+    }
+  };
+  function alHref(p) { return AL.file + "#/" + p; }
+  function alLabel(p) { return AL.labels[p] || p; }
+
   /* The guide's routes are #/framework/<step>, #/patterns/<id>, #/designs/<id>/<step>.
      Pointers keep the older view/anchor shape; the guide also redirects that shape. */
   function sdHref(p) {
@@ -6001,17 +6023,24 @@
     return (SD.views[p.v] || p.v) + (p.a ? ", " + (SD.anchors[p.a] || p.a) : "");
   }
   function sdRow(s, list) {
+    return guideRow(s, list, "In your system design guide", "sdrow", "System design: ", sdHref, sdLabel);
+  }
+  function alRow(s, list) {
+    return guideRow(s, list, "In your Alaap study guide", "sdrow alrow", "Alaap guide: ",
+      function (p) { return alHref(p.p); }, function (p) { return alLabel(p.p); });
+  }
+  function guideRow(s, list, head, cls, logAs, hrefOf, labelOf) {
     if (!list || !list.length) { return null; }
-    var box = el("div", "sdrow");
-    box.appendChild(el("div", "sdh", "In your system design guide"));
+    var box = el("div", cls);
+    box.appendChild(el("div", "sdh", head));
     list.forEach(function (p) {
       var line = el("div", "sdp");
       var a = document.createElement("a");
-      a.href = sdHref(p);
+      a.href = hrefOf(p);
       a.target = "_blank";
       a.rel = "noopener";
-      a.textContent = sdLabel(p);
-      a.addEventListener("click", function () { logVisit(s.id, "System design: " + sdLabel(p), a.href); });
+      a.textContent = labelOf(p);
+      a.addEventListener("click", function () { logVisit(s.id, logAs + labelOf(p), a.href); });
       line.appendChild(a);
       if (p.why) { line.appendChild(el("span", "why", p.why)); }
       box.appendChild(line);
@@ -6181,15 +6210,15 @@
     /* everything that is not a session, grouped by what it is for */
     [["Practise", [["requeue", "Requeue"], ["written", "Written work"], ["search", "Search"]]],
      ["Look ahead", [["map", "The work ahead"], ["ahead", "What comes after"]]],
-     ["Reference", [["resources", "Resources"], ["sd", "System design guide"]]],
+     ["Reference", [["resources", "Resources"], ["sd", "System design guide"], ["al", "Alaap study guide"]]],
      ["Rules and data", [["charter", "Charter"], ["protocol", "Protocol"], ["data", "Data and export"]]]
     ].forEach(function (grp) {
       var foot = el("div", "foot");
       foot.appendChild(el("div", "fh", grp[0]));
       grp[1].forEach(function (t) {
-        if (t[0] === "sd") {
+        if (t[0] === "sd" || t[0] === "al") {
           var sdLink = document.createElement("a");
-          sdLink.href = SD.file;
+          sdLink.href = t[0] === "sd" ? SD.file : AL.file;
           sdLink.target = "_blank";
           sdLink.rel = "noopener";
           sdLink.className = "sdnav";
@@ -6464,6 +6493,13 @@
     sdg.className = "go-link";
     sdg.textContent = "System design guide";
     acts.appendChild(sdg);
+    var alg = document.createElement("a");
+    alg.href = AL.file;
+    alg.target = "_blank";
+    alg.rel = "noopener";
+    alg.className = "go-link";
+    alg.textContent = "Alaap study guide";
+    acts.appendChild(alg);
     hero.appendChild(acts);
 
     var traj = el("figure", "traj");
@@ -6923,6 +6959,8 @@
         }
         var sdIt = sdRow(s, it.sd);
         if (sdIt) { tx.appendChild(sdIt); }
+        var alIt = alRow(s, it.al);
+        if (alIt) { tx.appendChild(alIt); }
         var acts = doList(s, it, i);
         if (acts) { tx.appendChild(acts); }
         var itClose = closerFor(key, it.close, !!state.steps[key]);
@@ -6988,6 +7026,8 @@
       if (sdo) { tcell.appendChild(sdo); }
       var sdSt = sdRow(s, st.sd);
       if (sdSt) { tcell.appendChild(sdSt); }
+      var alSt = alRow(s, st.al);
+      if (alSt) { tcell.appendChild(alSt); }
       var stClose = closerFor(key, st.close, !!state.steps[key]);
       if (stClose) { tcell.appendChild(stClose); }
       row.appendChild(tcell);
@@ -8945,6 +8985,14 @@
     if (needs.length) { meta.appendChild(el("span", "", "Needs first: " + needs.join(", "))); }
     if (feeds.length) { meta.appendChild(el("span", "", "Feeds: " + feeds.join(", "))); }
     if (!needs.length && !feeds.length) { meta.appendChild(el("span", "", "Stands alone.")); }
+    if (n.al) {
+      var ga = document.createElement("a");
+      ga.href = alHref(n.al);
+      ga.target = "_blank";
+      ga.rel = "noopener";
+      ga.textContent = "Alaap study guide: " + alLabel(n.al);
+      meta.appendChild(ga);
+    }
     box.appendChild(meta);
   }
 
