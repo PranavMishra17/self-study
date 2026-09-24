@@ -44,6 +44,11 @@ covers it, and Part 3 on speaker identity becomes readable because the mathemati
 is there. The three navigability papers are the intellectual core of the project and
 the reward for the work of milestone 1.
 
+**The sequence** lives in `ALAAP.html`, the Alaap and TrenTorch plan: stages 3 to 15 are this
+milestone, TrenTorch modules 01 to 13 interleaved with Alaap's Part 1, the rest of Part 2,
+and Part 3. As sequenced it is about 40 hours, twice the twenty for TrenTorch alone, so
+the re-plan that details this milestone decides what moves to milestone 3.
+
 **Gate:** a timed quiz plus something built. Probably a small network trained from
 scratch in PyTorch on something trivial, with you able to explain every line and
 what the gradients are doing.
@@ -60,6 +65,9 @@ per-dimension rescaling, the actual loss functions, understood as mathematics
 because by then they are. Alaap's Parts 4 through 6 become readable: codecs, flow
 matching, and the evaluation traps, which is the part of that project with the
 highest ratio of hard-won knowledge to published literature.
+
+In the plan these are stages 16 to 21, including TrenTorch's optimisation modules 14 to
+19, which are the skills Alaap's blocked platform track needs, and its capstone.
 
 DSA moves to maintenance, two problems a week, permanently.
 

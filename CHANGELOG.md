@@ -184,3 +184,26 @@ charter's four-hour Alaap cap in milestone 1 stands.
 
 The system design guide now loads its typefaces from `fonts/` rather than Google, and
 has its own icon: the Accelerate craft with the colours inverted.
+
+**2026-09-24 — One study plan for Alaap and TrenTorch.**
+The Alaap page was the Alaap documents side by side, which meant choosing where to go
+next each time. It is now one linear plan of twenty-two stages across the three
+milestones. Each stage says what you can do afterwards and why it matters for Alaap,
+then brings everything it needs into place: a diagram drawn for it, the TrenTorch
+module to build (objectives, what it exports, the `tren` commands, its reflection
+questions), the Alaap guide's own sections, the architecture diagrams that apply, the
+TrenTorch historical milestone it unlocks, and one exit check with a short answer.
+All twenty TrenTorch modules and every section of the Alaap guide are placed; the
+build refuses to run if one is left out. The fourteen architecture diagrams now carry
+what each involves, its topics, and the stages that teach it.
+
+TrenTorch is read in place from `E:/TrenTorch` rather than copied here, so there is one
+copy of it. The sequence is `alaap/plan.py`; `alaap/build.py` regenerates the page and
+the plan's stage list and labels inside the tracker from it.
+
+In Accelerate, milestone 2's map nodes (tensors, modules, autograd, the loop, batch
+normalisation, embeddings, attention) and milestone 3's now open the stage that teaches
+them, "What comes after" lists each milestone's stages, and six more mathematics steps
+point at the stage that uses them. As sequenced, milestone 2 is about 40 hours of this
+work against the roadmap's twenty for TrenTorch alone; the milestone 2 re-plan decides
+what moves. Milestone 1 is unchanged, with Alaap still capped at four hours.
