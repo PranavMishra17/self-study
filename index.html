@@ -5975,8 +5975,18 @@
     }
   };
 
+  /* The guide's routes are #/framework/<step>, #/patterns/<id>, #/designs/<id>/<step>.
+     Pointers keep the older view/anchor shape; the guide also redirects that shape. */
   function sdHref(p) {
-    return SD.file + "#/" + encodeURIComponent(p.v) + (p.a ? "/" + encodeURIComponent(p.a) : "");
+    var parts;
+    if (p.v === "overview") {
+      parts = !p.a ? ["framework"]
+        : p.a.indexOf("pattern-") === 0 ? ["patterns", p.a.slice(8)]
+        : ["framework", p.a];
+    } else {
+      parts = p.a ? ["designs", p.v, p.a] : ["designs", p.v];
+    }
+    return SD.file + "#/" + parts.map(encodeURIComponent).join("/");
   }
   function sdLabel(p) {
     if (p.a && p.a.indexOf("pattern-") === 0) {
