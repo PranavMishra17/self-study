@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate, mission patch</title>
+  <!-- A crew patch: cream embroidered rim with the name around the top, a
+       mid-century rocket climbing out of a launch arc, a ringed planet. -->
+  <defs>
+    <radialGradient id="field" cx="0.5" cy="0.38" r="0.62">
+      <stop offset="0" stop-color="#2C4C8F"/>
+      <stop offset="1" stop-color="#101D44"/>
+    </radialGradient>
+    <linearGradient id="hullp" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#D9CDAE"/>
+      <stop offset="0.4" stop-color="#FFFBEF"/>
+      <stop offset="1" stop-color="#CBBE9B"/>
+    </linearGradient>
+    <path id="top" d="M 40 128 A 88 88 0 0 1 216 128"/>
+    <path id="bottom" d="M 30 128 A 98 98 0 0 0 226 128"/>
+  </defs>
+
+  <rect width="256" height="256" rx="56" fill="#0E1733"/>
+
+  <!-- rim, with a stitch line on each edge -->
+  <circle cx="128" cy="128" r="114" fill="#F2E6C9"/>
+  <circle cx="128" cy="128" r="109" fill="none" stroke="#B5A277" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <circle cx="128" cy="128" r="84" fill="none" stroke="#B5A277" stroke-width="1.4" stroke-dasharray="3 3"/>
+
+  <text font-family="Segoe UI, Helvetica Neue, Arial, sans-serif" font-weight="900"
+        font-size="19" letter-spacing="3.6" fill="#C8102E">
+    <textPath href="#top" startOffset="50%" text-anchor="middle">ACCELERATE</textPath>
+  </text>
+  <text font-family="Segoe UI Symbol, Segoe UI, sans-serif" font-size="13" letter-spacing="10" fill="#C8102E">
+    <textPath href="#bottom" startOffset="50%" text-anchor="middle">&#9733;&#9733;&#9733;</textPath>
+  </text>
+
+  <!-- field -->
+  <circle cx="128" cy="128" r="80" fill="url(#field)"/>
+  <clipPath id="fieldclip"><circle cx="128" cy="128" r="80"/></clipPath>
+  <g clip-path="url(#fieldclip)">
+    <g fill="#F2E6C9">
+      <circle cx="88" cy="84" r="1.6"/>
+      <circle cx="170" cy="96" r="1.2" opacity="0.8"/>
+      <circle cx="104" cy="176" r="1.3" opacity="0.7"/>
+      <circle cx="182" cy="150" r="1.5"/>
+      <circle cx="146" cy="72" r="1" opacity="0.7"/>
+    </g>
+
+    <!-- ringed planet, upper left -->
+    <circle cx="86" cy="104" r="14" fill="#F4A261"/>
+    <ellipse cx="86" cy="104" rx="26" ry="6.5" fill="none" stroke="#F2E6C9" stroke-width="2.4" transform="rotate(-18 86 104)"/>
+
+    <!-- launch arc and exhaust puffs -->
+    <path d="M 58 222 Q 96 196 128 150" fill="none" stroke="#F4A261" stroke-width="5" stroke-linecap="round"/>
+    <g fill="#F2E6C9">
+      <circle cx="96" cy="190" r="9"/>
+      <circle cx="84" cy="200" r="7" opacity="0.9"/>
+      <circle cx="108" cy="178" r="6" opacity="0.9"/>
+    </g>
+
+    <!-- the rocket, climbing up and right -->
+    <g transform="translate(142 128) rotate(34)">
+      <path d="M -8 30 C -9 42 -3 48 0 56 C 3 48 9 42 8 30 Z" fill="#F4A261"/>
+      <path d="M -13 8 C -24 16 -28 28 -26 38 L -13 30 Z" fill="#C8102E"/>
+      <path d="M 13 8 C 24 16 28 28 26 38 L 13 30 Z" fill="#C8102E"/>
+      <path d="M -13 30 L -13 -10 C -13 -28 -6 -40 0 -48 C 6 -40 13 -28 13 -10 L 13 30 Z" fill="url(#hullp)"/>
+      <path d="M -10 -24 C -8 -34 -4 -42 0 -48 C 4 -42 8 -34 10 -24 Z" fill="#C8102E"/>
+      <circle cx="0" cy="-4" r="6" fill="#1D3A74" stroke="#C8102E" stroke-width="2"/>
+      <path d="M -2 26 L 2 26 L 2 44 L -2 44 Z" fill="#C8102E"/>
+    </g>
+  </g>
+</svg>

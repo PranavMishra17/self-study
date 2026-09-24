@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate, monogram</title>
+  <!-- The ship is the letter. The nose is the apex of the A, the aft fins are
+       its legs, the engine ring is its crossbar, and the burn fills the
+       counter. One colour on a gradient, so it survives every size. -->
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E1678"/>
+      <stop offset="0.52" stop-color="#9B1F86"/>
+      <stop offset="1" stop-color="#FF6A3D"/>
+    </linearGradient>
+    <linearGradient id="burn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.45" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#FFB347" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="url(#dusk)"/>
+    <circle cx="208" cy="48" r="120" fill="#FFFFFF" opacity="0.05"/>
+
+    <g fill="#FFFFFF">
+      <!-- legs -->
+      <path d="M 109 104 L 109 140 L 74 222 L 44 222 Z"/>
+      <path d="M 147 104 L 147 140 L 182 222 L 212 222 Z"/>
+      <!-- body, apex of the A -->
+      <path d="M 109 162 L 109 86 C 109 60 118 44 128 32 C 138 44 147 60 147 86 L 147 162 Z"/>
+      <!-- crossbar, the engine ring -->
+      <rect x="84" y="160" width="88" height="15" rx="3"/>
+    </g>
+    <!-- porthole, cut back to the sky -->
+    <circle cx="128" cy="92" r="9" fill="#5A1B82"/>
+    <circle cx="125" cy="89" r="3" fill="#FFFFFF" opacity="0.5"/>
+    <!-- the burn, inside the counter of the A -->
+    <path d="M 112 175 C 110 196 122 214 128 236 C 134 214 146 196 144 175 Z" fill="url(#burn)"/>
+  </g>
+</svg>

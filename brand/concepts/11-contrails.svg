@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate, contrails</title>
+  <defs>
+<linearGradient id="lead" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#9DB8FF"/>
+</linearGradient>
+<radialGradient id="spark" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.35" stop-color="#FFC04D"/><stop offset="1" stop-color="#FF5A1F" stop-opacity="0"/>
+</radialGradient>
+
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#101845"/><stop offset="1" stop-color="#03040B"/>
+</linearGradient>
+<linearGradient id="trail" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#CFDCFF" stop-opacity="0.95"/><stop offset="1" stop-color="#CFDCFF" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="plume" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#FFF3C4"/><stop offset="0.3" stop-color="#FFAA33"/><stop offset="1" stop-color="#FF4A1F" stop-opacity="0"/>
+</linearGradient>
+<clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath></defs>
+  <g clip-path="url(#tile)">
+<rect width="256" height="256" fill="url(#bg)"/>
+<g fill="#FFFFFF" opacity="0.6"><circle cx="40" cy="44" r="1.4"/><circle cx="92" cy="26" r="1"/><circle cx="214" cy="178" r="1.2"/><circle cx="230" cy="108" r="0.9"/></g>
+<g transform="translate(160 96) rotate(45) scale(0.95)">
+  <rect x="39.5" y="50" width="3" height="170" rx="1.5" fill="url(#trail)"/>
+  <rect x="-42.5" y="50" width="3" height="170" rx="1.5" fill="url(#trail)"/>
+  <path d="M -12 28 C -14 70 -4 104 0 140 C 4 104 14 70 12 28 Z" fill="url(#plume)"/>
+  <path d="M 0 -60 L 42 52 L 0 28 L -42 52 Z" fill="url(#lead)"/>
+  <path d="M 0 -60 L 0 28 L -42 52 Z" fill="#FFFFFF" opacity="0.35"/>
+</g>
+</g>
+</svg>

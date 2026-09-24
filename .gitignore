@@ -2,3 +2,5 @@
 Thumbs.db
 *.tmp
 .fleet/
+__pycache__/
+brand/craft-512.png

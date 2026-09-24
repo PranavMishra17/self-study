@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Primitives</title>
-<link rel="icon" type="image/png" href="icon.png">
+<title>Accelerate</title>
+<link rel="icon" type="image/svg+xml" href="brand/accelerate.svg">
+<link rel="alternate icon" type="image/png" href="brand/accelerate-32.png">
 <style>
   :root {
     --board: #e8e5dd;
@@ -511,12 +512,98 @@
     color: var(--mark); margin-bottom: 6px; }  .originwarn { border: 2px solid var(--mark); background: var(--live); padding: 12px 16px;
     margin: 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
   .originwarn b { color: var(--mark); }
+  /* -------- Accelerate: header lockup and the flight plan -------- */
+  :root {
+    --flight: #2447E0; --flight-deep: #1733B8; --ghost: #8FA6F0; --burn: #F05A1A;
+    --plan: #B3AFA4; --grid: #D8D4C9;
+    --display: "Bahnschrift", "DIN Alternate", "DIN 2014", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  }
+  .bar .brand { display: flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; min-width: 0; }
+  .bar .brand img { width: 30px; height: 30px; border-radius: 7px; flex: none; }
+  .bar .brand .word { font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: 0.16em; }
+  .bar .brand .mission { font-family: var(--display); font-stretch: 87.5%; font-size: 13px; color: var(--dim);
+    padding-left: 12px; margin-left: 2px; border-left: 1px solid var(--line); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .bar .brand:focus-visible { outline: 2px solid var(--flight); outline-offset: 4px; }
+
+  .hero { margin: 4px 0 30px; }
+  .hero .hdate { font-family: var(--display); font-stretch: 87.5%; font-size: 14px; color: var(--dim); margin: 0 0 8px; }
+  .hero h1.next { font-family: var(--display); font-weight: 600; font-size: 38px; line-height: 1.06;
+    letter-spacing: -0.012em; margin: 0; max-width: 24ch; color: var(--ink); text-wrap: balance; }
+  .hero .hsub { font-size: 15.5px; color: var(--mid); margin: 10px 0 18px; max-width: 62ch; line-height: 1.55; }
+  .hero .hacts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .hero .go-big { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: 0.01em;
+    background: var(--flight); color: #FFFFFF; border: 1px solid var(--flight); padding: 11px 22px; cursor: pointer; }
+  .hero .go-big:hover { background: var(--flight-deep); border-color: var(--flight-deep); }
+  .hero .go-soft { font-family: var(--display); font-size: 15px; background: transparent; color: var(--flight);
+    border: 1px solid var(--flight); padding: 11px 18px; cursor: pointer; }
+  .hero .go-soft:hover { background: rgba(36, 71, 224, 0.07); }
+  .hero .go-link { font-family: var(--display); font-size: 14px; background: none; border: none; color: var(--mid);
+    padding: 11px 6px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .hero .go-link:hover { color: var(--ink); }
+  .hero button:focus-visible { outline: 2px solid var(--flight); outline-offset: 3px; }
+
+  .traj { margin: 26px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
+  .traj .fp svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .traj .cap { font-size: 15px; color: var(--mid); line-height: 1.6; max-width: 72ch; margin: 10px 0 0; }
+  .traj .cap b { color: var(--ink); font-weight: 600; }
+  .traj .go-inline { font-family: var(--display); font-size: 14px; background: none; border: none; padding: 0;
+    color: var(--flight); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  .fp-ground { stroke: var(--line); stroke-width: 1.2; }
+  .fp-grid { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 2 5; }
+  .fp-plan { fill: none; stroke: var(--plan); stroke-width: 2; stroke-dasharray: 6 7; stroke-linecap: round; }
+  .fp-broken { fill: none; stroke: var(--plan); stroke-width: 2; stroke-dasharray: 1 9; stroke-linecap: round; }
+  .flown { fill: none; stroke: var(--flight); stroke-linecap: round; stroke-linejoin: round; }
+  .fp-g { stroke-width: 7; }
+  .fp-a { stroke-width: 4.5; }
+  .fp-r { stroke-width: 2.6; }
+  .fp-now { stroke-width: 2.6; opacity: 0.55; }
+  .fp-pad { fill: var(--ink); }
+  .fp-stage { fill: var(--board); stroke: var(--ink); stroke-width: 1.6; }
+  .fp-gate { fill: var(--board); stroke: var(--flight); stroke-width: 2.2; }
+  .fp-gatec { fill: var(--flight); }
+  .fp-today { stroke: var(--burn); stroke-width: 1.2; stroke-dasharray: 3 4; }
+  .fp-stem { stroke: var(--burn); stroke-width: 1; opacity: 0.7; }
+  .fp-wp { fill: var(--board); stroke: var(--burn); stroke-width: 1.6; }
+  .fp-wp.done { fill: var(--burn); }
+  .fp-lbl { font-family: var(--display); font-weight: 600; font-size: 14px; fill: var(--ink); }
+  .fp-wk { font-family: var(--display); font-weight: 600; font-size: 13.5px; fill: var(--mid); }
+  .fp-wk.on { fill: var(--flight); }
+  .fp-dim { font-family: var(--display); font-stretch: 87.5%; font-size: 12.5px; fill: var(--dim); }
+  .fp-wpl { font-family: var(--display); font-stretch: 87.5%; font-size: 12.5px; fill: var(--burn); }
+  .fp-hull { fill: var(--flight); }
+  .fp-hullshade { fill: #0E1E7A; opacity: 0.35; }
+  .fp-canopy { fill: #FFFFFF; opacity: 0.9; }
+  .fp-ghost1 { fill: var(--ghost); opacity: 0.55; }
+  .fp-ghost2 { fill: var(--ghost); opacity: 0.25; }
+  .fp-spark { fill: url(#fpSpark); }
+
+  /* one moment, once per page load: the flown path draws, then the ship arrives */
+  .hero.arrive .flown { stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation-name: fpFly; animation-timing-function: cubic-bezier(0.3, 0.6, 0.2, 1); animation-fill-mode: forwards; }
+  .hero.arrive .ship { opacity: 0; animation: fpArrive 0.4s ease-out 0.95s forwards; }
+  @keyframes fpFly { to { stroke-dashoffset: 0; } }
+  @keyframes fpArrive { to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero.arrive .flown { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+    .hero.arrive .ship { animation: none; opacity: 1; }
+  }
+  @media (max-width: 720px) {
+    .bar .brand .mission { display: none; }
+    .hero h1.next { font-size: 28px; }
+    .traj .wl, .traj .wpl { display: none; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="bar">
-    <div class="id"><b>Primitives</b><span>Milestone 1, 21 September to 25 October 2026</span></div>
+    <a class="brand" href="#/" aria-label="Accelerate, home">
+      <img src="brand/accelerate.svg" width="30" height="30" alt="">
+      <span class="word">ACCELERATE</span>
+      <span class="mission">Milestone 1, Primitives. 21 September to 25 October 2026.</span>
+    </a>
     <button class="railtoggle" id="railtoggle" aria-expanded="false">Contents</button>
   </div>
   <div class="layout">
@@ -5228,9 +5315,24 @@
     PLAN.forEach(function (w, wi) { w.sessions.forEach(function (s, si) { fn(s, wi, si); }); });
   }
   function eachWild(fn) { WILDCARD.sessions.forEach(function (s, si) { fn(s, "wc", si); }); }
+  /* The day an interview loop happens, read from the session's forWhat,
+     for example "ZenML round 3, 28 Sep". */
+  function loopDate(s) {
+    var m = /(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/.exec(s.forWhat || "");
+    return m ? new Date(START.getFullYear(), MON.indexOf(m[2]), parseInt(m[1], 10)) : null;
+  }
+  function todayMid() {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
   function nextSession() {
-    var found = null;
+    var found = null, today = todayMid();
     eachWild(function (s, wi, si) {
+      /* A loop whose day has passed is over. Its unfinished sessions are not
+         what to do next, however many of them were left unticked. */
+      var when = loopDate(s);
+      if (when && when < today) { return; }
       if (!found && !sessionDone(s)) { found = { s: s, wi: wi, si: si, wild: true }; }
     });
     if (found) { return found; }
@@ -5991,13 +6093,250 @@
 
   /* ---------------------------------------------------------------- home view */
 
+  /* ------------------------------------------------------ the flight plan
+
+     The landing page opens on the milestone drawn as an ascent: launch at week
+     one, orbit at the gate. The path is not an hours target. A gap under a
+     planned line would be debt, and the charter says missed hours are never
+     owed. So each week's segment is drawn by its state instead, heavy for
+     Green, lighter for Amber, a thin line for Red that is still unbroken, and
+     a real break only for a week that ended empty. It is the streak, drawn. */
+
+  var heroDrawn = false;
+  var DAYNAME = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var MONTHNAME = ["January", "February", "March", "April", "May", "June", "July",
+    "August", "September", "October", "November", "December"];
+
+  function stampDate(stamp) {
+    if (!stamp) { return null; }
+    var p = String(stamp).split(" ");
+    var mi = MON.indexOf(p[1]);
+    if (mi < 0) { return null; }
+    return new Date(START.getFullYear(), mi, parseInt(p[0], 10));
+  }
+
+  function flightPath() {
+    var X0 = 40, X1 = 800, XE = 996, Y0 = 244, Y1 = 66, DAYS = PLAN.length * 7;
+    function at(t) {
+      return {
+        x: X0 + t * (X1 - X0),
+        y: Y0 - (Y0 - Y1) * (1 - Math.pow(1 - t, 1.7))
+      };
+    }
+    function seg(t0, t1) {
+      var d = "", i, n = 24, p;
+      for (i = 0; i <= n; i++) {
+        p = at(t0 + (t1 - t0) * i / n);
+        d += (i ? " L " : "M ") + p.x.toFixed(1) + " " + p.y.toFixed(1);
+      }
+      return d;
+    }
+    function tFor(date) { return (date - START) / (DAYS * 864e5); }
+
+    var today = todayMid();
+    var tNow = Math.max(0.004, Math.min(1, (tFor(today) + 0.5 / DAYS)));
+    var wk = currentWeek();
+    var b = "", i;
+
+    /* ground, and the week boundaries rising off it */
+    b += '<line x1="' + X0 + '" y1="262" x2="' + X1 + '" y2="262" class="fp-ground"/>';
+    for (i = 1; i < PLAN.length; i++) {
+      var xg = at(i / PLAN.length).x;
+      b += '<line x1="' + xg + '" y1="262" x2="' + xg + '" y2="30" class="fp-grid"/>';
+    }
+
+    /* beyond the gate: orbit, milestone two, faint because it is not planned yet */
+    b += '<path d="M ' + X1 + ' ' + Y1 + ' L ' + XE + ' ' + Y1 + '" class="fp-plan"/>';
+    b += '<text x="' + (X1 + 20) + '" y="' + (Y1 - 12) + '" class="fp-dim">Milestone 2, Mechanism</text>';
+
+    /* the path, one segment per week */
+    var flown = [];
+    for (i = 0; i < PLAN.length; i++) {
+      var t0 = i / PLAN.length, t1 = (i + 1) / PLAN.length;
+      var ws = weekState(i);
+      var cls = ws === "green" ? "fp-g" : ws === "amber" ? "fp-a" : (ws === "red" || ws === "gap") ? "fp-r" : null;
+      if (i < wk) {
+        if (cls) { flown.push([t0, t1, cls]); }
+        else { b += '<path d="' + seg(t0, t1) + '" class="fp-broken"/>'; }
+      } else if (i === wk) {
+        flown.push([t0, tNow, cls || "fp-now"]);
+        if (tNow < t1) { b += '<path d="' + seg(tNow, t1) + '" class="fp-plan"/>'; }
+      } else {
+        b += '<path d="' + seg(t0, t1) + '" class="fp-plan"/>';
+      }
+    }
+    flown.forEach(function (f) {
+      var span = Math.max(tNow, 0.05);
+      var delay = (f[0] / span) * 0.9, dur = Math.max(0.12, ((f[1] - f[0]) / span) * 0.9);
+      b += '<path d="' + seg(f[0], f[1]) + '" class="flown ' + f[2] + '" pathLength="1" style="animation-delay:' +
+        delay.toFixed(2) + 's;animation-duration:' + dur.toFixed(2) + 's"/>';
+    });
+
+    /* stage markers at each week boundary, launch and gate */
+    var pad = at(0);
+    b += '<path d="M ' + (pad.x - 8) + ' 262 L ' + (pad.x + 8) + ' 262 L ' + pad.x + ' 252 Z" class="fp-pad"/>';
+    b += '<text x="' + pad.x + '" y="280" text-anchor="middle" class="fp-dim">21 Sep</text>';
+    for (i = 1; i < PLAN.length; i++) {
+      var pm = at(i / PLAN.length);
+      b += '<circle cx="' + pm.x.toFixed(1) + '" cy="' + pm.y.toFixed(1) + '" r="4.5" class="fp-stage"/>';
+    }
+    var gate = at(1);
+    b += '<circle cx="' + gate.x + '" cy="' + gate.y.toFixed(1) + '" r="9" class="fp-gate"/>';
+    b += '<circle cx="' + gate.x + '" cy="' + gate.y.toFixed(1) + '" r="3.2" class="fp-gatec"/>';
+    b += '<text x="' + gate.x + '" y="' + (gate.y + 28).toFixed(1) + '" text-anchor="middle" class="fp-lbl">The gate</text>';
+    b += '<text x="' + gate.x + '" y="' + (gate.y + 43).toFixed(1) + '" text-anchor="middle" class="fp-dim">26 Oct</text>';
+
+    /* week labels along the ground */
+    for (i = 0; i < PLAN.length; i++) {
+      var ss = PLAN[i].sessions;
+      var lab = (SHORT[ss[0].id] || "") + ", " + String(SHORT[ss[1].id] || "").toLowerCase();
+      var xm = at((i + 0.5) / PLAN.length).x;
+      b += '<text x="' + xm.toFixed(1) + '" y="280" text-anchor="middle" class="fp-wk' + (i === wk ? " on" : "") + ' wl">Week ' + (i + 1) + '</text>';
+      b += '<text x="' + xm.toFixed(1) + '" y="295" text-anchor="middle" class="fp-dim wl">' + esc(lab) + '</text>';
+    }
+
+    /* interview loops, as waypoints on the path: solid once passed, open ahead */
+    var loops = {};
+    WILDCARD.sessions.forEach(function (w) {
+      var when = loopDate(w);
+      if (!when) { return; }
+      var key = String(w.forWhat).split(",")[0];
+      if (!loops[key]) { loops[key] = { when: when, done: 0, n: 0 }; }
+      loops[key].n += 1;
+      if (sessionDone(w)) { loops[key].done += 1; }
+    });
+    Object.keys(loops).forEach(function (k, li) {
+      var L = loops[k], tl = tFor(L.when) + 0.5 / DAYS;
+      if (tl < 0 || tl > 1) { return; }
+      var wp = at(tl), past = L.when < today;
+      var up = 50 + (li % 2) * 20;
+      b += '<line x1="' + wp.x.toFixed(1) + '" y1="' + wp.y.toFixed(1) + '" x2="' + wp.x.toFixed(1) + '" y2="' +
+        (wp.y - up + 6).toFixed(1) + '" class="fp-stem"/>';
+      b += '<path d="M ' + wp.x.toFixed(1) + ' ' + (wp.y - up - 5).toFixed(1) + ' l 5 5 l -5 5 l -5 -5 Z" class="' +
+        (past ? "fp-wp done" : "fp-wp") + '"/>';
+      b += '<text x="' + (wp.x + 9).toFixed(1) + '" y="' + (wp.y - up + 4).toFixed(1) + '" class="fp-wpl wpl">' +
+        esc(k) + ", " + L.when.getDate() + " " + MON[L.when.getMonth()] + '</text>';
+    });
+
+    /* today, and the ship on it, turned to the path */
+    var here = at(tNow), ahead = at(Math.min(1, tNow + 0.01)), behind = at(Math.max(0, tNow - 0.01));
+    var ang = Math.atan2(ahead.y - behind.y, ahead.x - behind.x) * 180 / Math.PI + 90;
+    b += '<line x1="' + here.x.toFixed(1) + '" y1="262" x2="' + here.x.toFixed(1) + '" y2="' + (here.y + 18).toFixed(1) + '" class="fp-today"/>';
+    b += '<g class="ship"><g transform="translate(' + here.x.toFixed(1) + ' ' + here.y.toFixed(1) + ') rotate(' +
+      ang.toFixed(1) + ') scale(0.5)">' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 112) scale(0.8)" class="fp-ghost2"/>' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 58) scale(0.9)" class="fp-ghost1"/>' +
+      '<circle cx="-11" cy="42" r="15" class="fp-spark"/><circle cx="11" cy="42" r="15" class="fp-spark"/>' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 L -11 36 L -30 50 L -46 42 L -11 -24 Z" class="fp-hull"/>' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 Z" class="fp-hullshade"/>' +
+      '<ellipse cx="0" cy="-24" rx="6" ry="12" class="fp-canopy"/>' +
+      "</g></g>";
+
+    var label = "The milestone as a flight path. Week " + (wk + 1) + " of " + PLAN.length +
+      ", the ship marks today, the gate is on 26 October.";
+    return '<svg viewBox="0 0 1000 304" role="img" aria-label="' + esc(label) + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><radialGradient id="fpSpark" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFFFFF"/>' +
+      '<stop offset="0.35" stop-color="#FFB443"/><stop offset="1" stop-color="#F05A1A" stop-opacity="0"/></radialGradient></defs>' +
+      b + "</svg>";
+  }
+
+  function statusLine(wk) {
+    var parts = [], decl = declaredFor(wk), act = weekState(wk);
+    if (!decl) {
+      parts.push("You have not declared this week yet.");
+    } else if (act === null) {
+      parts.push("You declared <b>" + stateWord(decl.state) + "</b> for this week. Nothing has closed yet.");
+    } else if (act === decl.state) {
+      parts.push("You declared <b>" + stateWord(decl.state) + "</b> for this week, and that is how it reads.");
+    } else {
+      parts.push("You declared <b>" + stateWord(decl.state) + "</b> for this week. So far it reads <b>" +
+        stateWord(act) + "</b>" + (act === "red" || act === "gap" ? ", which still counts as unbroken." : "."));
+    }
+    var st = currentStreak();
+    parts.push(st > 0
+      ? "The streak is <b>" + st + (st === 1 ? " week" : " weeks") + "</b>."
+      : "Close any session this week and the streak begins.");
+    var m = weekMinutesFor(wk);
+    parts.push(m > 0
+      ? "<b>" + mins(m) + "</b> on the clock this week, against the four-to-six-hour floor."
+      : "Nothing on the clock yet this week. The floor is four to six hours.");
+    return parts.join(" ");
+  }
+
+  function mostCold() {
+    var best = null;
+    ["wc", "week1", "week2", "week3", "week4", "week5"].forEach(function (sc) {
+      var n = coldCards(cardsFor(sc)).length;
+      if (n && (!best || n > best.n)) { best = { scope: sc, n: n }; }
+    });
+    return best;
+  }
+
+  function heroHome(v, nx) {
+    var hero = el("section", "hero" + (heroDrawn ? "" : " arrive"));
+    heroDrawn = true;
+    var wk = currentWeek(), today = todayMid();
+    var dayN = Math.floor((today - START) / 864e5);
+    var dayInWeek = Math.max(1, Math.min(7, dayN - wk * 7 + 1));
+
+    hero.appendChild(el("p", "hdate", DAYNAME[today.getDay()] + " " + today.getDate() + " " +
+      MONTHNAME[today.getMonth()] + ". Week " + (wk + 1) + " of " + PLAN.length + ", day " + dayInWeek + "."));
+
+    if (nx) {
+      hero.appendChild(el("h1", "next", nx.s.name));
+      var why = nx.s.blurb || "";
+      if (nx.wild) {
+        var when = loopDate(nx.s), diff = when ? Math.round((when - today) / 864e5) : null;
+        var whenTxt = diff === 0 ? "today" : diff === 1 ? "tomorrow" :
+          (diff !== null && diff < 7 ? "on " + DAYNAME[when.getDay()] : "on " + when.getDate() + " " + MONTHNAME[when.getMonth()]);
+        why = "For " + String(nx.s.forWhat).split(",")[0] + ", " + whenTxt + ". " + why;
+      } else {
+        why = "Week " + (nx.wi + 1) + ", " + nx.s.track.toLowerCase() + ". " + why;
+      }
+      hero.appendChild(el("p", "hsub", why));
+    } else {
+      hero.appendChild(el("h1", "next", "Every session is closed."));
+      hero.appendChild(el("p", "hsub", "The gate is next: a timed quiz and the five-minute spoken answer, recorded."));
+    }
+
+    var acts = el("div", "hacts");
+    if (nx) {
+      var start = el("button", "go-big", "Start this session");
+      start.addEventListener("click", function () { go("session", nx.wild ? "wc" : nx.wi, nx.si); });
+      acts.appendChild(start);
+    }
+    var cold = mostCold();
+    if (cold) {
+      var dr = el("button", "go-soft", "Drill the " + cold.n + " you could not say");
+      dr.addEventListener("click", function () { drill.scope = null; go("drill", cold.scope); });
+      acts.appendChild(dr);
+    }
+    var mp = el("button", "go-link", "See the whole map");
+    mp.addEventListener("click", function () { go("map"); });
+    acts.appendChild(mp);
+    hero.appendChild(acts);
+
+    var traj = el("figure", "traj");
+    traj.appendChild(htm("div", "fp", flightPath()));
+    var cap = el("figcaption", "cap");
+    cap.innerHTML = statusLine(wk);
+    if (!declaredFor(wk)) {
+      var dec = el("button", "go-inline", "Declare it");
+      dec.addEventListener("click", function () { go("week", wk); });
+      cap.appendChild(document.createTextNode(" "));
+      cap.appendChild(dec);
+    }
+    traj.appendChild(cap);
+    hero.appendChild(traj);
+    v.appendChild(hero);
+  }
+
   function viewHome() {
     var v = document.getElementById("view");
     var nx = nextSession();
 
-    v.appendChild(rubric("Five weeks", nx
-      ? "Next: " + nx.s.name.toLowerCase() + ", week " + (nx.wi + 1)
-      : "Every session closed. The gate is next."));
+    heroHome(v, nx);
+    v.appendChild(rubric("Five weeks", "open a week to see its sessions"));
     v.appendChild(el("p", "sm dim", exportStaleNote()));
 
     var grid = el("div", "planner");
@@ -8148,7 +8487,12 @@
   function currentStreak() {
     var n = 0, wi;
     for (wi = currentWeek(); wi >= 0; wi--) {
-      if (weekState(wi) === null) { break; }
+      if (weekState(wi) === null) {
+        /* A week still under way has not broken anything yet. Only a week that
+           ended with nothing in it does. */
+        if (wi === currentWeek()) { continue; }
+        break;
+      }
       n += 1;
     }
     return n;

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate, neon</title>
+  <defs>
+<linearGradient id="pop" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#1F3DFF"/><stop offset="0.55" stop-color="#7A2BFF"/><stop offset="1" stop-color="#FF3D8B"/>
+</linearGradient>
+<radialGradient id="flare" cx="0.5" cy="0.5" r="0.5">
+  <stop offset="0" stop-color="#FFFFFF"/><stop offset="0.4" stop-color="#FFE08A"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0"/>
+</radialGradient>
+<clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath></defs>
+  <g clip-path="url(#tile)">
+<rect width="256" height="256" fill="url(#pop)"/>
+<circle cx="214" cy="40" r="120" fill="#FFFFFF" opacity="0.09"/>
+<g transform="translate(150 104) rotate(45)">
+  <path d="M 0 -60 L 42 52 L 0 28 L -42 52 Z" transform="translate(0 92) scale(0.84)" fill="#FFFFFF" opacity="0.16"/>
+  <path d="M 0 -60 L 42 52 L 0 28 L -42 52 Z" transform="translate(0 46) scale(0.92)" fill="#FFFFFF" opacity="0.34"/>
+  <circle cx="0" cy="34" r="20" fill="url(#flare)"/>
+  <path d="M 0 -60 L 42 52 L 0 28 L -42 52 Z" fill="#FFFFFF"/>
+  <path d="M 0 -60 L 42 52 L 0 28 Z" fill="#DCE3FF"/>
+</g>
+</g>
+</svg>

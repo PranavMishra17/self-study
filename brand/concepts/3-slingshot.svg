@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate, slingshot</title>
+  <!-- A gravity assist: the ship swings round the planet and leaves faster than
+       it arrived. The curve is the past, dashed; the straight line is the
+       acceleration, solid. Flat colour throughout so it holds at 16 px. -->
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#11596A"/>
+      <stop offset="1" stop-color="#05222A"/>
+    </linearGradient>
+    <radialGradient id="planet" cx="0.34" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#FFC874"/>
+      <stop offset="0.55" stop-color="#FF7A45"/>
+      <stop offset="1" stop-color="#C8422A"/>
+    </radialGradient>
+    <clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="url(#sea)"/>
+
+    <g fill="#FFE3B3">
+      <circle cx="44" cy="46" r="2.2"/>
+      <circle cx="94" cy="28" r="1.4" opacity="0.7"/>
+      <circle cx="222" cy="150" r="1.8" opacity="0.8"/>
+      <circle cx="176" cy="206" r="1.4" opacity="0.6"/>
+      <circle cx="30" cy="112" r="1.3" opacity="0.6"/>
+      <circle cx="214" cy="30" r="1.2" opacity="0.5"/>
+    </g>
+
+    <circle cx="70" cy="196" r="40" fill="url(#planet)"/>
+
+    <!-- orbit arc, from below the planet round its left side to the exit point -->
+    <path d="M 60.6 249.2 A 54 54 0 0 1 43 149.2"
+          fill="none" stroke="#FFE3B3" stroke-width="5" stroke-linecap="round"
+          stroke-dasharray="1 11" opacity="0.75"/>
+    <!-- the exit: tangent to the orbit, leaving at thirty degrees -->
+    <path d="M 43 149.2 L 160 81.7"
+          fill="none" stroke="#FFE3B3" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 58 150 L 150 97" fill="none" stroke="#FFE3B3" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+    <path d="M 40 136 L 132 83" fill="none" stroke="#FFE3B3" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+
+    <!-- the ship at the head of the line, pointing along it -->
+    <g transform="translate(182 69) rotate(60)">
+      <path d="M -7 30 C -8 44 -2 52 0 60 C 2 52 8 44 7 30 Z" fill="#FF9A3D"/>
+      <path d="M -12 10 L -24 30 L -24 38 L -12 34 Z" fill="#FF7A45"/>
+      <path d="M 12 10 L 24 30 L 24 38 L 12 34 Z" fill="#FF7A45"/>
+      <path d="M -12 34 L -12 -8 C -12 -22 -6 -32 0 -38 C 6 -32 12 -22 12 -8 L 12 34 Z" fill="#FFF3DC"/>
+      <circle cx="0" cy="-6" r="4.6" fill="#11596A"/>
+    </g>
+  </g>
+</svg>

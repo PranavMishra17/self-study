@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Accelerate</title>
+  <!-- Craft. A delta-wing ship with a canopy, a spine and twin engines,
+       climbing through deep space, with two afterimages of where it was a
+       moment ago. The afterimages use a smoothed silhouette without the
+       notched tail, so three copies read as motion rather than as a staircase. -->
+  <defs>
+    <radialGradient id="void" cx="0.62" cy="0.36" r="0.8">
+      <stop offset="0" stop-color="#1A2450"/>
+      <stop offset="0.6" stop-color="#090B16"/>
+      <stop offset="1" stop-color="#040509"/>
+    </radialGradient>
+    <linearGradient id="lead" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#9DB8FF"/>
+    </linearGradient>
+    <radialGradient id="spark" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.35" stop-color="#FFC04D"/>
+      <stop offset="1" stop-color="#FF5A1F" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="url(#void)"/>
+    <g fill="#FFFFFF" opacity="0.55">
+      <circle cx="46" cy="52" r="1.3"/>
+      <circle cx="196" cy="206" r="1.1"/>
+      <circle cx="220" cy="120" r="1"/>
+      <circle cx="120" cy="30" r="0.9"/>
+      <circle cx="30" cy="150" r="0.9"/>
+    </g>
+    <g transform="translate(156 98) rotate(45)">
+      <path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 112) scale(0.8)" fill="#2F5BFF" opacity="0.26"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z" transform="translate(0 58) scale(0.9)" fill="#3D72FF" opacity="0.52"/>
+      <circle cx="-11" cy="40" r="14" fill="url(#spark)"/>
+      <circle cx="11" cy="40" r="14" fill="url(#spark)"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 L -11 36 L -30 50 L -46 42 L -11 -24 Z" fill="url(#lead)"/>
+      <path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 Z" fill="#1B2B66" opacity="0.2"/>
+      <rect x="-1" y="-44" width="2" height="80" fill="#7F9BFF" opacity="0.55"/>
+      <ellipse cx="0" cy="-24" rx="5.6" ry="11.5" fill="#16204A"/>
+      <ellipse cx="-1.6" cy="-28" rx="1.8" ry="4.2" fill="#FFFFFF" opacity="0.75"/>
+    </g>
+  </g>
+</svg>

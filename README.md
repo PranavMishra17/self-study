@@ -10,9 +10,14 @@ is a separate store from `http://localhost:8000` and will look completely empty.
 So will `http://127.0.0.1:8000`, although it is the same server serving the same
 file. Nothing is lost when that happens; it is at the other address.
 
-There is a **Self-study** shortcut on the desktop, with the desk icon, that runs
-`study.cmd` minimised. That is the one to use day to day. If it is ever lost, it
-points at `study.cmd` in this folder and uses `icon.ico` for its picture.
+There is an **Accelerate** shortcut on the desktop that runs `study.cmd` minimised.
+That is the one to use day to day. If it is ever lost, it points at `study.cmd`
+in this folder and takes its picture from `brand/accelerate.ico`.
+
+`brand/` holds the icon. `accelerate.svg` is the source; `python brand/render.py`
+rebuilds the `.ico` and the favicon from it through headless Edge. The fifteen
+directions it was chosen from, and the two gallery pages used to choose, are in
+`brand/concepts/`.
 
 `study.cmd` always opens `http://localhost:8000`, starting a small local server
 first if one is not already running, so the address never drifts. If the tracker

@@ -108,3 +108,25 @@ Hovering a node lights everything it needs and everything that needs it. Detail
 decays with distance, so the further-out columns render faint and milestone 3 has
 five nodes because `ROADMAP-AHEAD.md` names five things. This is a presentation of
 the existing plan and not a change to it; nothing in `CHARTER.md` is contradicted.
+
+**2026-09-24 — The tracker is called Accelerate, and opens on a flight plan.**
+The icon was chosen from fifteen directions over two rounds, judged at the sizes an
+icon actually lives at rather than only large. The winner is Craft: a delta-wing ship
+climbing through deep space with two afterimages behind it. It is on the desktop
+shortcut, now called Accelerate, and on the browser tab.
+
+The landing page opens on the milestone drawn as an ascent, launch at week one and
+orbit at the gate, with the ship at today's position. The obvious version of this
+chart, a planned-hours line with the real line beneath it, was rejected because a
+gap under a plan line is debt drawn on a screen, and `CHARTER.md` says missed hours
+are never owed. So each week's segment is drawn by its declared state instead: heavy
+for Green, lighter for Amber, thin but unbroken for Red. Only a week that ended empty
+breaks the line. What the chart draws is the streak, which `PROTOCOL.md` names as the
+thing being protected.
+
+Two bugs fixed on the way, both of which the new page would have put front and
+centre. The streak read zero every Monday, because the week in progress counted as a
+break before it had had a chance to be anything. And the next session stayed pinned
+to Oxus the day after the Oxus interview, because an unfinished session in a loop
+that is already over still counted as next. Neither is a deviation from the charter;
+both were the code disagreeing with it.
