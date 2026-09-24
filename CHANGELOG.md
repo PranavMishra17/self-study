@@ -146,3 +146,21 @@ patterns list nothing: real-time updates, contention, geo search and LLM cost ar
 taught by any session yet. That is a finding rather than a gap in the linking, and
 worth a thought at the milestone 2 re-plan. No actions were added and no session
 minutes changed.
+
+**2026-09-24 — The guide in three tabs, the map on its side, the rail grouped.**
+The system design guide was too wordy to skim. It now has three tabs. Framework is
+the landing page: the six-step diagram, one card per step, the classic-versus-agentic
+table, and the signals and transition lines folded away. Patterns opens on a gallery
+of fifteen diagrams; each pattern page shows its diagram, then every technique with a
+small diagram of its own mechanism (ninety eight new), what it is, an example and its
+trade-off, the designs that use it, and where Accelerate practises it. Designs lists
+the six worked designs; a design page keeps a side list of its steps, and "Patterns
+this design uses" is a grid of cards. The guide's text is unchanged. Old links still
+work: `#/overview/...` and `#/<design>/...` redirect to the new routes, and the
+tracker's pointers use the new routes directly.
+
+In Accelerate, the map of the work ahead was two and a half screens wide and needed
+sideways scrolling. Time now runs downward, one band per milestone, with the five
+tracks as columns; it fits the page and sits just above the Day board. The side rail's
+loose list of nine links is grouped into Practise, Look ahead, Reference, and Rules
+and data. No plan content changed.

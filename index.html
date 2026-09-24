@@ -60,8 +60,10 @@
   .side .it .sq { width: 8px; height: 8px; margin: 0 0 0 6px; display: inline-block; box-shadow: inset 0 0 0 1.5px var(--line); }
   .side .it .sq.done { box-shadow: none; }
   .side .sub { font-size: 11.5px; color: var(--faint); padding: 6px 0 2px 28px; }
-  .side .foot { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 10px;
-    display: flex; flex-direction: column; gap: 2px; }
+  .side .foot { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px;
+    display: flex; flex-direction: column; gap: 0; }
+  .side .foot .fh { font-size: 11px; color: var(--faint); padding: 2px 0 3px; }
+  .side .foot + .foot { border-top: 0; margin-top: 6px; padding-top: 0; }
   .side .foot button { background: none; border: none; text-align: left; padding: 4px 0; cursor: pointer;
     color: var(--dim); font-size: 13px; }
   .side .foot button:hover { color: var(--ink); }
@@ -399,7 +401,7 @@
   .mapwrap { border: 1px solid var(--line); background: var(--sheet); }
   .mapscroll { overflow-x: auto; overflow-y: hidden; padding: 12px 14px 6px; }
   .mapwrap.tall .mapscroll { overflow-y: visible; }
-  .mapsvg { display: block; }
+  .mapsvg { display: block; width: 100%; min-width: 620px; height: auto; margin: 0 auto; }
   .m-col { fill: var(--ink); font-family: var(--sans); font-size: 12.5px; font-weight: 700; }
   .m-when { fill: var(--faint); font-family: var(--sans); font-size: 10px; }
   .m-lane { fill: var(--dim); font-family: var(--sans); font-size: 10px;
@@ -600,7 +602,8 @@
   .sdrow .sdp a { color: var(--flight); font-weight: 600; text-decoration: none; margin-right: 6px; }
   .sdrow .sdp a:hover, .sdrow .sdp a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
   .sdrow .sdp .why { color: var(--mid); }
-  .side .foot a.sdnav { display: block; padding: 4px 0; color: var(--flight); font-size: 13px; text-decoration: none; }
+  .side .foot a.sdnav { display: block; padding: 4px 0; color: var(--dim); font-size: 13px; text-decoration: none; }
+  .side .foot a.sdnav::after { content: " \2197"; color: var(--faint); }
   .side .foot a.sdnav:hover { text-decoration: underline; }
   .hero a.go-link { display: inline-block; }
 </style>
@@ -6175,23 +6178,31 @@
     }
     side.appendChild(wg);
 
-    var foot = el("div", "foot");
-    [["requeue", "Requeue"], ["protocol", "Protocol"], ["charter", "Charter"],
-     ["written", "Written work"], ["ahead", "What comes after"], ["data", "Data and export"],
-     ["resources", "Resources"], ["search", "Search"],
-     ["map", "The work ahead"]].forEach(function (t) {
-      var b = el("button", view.page === t[0] ? "on" : "", t[1]);
-      b.addEventListener("click", function () { go(t[0]); closeRail(); });
-      foot.appendChild(b);
+    /* everything that is not a session, grouped by what it is for */
+    [["Practise", [["requeue", "Requeue"], ["written", "Written work"], ["search", "Search"]]],
+     ["Look ahead", [["map", "The work ahead"], ["ahead", "What comes after"]]],
+     ["Reference", [["resources", "Resources"], ["sd", "System design guide"]]],
+     ["Rules and data", [["charter", "Charter"], ["protocol", "Protocol"], ["data", "Data and export"]]]
+    ].forEach(function (grp) {
+      var foot = el("div", "foot");
+      foot.appendChild(el("div", "fh", grp[0]));
+      grp[1].forEach(function (t) {
+        if (t[0] === "sd") {
+          var sdLink = document.createElement("a");
+          sdLink.href = SD.file;
+          sdLink.target = "_blank";
+          sdLink.rel = "noopener";
+          sdLink.className = "sdnav";
+          sdLink.textContent = t[1];
+          foot.appendChild(sdLink);
+          return;
+        }
+        var b = el("button", view.page === t[0] ? "on" : "", t[1]);
+        b.addEventListener("click", function () { go(t[0]); closeRail(); });
+        foot.appendChild(b);
+      });
+      side.appendChild(foot);
     });
-    var sdLink = document.createElement("a");
-    sdLink.href = SD.file;
-    sdLink.target = "_blank";
-    sdLink.rel = "noopener";
-    sdLink.className = "sdnav";
-    sdLink.textContent = "System design guide";
-    foot.appendChild(sdLink);
-    side.appendChild(foot);
     side.appendChild(htm("div", "keys", "Left and right arrows move between sessions.<br>Escape goes up a level."));
   }
   function drawCrumb() {
@@ -6628,6 +6639,17 @@
       v.appendChild(cr);
     }
 
+    /* the work ahead, from here to 2027 */
+    v.appendChild(rubric("The work ahead", "every milestone through 2027"));
+    v.appendChild(el("p", "sm dim", "Time runs downward, one band per milestone; each column is a track, and a line means the lower thing needs the upper thing first."));
+    v.appendChild(mapLegend());
+    v.appendChild(mapPanel(""));
+    var mapActs = el("div", "row-act");
+    var mapOpen = el("button", "sec", "Open the map on its own page");
+    mapOpen.addEventListener("click", function () { go("map"); });
+    mapActs.appendChild(mapOpen);
+    v.appendChild(mapActs);
+
     /* day board */
     v.appendChild(rubric("Day board", "session closures above, the rest of life below"));
     var board = el("div", "board");
@@ -6711,15 +6733,6 @@
     });
     v.appendChild(t);
 
-    v.appendChild(rubric("The work ahead", "every milestone through 2027"));
-    v.appendChild(el("p", "sm dim", "Time runs left to right, tracks are the lanes, and a line means the thing on the right needs the thing on the left first. Later columns are faint because the plan is genuinely vaguer out there. Scroll sideways."));
-    v.appendChild(mapLegend());
-    v.appendChild(mapPanel(""));
-    var mapActs = el("div", "row-act");
-    var mapOpen = el("button", "sec", "Open the map on its own page");
-    mapOpen.addEventListener("click", function () { go("map"); });
-    mapActs.appendChild(mapOpen);
-    v.appendChild(mapActs);
   }
 
   /* ---------------------------------------------------------------- week view */
@@ -8695,7 +8708,9 @@
      wide as its own dependency chain. Detail decays with distance on purpose, so
      the further-out columns render faint. */
 
-  var MAPGEO = { bw: 118, bh: 26, xs: 134, ys: 31, lgap: 20, left: 138, top: 52 };
+  /* Time runs downward: one band per milestone, one column per track. A track with
+     more than a dozen nodes in any one milestone gets a second slot side by side. */
+  var MAPGEO = { bw: 122, bh: 28, xs: 131, ys: 35, lanegap: 10, top: 34, bandHead: 34, pad: 4, perSlot: 12 };
   var MAPFADE = { detailed: 1, planned: 0.68, sketch: 0.46, parked: 0.3 };
 
   function mapNodeState(n) {
@@ -8728,47 +8743,56 @@
     }
     MAP.nodes.forEach(function (n) { depthOf(n.id); });
 
-    /* column widths, in sub-columns */
-    var colSpan = {}, colX = {}, runX = MAPGEO.left;
-    MAP.cols.forEach(function (c) { colSpan[c.id] = 0; });
+    /* slots per track: the busiest milestone decides */
+    var count = {}, slots = {}, laneX = {}, runX = MAPGEO.pad;
     MAP.nodes.forEach(function (n) {
-      colSpan[n.col] = Math.max(colSpan[n.col], depth[n.id] + 1);
-    });
-    MAP.cols.forEach(function (c) {
-      colX[c.id] = runX;
-      c._w = colSpan[c.id] * MAPGEO.xs;
-      runX += c._w;
-    });
-
-    /* lane heights, in rows: the busiest single cell decides the band */
-    var cell = {}, laneRows = {}, laneY = {}, runY = MAPGEO.top;
-    MAP.lanes.forEach(function (l) { laneRows[l.id] = 0; });
-    MAP.nodes.forEach(function (n) {
-      var k = n.col + "|" + depth[n.id] + "|" + n.lane;
-      cell[k] = (cell[k] || 0) + 1;
-      laneRows[n.lane] = Math.max(laneRows[n.lane], cell[k]);
+      var k = n.col + "|" + n.lane;
+      count[k] = (count[k] || 0) + 1;
     });
     MAP.lanes.forEach(function (l) {
-      laneY[l.id] = runY;
-      l._h = laneRows[l.id] * MAPGEO.ys;
-      runY += l._h + MAPGEO.lgap;
+      var most = 0;
+      MAP.cols.forEach(function (c) { most = Math.max(most, count[c.id + "|" + l.id] || 0); });
+      slots[l.id] = Math.max(1, Math.ceil(most / MAPGEO.perSlot));
+      laneX[l.id] = runX;
+      l._w = slots[l.id] * MAPGEO.xs;
+      runX += l._w + MAPGEO.lanegap;
     });
 
-    /* place */
-    var fill = {}, placed = [];
-    MAP.nodes.forEach(function (n) {
-      var k = n.col + "|" + depth[n.id] + "|" + n.lane;
-      var row = fill[k] || 0;
-      fill[k] = row + 1;
-      placed.push({
-        n: n,
-        x: colX[n.col] + depth[n.id] * MAPGEO.xs,
-        y: laneY[n.lane] + row * MAPGEO.ys
+    /* rows: a node sits below everything it needs in its milestone, in the
+       first slot of its track that is free by then */
+    var pos = {}, placed = [], bandY = {}, runY = MAPGEO.top;
+    MAP.cols.forEach(function (c) {
+      var ns = MAP.nodes.filter(function (n) { return n.col === c.id; });
+      ns.sort(function (a, b) { return depth[a.id] - depth[b.id]; });
+      var row = {}, free = {}, rows = 0;
+      bandY[c.id] = runY;
+      ns.forEach(function (n) {
+        var base = 0, best = 0, s;
+        n.needs.forEach(function (p) {
+          if (row[p] !== undefined) { base = Math.max(base, row[p] + 1); }
+        });
+        if (!free[n.lane]) {
+          free[n.lane] = [];
+          for (s = 0; s < slots[n.lane]; s++) { free[n.lane].push(0); }
+        }
+        var f = free[n.lane];
+        for (s = 1; s < f.length; s++) {
+          if (Math.max(f[s], base) < Math.max(f[best], base)) { best = s; }
+        }
+        row[n.id] = Math.max(f[best], base);
+        f[best] = row[n.id] + 1;
+        rows = Math.max(rows, row[n.id] + 1);
+        var p = {
+          n: n,
+          x: laneX[n.lane] + best * MAPGEO.xs,
+          y: runY + MAPGEO.bandHead + row[n.id] * MAPGEO.ys
+        };
+        placed.push(p);
+        pos[n.id] = p;
       });
+      c._h = MAPGEO.bandHead + rows * MAPGEO.ys;
+      runY += c._h + 8;
     });
-
-    var pos = {};
-    placed.forEach(function (p) { pos[p.n.id] = p; });
 
     /* upstream and downstream closures, for the focus highlight */
     var up = {}, down = {};
@@ -8786,10 +8810,10 @@
     });
 
     mapCache = {
-      by: by, pos: pos, placed: placed, depth: depth, colX: colX, laneY: laneY,
+      by: by, pos: pos, placed: placed, depth: depth, laneX: laneX, bandY: bandY,
       up: up, down: down,
-      w: runX + 24,
-      h: runY - MAPGEO.lgap + 14
+      w: runX - MAPGEO.lanegap + MAPGEO.pad,
+      h: runY
     };
     return mapCache;
   }
@@ -8804,37 +8828,34 @@
   function mapSvg() {
     var L = mapLayout(), b = "", i;
 
-    /* column bands and headers */
-    MAP.cols.forEach(function (c, ci) {
-      var x = L.colX[c.id];
-      if (ci > 0) {
-        b += '<line x1="' + (x - MAPGEO.xs / 2 + MAPGEO.bw / 2 + 8) + '" y1="20" x2="' +
-          (x - MAPGEO.xs / 2 + MAPGEO.bw / 2 + 8) + '" y2="' + (L.h - 16) +
-          '" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
+    /* track headers, and a faint rule between tracks */
+    MAP.lanes.forEach(function (l, li) {
+      var x = L.laneX[l.id];
+      b += '<text x="' + (x + l._w / 2) + '" y="14" text-anchor="middle" class="m-lane">' + esc(l.name) + '</text>';
+      if (li > 0) {
+        b += '<line x1="' + (x - MAPGEO.lanegap / 2 - 2) + '" y1="' + (MAPGEO.top - 6) + '" x2="' +
+          (x - MAPGEO.lanegap / 2 - 2) + '" y2="' + (L.h - 4) + '" class="d-str-flat" stroke-width="1" stroke-dasharray="2 5"/>';
       }
-      b += '<text x="' + x + '" y="22" class="m-col">' + esc(c.name) + '</text>';
-      b += '<text x="' + x + '" y="36" class="m-when">' + esc(c.when) + '</text>';
     });
 
-    /* lane labels */
-    MAP.lanes.forEach(function (l) {
-      b += '<text x="0" y="' + (L.laneY[l.id] + 15) + '" class="m-lane">' + esc(l.name) + '</text>';
-      b += '<line x1="0" y1="' + (L.laneY[l.id] - 9) + '" x2="' + (L.w - 24) + '" y2="' +
-        (L.laneY[l.id] - 9) + '" class="d-str-flat" stroke-width="1"/>';
+    /* milestone bands: a rule, the name, and when */
+    MAP.cols.forEach(function (c) {
+      var y = L.bandY[c.id];
+      b += '<line x1="0" y1="' + y + '" x2="' + L.w + '" y2="' + y + '" class="d-str-flat" stroke-width="1"/>';
+      b += '<text x="' + MAPGEO.pad + '" y="' + (y + 19) + '" class="m-col">' + esc(c.name) +
+        '<tspan class="m-when" dx="10">' + esc(c.when) + '</tspan></text>';
     });
 
-    /* edges first, so nodes sit on top */
+    /* edges first, so nodes sit on top: bottom of what is needed to top of what needs it */
     MAP.nodes.forEach(function (n) {
       var t = L.pos[n.id];
       n.needs.forEach(function (pid) {
         var s = L.pos[pid];
         if (!s) { return; }
-        var x1 = s.x + MAPGEO.bw, y1 = s.y + MAPGEO.bh / 2;
-        var x2 = t.x, y2 = t.y + MAPGEO.bh / 2;
-        var dx = Math.max(16, Math.min(58, (x2 - x1) / 2));
-        var d = x2 > x1
-          ? "M" + x1 + "," + y1 + " C" + (x1 + dx) + "," + y1 + " " + (x2 - dx) + "," + y2 + " " + x2 + "," + y2
-          : "M" + x1 + "," + y1 + " L" + x2 + "," + y2;
+        var x1 = s.x + MAPGEO.bw / 2, y1 = s.y + MAPGEO.bh;
+        var x2 = t.x + MAPGEO.bw / 2, y2 = t.y;
+        var dy = Math.max(10, Math.min(40, (y2 - y1) / 2));
+        var d = "M" + x1 + "," + y1 + " C" + x1 + "," + (y1 + dy) + " " + x2 + "," + (y2 - dy) + " " + x2 + "," + y2;
         b += '<path d="' + d + '" class="m-edge" data-from="' + pid + '" data-to="' + n.id + '"/>';
       });
     });
@@ -8861,17 +8882,17 @@
         b += '<rect x="' + p.x + '" y="' + p.y + '" width="4" height="' + MAPGEO.bh +
           '" class="d-fill-' + tone + ' d-str-' + tone + '" stroke-width="0.5"/>';
       }
-      var lines = mapWrap(n.label, 22);
+      var lines = mapWrap(n.label, 23);
       for (i = 0; i < lines.length; i++) {
         b += '<text x="' + (p.x + MAPGEO.bw / 2) + '" y="' +
-          (p.y + (lines.length === 1 ? 17 : 12 + i * 11)) +
+          (p.y + (lines.length === 1 ? 18 : 12 + i * 11)) +
           '" text-anchor="middle" class="m-lbl">' + esc(lines[i]) + '</text>';
       }
       b += '</g>';
     });
 
-    return '<svg viewBox="0 0 ' + L.w + ' ' + L.h + '" width="' + L.w + '" height="' + L.h +
-      '" xmlns="http://www.w3.org/2000/svg" role="img" class="mapsvg">' + b + '</svg>';
+    return '<svg viewBox="0 0 ' + L.w + ' ' + L.h + '" style="max-width:' + L.w + 'px"' +
+      ' xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The work ahead, milestone by milestone" class="mapsvg">' + b + '</svg>';
   }
 
   function mapFocus(host, id) {
@@ -8984,7 +9005,7 @@
         s.appendChild(document.createTextNode(t[1]));
         lg.appendChild(s);
       });
-    var s2 = el("span", "dim", "Later columns are faint because the plan is genuinely vaguer out there.");
+    var s2 = el("span", "dim", "Later milestones are faint because the plan is genuinely vaguer out there.");
     lg.appendChild(s2);
     return lg;
   }
@@ -8992,7 +9013,7 @@
   function viewMap() {
     var v = document.getElementById("view");
     v.appendChild(el("h1", "", "The work ahead"));
-    v.appendChild(el("p", "lede", "Every milestone through 2027 in one picture. Time runs left to right, tracks are the lanes, and a line means the thing on the right needs the thing on the left first. Scroll sideways."));
+    v.appendChild(el("p", "lede", "Every milestone through 2027 in one picture. Time runs downward, one band per milestone; each column is a track, and a line means the lower thing needs the upper thing first."));
     v.appendChild(mapLegend());
     v.appendChild(mapPanel("tall"));
     var acts = el("div", "row-act");
