@@ -507,7 +507,9 @@
   .crb.no.on { border-color: var(--mark); color: var(--mark); font-weight: 600; }
   .carry { border: 1px solid var(--mark); background: var(--sheet); padding: 11px 14px; margin-bottom: 14px; }
   .carry .ch { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase;
-    color: var(--mark); margin-bottom: 6px; }
+    color: var(--mark); margin-bottom: 6px; }  .originwarn { border: 2px solid var(--mark); background: var(--live); padding: 12px 16px;
+    margin: 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .originwarn b { color: var(--mark); }
 </style>
 </head>
 <body>
@@ -5074,7 +5076,7 @@
     return {
       steps: {}, done: {}, quiz: {}, quizHistory: {}, life: {}, notes: {},
       visits: {}, answers: {}, folded: {}, recall: {}, declared: {},
-      clock: {}, floor: {}, exports: {}, closer: {},
+      clock: {}, floor: {}, exports: {}, closer: {}, origin: null,
       requeue: { read: null, answered: {}, added: [] }
     };
   }
@@ -5108,6 +5110,7 @@
           state.clock = p.clock || {};
           state.floor = p.floor || {};
           state.closer = p.closer || {};
+          state.origin = p.origin || null;
           state.quizHistory = p.quizHistory || {};
           Object.keys(state.quiz).forEach(function (qid) {
             if (!state.quizHistory[qid] && state.quiz[qid]) { state.quizHistory[qid] = [state.quiz[qid]]; }
@@ -5121,6 +5124,8 @@
   }
   function save() {
     if (!storageOk) { return; }
+    var here = whereAmI();
+    if (here !== "file" && here !== "unknown") { state.origin = here; }
     try { window.localStorage.setItem(KEY, JSON.stringify(state)); }
     catch (err) { storageOk = false; console.error("Could not save progress. Export from Data.", err); }
   }
@@ -5738,6 +5743,49 @@
       ol.appendChild(li);
     });
     return ol;
+  }
+
+  /* ------------------------------------------ where the progress lives
+
+     The browser stores progress against the exact address the page was opened
+     from: scheme, host and port. http://localhost:8000 and a double-clicked
+     file:// copy of this same page are two separate, invisible stores, so
+     opening it the other way looks exactly like losing everything. It is not
+     lost. It is at the other address. This says so out loud instead of
+     showing an empty tracker. */
+
+  var HOME_ORIGIN = "http://localhost:8000";
+
+  function whereAmI() {
+    try {
+      if (window.location.protocol === "file:") { return "file"; }
+      return window.location.origin;
+    } catch (err) {
+      console.error("Could not read the page address", err);
+      return "unknown";
+    }
+  }
+
+  function originBanner() {
+    var here = whereAmI();
+    var before = state.origin;
+    var msg = null;
+    if (here === "file") {
+      msg = "Opened directly as a file. Anything saved here is kept separately from " +
+        HOME_ORIGIN + ", so it will look empty and anything you tick now will not appear " +
+        "there. Close this and double-click study.cmd instead.";
+    } else if (before && before !== here) {
+      msg = "This is " + here + ". Your progress was last saved at " + before +
+        ". The browser keeps each address separate, so open " + before + " to get it back.";
+    } else if (here !== HOME_ORIGIN && here !== "unknown") {
+      msg = "This is " + here + ", not " + HOME_ORIGIN + ". Progress saved here will not " +
+        "appear at the usual address. Double-click study.cmd to use the usual one.";
+    }
+    if (!msg) { return null; }
+    var b = el("div", "originwarn");
+    b.appendChild(el("b", "", "Your progress is not lost. "));
+    b.appendChild(document.createTextNode(msg));
+    return b;
   }
 
   function tone(track) { return TRACK[track] || "flat"; }
@@ -8488,6 +8536,8 @@
       else if (view.page === "search") { viewSearch(); }
       else if (view.page === "map") { viewMap(); }
       else { viewData(); }
+      var ob = originBanner();
+      if (ob) { v.insertBefore(ob, v.firstChild); }
     } catch (err) {
       console.error("Render failed", err);
     }

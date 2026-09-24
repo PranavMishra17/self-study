@@ -2,8 +2,18 @@
 
 Started 17 September 2026. Milestone 1 runs 21 September to 25 October.
 
-Open `index.html` in a browser, served rather than double-clicked so progress saves
-reliably: `python -m http.server 8000` in this folder, then `http://localhost:8000`.
+**Double-click `study.cmd`.** Not `index.html`.
+
+The browser stores progress against the exact address the page was opened from:
+scheme, host and port. A double-clicked `index.html` gets a `file://` address, which
+is a separate store from `http://localhost:8000` and will look completely empty.
+So will `http://127.0.0.1:8000`, although it is the same server serving the same
+file. Nothing is lost when that happens; it is at the other address.
+
+`study.cmd` always opens `http://localhost:8000`, starting a small local server
+first if one is not already running, so the address never drifts. If the tracker
+is ever opened any other way, a banner at the top of every page says so and names
+the address the progress is actually at.
 
 ## The files
 
