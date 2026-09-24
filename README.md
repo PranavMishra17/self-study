@@ -10,6 +10,10 @@ is a separate store from `http://localhost:8000` and will look completely empty.
 So will `http://127.0.0.1:8000`, although it is the same server serving the same
 file. Nothing is lost when that happens; it is at the other address.
 
+There is a **Self-study** shortcut on the desktop, with the desk icon, that runs
+`study.cmd` minimised. That is the one to use day to day. If it is ever lost, it
+points at `study.cmd` in this folder and uses `icon.ico` for its picture.
+
 `study.cmd` always opens `http://localhost:8000`, starting a small local server
 first if one is not already running, so the address never drifts. If the tracker
 is ever opened any other way, a banner at the top of every page says so and names
