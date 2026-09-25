@@ -216,3 +216,19 @@ preparation and the personal plan along with the full history; the history was s
 for secrets first and none were found. Progress stays in each browser, so the online copy
 starts empty and carries progress across only through Export and Import. The tracker's
 address banner says so when opened online.
+
+**2026-09-25 — Interview loops get their own pages.**
+Working through the ZenML sessions in the tracker was the wrong shape: small grey text,
+content hidden behind Detail and Answer toggles, twenty-five controls on a page, and
+about twenty-five memorisation questions per session, some of them fill-in-the-blank.
+Every interview loop now gets its own page in `interviews/`. The ZenML round 3 page has
+the brief, spoken scripts, timed speak-aloud drills, a technical question bank
+(including LangChain, LangGraph and LangSmith, trace stores, and Supabase), Kitaru's
+mechanisms with the teardown's diagrams, questions to ask, traps, and all eleven sessions
+readable in place. Each session has one quiz, five to eight open questions shown one at
+a time in a pop-up, answered by typing or with Win+H, then compared with a model answer
+and self-rated. Ticks on the page are the tracker's own progress, shared because both
+are served from the same address. Oxus has a minimal archive page. The tracker's wildcard
+page leads with a card per loop, and the home page's button opens the loop's page. Full
+mock interviews run in the Claude Code chat, by the protocol in `interviews/MOCKS.md`.
+The whole-tracker overhaul waits on a choice between layout variants.

@@ -596,6 +596,15 @@
     .hero h1.next { font-size: 28px; }
     .traj .wl, .traj .wpl { display: none; }
   }
+  .side a.looplink { display: block; color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .loops { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 6px 0 22px; }
+  .loopcard { display: block; padding: 18px 20px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); text-decoration: none; }
+  .loopcard:hover { border-color: var(--ink); }
+  .loopcard .ln { font-family: var(--display); font-size: 22px; font-weight: 700; }
+  .loopcard .lw { font-size: 14px; color: var(--dim); margin-top: 2px; }
+  .loopcard .lt { font-size: 15px; margin-top: 10px; }
+  .loopcard .lm { font-size: 14px; color: var(--dim); margin-top: 8px; }
+  .loopcard .lo { font-size: 14px; font-weight: 700; margin-top: 12px; text-decoration: underline; text-underline-offset: 3px; }
   .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   .sdrow { margin: 9px 0 3px; padding: 3px 0 3px 11px; border-left: 2px solid var(--flight); max-width: 78ch; }
   .sdrow .sdh { font-family: var(--display); font-stretch: 87.5%; font-size: 12px; color: var(--dim); margin-bottom: 3px; }
@@ -2850,6 +2859,24 @@
 
   /* Wildcard: interview-driven sessions, appended as they are needed.
      Same shape as a planned session. Left empty until something lands. */
+  /* Every interview loop has its own page in interviews/, built by interviews/build.py.
+     The wildcard page lists them; a loop's sessions are the wildcard sessions whose
+     forWhat starts with the loop's forWhat. */
+  var LOOPS = [
+    { id: "zenml-r3", name: "ZenML round 3", when: "Mon 28 Sep, 9 AM Eastern", forWhat: "ZenML round 3",
+      file: "interviews/zenml-round3.html", note: "Ninety minutes, technical, with Hamza and Alex." },
+    { id: "oxus", name: "Oxus, technical", when: "23 Sep", forWhat: "Oxus",
+      file: "interviews/oxus.html", note: "Happened. Its design sessions moved into weeks 2 to 4." }
+  ];
+  function loopSessions(lp) {
+    return WILDCARD.sessions.filter(function (s) { return String(s.forWhat || "").indexOf(lp.forWhat) === 0; });
+  }
+  function loopOf(s) {
+    var hit = null;
+    LOOPS.forEach(function (lp) { if (!hit && String(s.forWhat || "").indexOf(lp.forWhat) === 0) { hit = lp; } });
+    return hit;
+  }
+
   var WILDCARD = {
     title: "Wildcard",
     note: "ZenML round 3: Mon 28 Sep, 9 AM Eastern, ninety minutes of in-depth technical questions with Hamza and Alex. Oxus happened on 23 Sep; its design sessions moved into weeks 2 to 4 and the rest are parked.",
@@ -6754,7 +6781,19 @@
       WILDCARD.sessions.forEach(function (s, si) {
         if (s.parked) { return; }
         var f = s.forWhat || "";
-        if (f !== lastFor) { wg.appendChild(el("div", "sub", f)); lastFor = f; }
+        if (f !== lastFor) {
+          var lp = loopOf(s);
+          if (lp) {
+            var la = document.createElement("a");
+            la.className = "sub looplink";
+            la.href = lp.file;
+            la.textContent = lp.name + ": open its page";
+            wg.appendChild(la);
+          } else {
+            wg.appendChild(el("div", "sub", f));
+          }
+          lastFor = f;
+        }
         wg.appendChild(sessionItem(s, "wc", si));
       });
     }
@@ -7026,8 +7065,12 @@
 
     var acts = el("div", "hacts");
     if (nx) {
-      var start = el("button", "go-big", "Start this session");
-      start.addEventListener("click", function () { go("session", nx.wild ? "wc" : nx.wi, nx.si); });
+      var nxLoop = nx.wild ? loopOf(nx.s) : null;
+      var start = el("button", "go-big", nxLoop ? "Open the " + nxLoop.name + " page" : "Start this session");
+      start.addEventListener("click", function () {
+        if (nxLoop) { window.location.href = nxLoop.file + "#s-" + nx.s.id; return; }
+        go("session", nx.wild ? "wc" : nx.wi, nx.si);
+      });
       acts.appendChild(start);
     }
     var cold = mostCold();
@@ -8005,8 +8048,25 @@
     }
 
     if (WILDCARD.note) { v.appendChild(el("p", "sm dim", WILDCARD.note)); }
+
+    v.appendChild(rubric("Interview loops", "each has its own page"));
+    var loopsBox = el("div", "loops");
+    LOOPS.forEach(function (lp) {
+      var ss = loopSessions(lp);
+      var mins = 0, closed = 0;
+      ss.forEach(function (x) { mins += x.est || 0; if (sessionDone(x)) { closed += 1; } });
+      var card = el("a", "loopcard");
+      card.href = lp.file;
+      card.appendChild(el("div", "ln", lp.name));
+      card.appendChild(el("div", "lw", lp.when));
+      card.appendChild(el("div", "lt", lp.note));
+      card.appendChild(el("div", "lm", ss.length + " sessions, about " + Math.round(mins / 60) + " hours, " + closed + " done"));
+      card.appendChild(el("div", "lo", "Open the page"));
+      loopsBox.appendChild(card);
+    });
+    v.appendChild(loopsBox);
     var live = WILDCARD.sessions.filter(function (s) { return !s.parked; });
-    v.appendChild(rubric("Sessions", live.length + " in the slot"));
+    v.appendChild(rubric("The same sessions, in the tracker", live.length + " in the slot"));
     var t = el("table", "t");
     var hr = el("tr");
     ["Session", "For", "Est.", "Steps", "Posted"].forEach(function (x, i) {
@@ -9666,6 +9726,12 @@
     acts.appendChild(back);
     v.appendChild(acts);
   }
+
+  /* A loop page writes the same progress store; pick its ticks up live. */
+  window.addEventListener("storage", function (e) {
+    if (e.key !== KEY) { return; }
+    try { load(); draw(); } catch (err) { console.error("Could not refresh from another tab", err); }
+  });
 
   function draw() {
     try {
