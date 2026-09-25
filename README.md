@@ -1,126 +1,136 @@
-# Self-study
+<p align="center">
+  <img src="brand/accelerate.svg" width="96" height="96" alt="Accelerate">
+</p>
 
-Started 17 September 2026. Milestone 1 runs 21 September to 25 October.
+<h1 align="center">Accelerate</h1>
 
-**Double-click `study.cmd`.** Not `index.html`.
+<p align="center">
+  One place to study, prepare for interviews, and track the plan for the next year.<br>
+  Started 17 September 2026. Milestone 1 runs 21 September to 25 October.
+</p>
 
-The browser stores progress against the exact address the page was opened from:
-scheme, host and port. A double-clicked `index.html` gets a `file://` address, which
-is a separate store from `http://localhost:8000` and will look completely empty.
-So will `http://127.0.0.1:8000`, although it is the same server serving the same
-file. Nothing is lost when that happens; it is at the other address.
+---
 
-There is an **Accelerate** shortcut on the desktop that runs `study.cmd` minimised.
-That is the one to use day to day. If it is ever lost, it points at `study.cmd`
-in this folder and takes its picture from `brand/accelerate.ico`.
+## Open it
 
-`brand/` holds the icons: `system-design.svg` (the craft inverted, for the system design guide) and `alaap.svg` (the craft in Alaap's palette) are tab icons. `accelerate.svg` is the source for the app icon; `python brand/render.py`
-rebuilds the `.ico` and the favicon from it through headless Edge. The fifteen
-directions it was chosen from, and the two gallery pages used to choose, are in
-`brand/concepts/`.
+**Double-click the Accelerate shortcut on the desktop**, or `study.cmd` in this folder.
+Not `index.html`.
 
-`study.cmd` always opens `http://localhost:8000`, starting a small local server
-first if one is not already running, so the address never drifts. If the tracker
-is ever opened any other way, a banner at the top of every page says so and names
-the address the progress is actually at.
+`study.cmd` starts a small local server if one is not already running and always opens
+`http://localhost:8000`. That matters because the browser stores progress against the
+exact address a page was opened from. A double-clicked `index.html` (`file://`), or
+`http://127.0.0.1:8000`, is a separate, empty store. Nothing is lost when that happens:
+it is at the other address, and a banner at the top of every page says which one.
 
-## The files
+If the shortcut is ever lost, it points at `study.cmd` and takes its picture from
+`brand/accelerate.ico`.
+
+## The four pages
+
+| | Page | What it is |
+|:---:|---|---|
+| <img src="brand/accelerate.svg" width="40" alt=""> | **[Accelerate](index.html)**<br>`index.html` | The tracker. A flight-plan landing page, the five weeks of milestone 1, the wildcard slot for interview loops, every session with steps, answers, model answers and hidden quizzes, the day board, and the map of all the work ahead. Everything renders from data inside the one file. |
+| <img src="brand/system-design.svg" width="40" alt=""> | **[System design](SYSTEM%20DESIGN.html)**<br>`SYSTEM DESIGN.html` | Your system design guide in three tabs. **Framework**: the six steps. **Patterns**: fifteen deep-dive patterns, each technique with its own mechanism diagram. **Designs**: seven worked end to end, NotebookLM, prior auth, an email agent, a coding agent, Ticketmaster, alfred_ and Kitaru. Sessions point into it, and its patterns point back. |
+| <img src="brand/alaap.svg" width="40" alt=""> | **[Alaap and TrenTorch](ALAAP.html)**<br>`ALAAP.html` | One linear study plan, twenty-two stages across three milestones. Each stage has its goal, why it matters for Alaap, a diagram, the TrenTorch module to build, the Alaap guide's own sections, the relevant architecture, and an exit check with its answer. Also the fourteen architecture diagrams with metadata. Generated; see below. |
+| <img src="brand/accelerate.svg" width="40" alt=""> | **[Baseline diagnostic](diagnostics/baseline-diagnostic.html)**<br>`diagnostics/` | The timed quiz the plan was calibrated from, and its result. Gate results go here too. |
+
+## Where things stand
 
 | | |
 |---|---|
-| `index.html` | The tracker. Planner, weeks, sessions, wildcard, quizzes, answers, resources. Everything renders from data inside the file. |
-| `CHARTER.md` | Fixed. Never rewritten. What every re-plan gets checked against. |
+| **Now** | ZenML round 3, Monday 28 September, 9 AM Eastern: a ninety-minute technical round. The wildcard holds eleven sessions for Friday to Sunday. |
+| **Milestone 1** | Week 1 is left as it is, to catch up on when there is time. Oxus's design sessions sit in weeks 2 to 4 as extra systems practice. |
+| **Next** | Milestone 2 is TrenTorch as the spine, sequenced in the Alaap and TrenTorch plan, stages 3 to 15. |
+
+## The documents
+
+| File | What it holds |
+|---|---|
+| `CHARTER.md` | Fixed. Never rewritten. What every re-plan is checked against. |
 | `MILESTONE-1.md` | The five weeks in long form. |
 | `ROADMAP-AHEAD.md` | Milestone 2 planned, milestone 3 sketched, the rest parked. |
-| `PROTOCOL.md` | Week states, re-entry ramp, the three working rules, the wildcard rule, the re-plan ritual. |
-| `WILDCARD.md` | The sixth slot for interview-driven sessions, the four-fold cap, the session shape, what is in it now. |
+| `PROTOCOL.md` | Week states, the re-entry ramp, the three working rules, the wildcard rule, the re-plan ritual. |
+| `WILDCARD.md` | The slot for interview-driven sessions, the four-fold cap, the session shape, and what is in it now. |
 | `STUDY-LIST.md` | The current wildcard study lists as a flat checklist, generated from the tracker. |
 | `REQUEUE.md` | Open items. Answered, never deleted. |
-| `SYSTEM DESIGN.html` | Your own system design guide, in three tabs: Framework (the six steps), Patterns (fifteen deep-dive patterns, each technique with its own diagram), Designs (six worked end to end). Sessions point into it, and its patterns point back. |
-| `ALAAP.html` | The Alaap and TrenTorch plan, in the Alaap repo's style: twenty-two stages in order across the three milestones, each with its goal, why it matters for Alaap, a diagram, the TrenTorch module to build, the Alaap guide's own sections, the relevant architecture, and an exit check with its answer. Also the fourteen architecture diagrams with metadata, where Alaap stands, and the accent research. Built by `python alaap/build.py`, which reads the Alaap repo and `E:/TrenTorch` in place and also refreshes the plan's links inside `index.html`; the sequence itself is `alaap/plan.py`. Never edit the page by hand. |
-| `fonts/` | The system design guide's three typefaces, so it looks the same offline. `python fonts/fetch.py` refetches them from `google.css`. |
-| `CHANGELOG.md` | Append only. Every re-plan and deviation, with reasons. |
-| `diagnostics/` | The baseline result, and `baseline-diagnostic.html`, the timed quiz used to take it. Gate results go here. |
+| `CHANGELOG.md` | Append only. Every re-plan and deviation, with its reason. |
 | `progress/` | Exported progress snapshots. Export from the Data page and commit them. |
-| `handoffs/` | Research handoffs unrelated to the plan itself, such as local dictation. |
+| `handoffs/` | Research handoffs unrelated to the plan itself. |
 
-## Navigating the tracker
+## Using the tracker
 
-The contents rail on the left always shows the five weeks and the wildcard. The week
-you are in expands to show its sessions. On a session page, the bar at the top moves
-to the previous or next session, and crosses week boundaries. Left and right arrows
-do the same; Escape goes up a level. Every page has its own address, so the browser's
-back button works and a refresh keeps your place.
+**Navigating.** The rail on the left shows the five weeks and the wildcard; the week you
+are in expands to its sessions. Below them, everything else is grouped: Practise, Look
+ahead, Reference, and Rules and data. On a session page the bar at the top moves to the
+previous or next session across weeks. Left and right arrows do the same, Escape goes up
+a level, and every page has its own address, so back and refresh keep your place.
 
-## Drill, and the printable sheet
+**Drill.** A checkbox records that you did something, not that you can say it. Drill turns
+one card at a time from content the plan already has: study items are terms with
+said-out-loud definitions, practice steps are prompts with model answers. Say it, turn it,
+rate it: clean, with gaps, or could not. Cold cards come first next time. Space turns,
+`1` `2` `3` rate, arrows move.
 
-A checkbox records that you did something. It cannot record that you ticked it and
-still could not say it out loud, which is the thing the charter is actually hunting.
-Drill closes that gap and costs no new content: every study item is already a term
-and a said-out-loud definition, and every practice step is already a prompt and a
-model answer, so the plan *is* the card deck.
+**Sheet.** A session, a week or the whole wildcard as a dense two-column page for
+printing. It is what to read on the morning of an interview, with the laptop shut.
 
-- **Drill** turns one card at a time. Say the answer out loud, turn the card, then
-  rate yourself: said it clean, roughly with gaps, or could not say it. Cold cards
-  come first on the next pass. Space turns, `1` `2` `3` rate, arrows move.
-- **The state bar** on every session page and on the wildcard page shows owned,
-  shaky, cold and untested at a glance, with a link straight into the drill.
-- **The cold band** appears under it when anything is shaky or cold, and names it.
-- **Sheet** renders a session, a week or the whole wildcard as a dense two-column
-  page with the chrome stripped for printing. This is what you read on the morning
-  of an interview, on paper, with the laptop shut.
+Both live at `#/drill/<scope>` and `#/sheet/<scope>`, where scope is a session id such as
+`wc13`, a week such as `week1`, or `wc` for the whole wildcard.
 
-Both views work for any session, planned or wildcard, with no per-session setup.
-Addresses are `#/drill/<scope>` and `#/sheet/<scope>`, where scope is a session id
-such as `wc2`, a week such as `week1`, or `wc` for the whole wildcard slot.
-
-Ratings live in `state.recall`, keyed the same way as steps, and export with
-everything else.
+**Parked sessions.** When an interview has happened, its unfinished sessions are parked:
+still counted toward wildcard credit and hours, still openable from the wildcard page, no
+longer listed as work.
 
 ## Progress
 
-Progress lives in the browser under the storage key `selfstudy.m1.planner`. Export it
-from the Data page into `progress/`, dated, and commit it. That is the only durable
-copy. Changing the storage key in the code starts from empty, so export first. The
-storage is also scoped to the origin, port included, so serving this on 8000 one day
-and 8777 the next reads as two separate stores with no warning either.
+Progress lives in the browser under the key `selfstudy.m1.planner`, scoped to the exact
+address, port included. Export it from the Data page into `progress/`, dated, and commit
+it. That is the only durable copy. Changing the storage key starts from empty, so export
+first.
+
+## Generated pages and assets
+
+| Command | What it rebuilds |
+|---|---|
+| `python alaap/build.py` | `ALAAP.html`, from the Alaap repo's `learning/` folder and `E:/TrenTorch`, both read in place. It also refreshes the plan's stage list and link names inside `index.html`. The sequence itself is `alaap/plan.py`. Never edit the page by hand. |
+| `python fonts/fetch.py` | The system design guide's three typefaces in `fonts/`, so it looks the same offline. |
+| `python brand/render.py` | `accelerate.ico` and the favicon PNGs from `brand/accelerate.svg`, through headless Edge. |
+
+`brand/` holds the three icons: `accelerate.svg` for the tracker and the desktop
+shortcut, `system-design.svg` (the same craft, colours inverted) for the guide, and
+`alaap.svg` (the craft in Alaap's palette) for the study plan. The fifteen directions the
+first was chosen from are in `brand/concepts/`.
 
 ## Working on this in Claude Code
 
-Start by reading `CHARTER.md`, then `CHANGELOG.md`, then the newest file in
-`diagnostics/`, then `REQUEUE.md` and `WILDCARD.md`. That is enough context to re-plan
-without re-explaining anything.
+Read `CHARTER.md`, then `CHANGELOG.md`, then the newest file in `diagnostics/`, then
+`REQUEUE.md` and `WILDCARD.md`. That is enough context to re-plan without re-explaining
+anything.
 
-`index.html` is one file on purpose. Its script is laid out in this order:
+`index.html` is one file on purpose. Its script runs in this order:
 
-1. **Config** — start date, storage key, tracks and their colours, short planner labels.
-2. **Resources** — `L` for the planned weeks and `R` for wildcard study lists. Add a
-   link once there and reference it by key.
-3. **Diagram toolkit** — `S`, a handful of SVG primitives. Every figure is built from
-   these so they share one look.
-4. **Diagrams** — `DIA`, each with a title, a caption and an `svg()` builder. Sessions
-   reference them by key.
-5. **Plan** — `PLAN`, five weeks of three sessions. Each session has steps, optional
-   detail and links per step, optional diagrams and a closing quiz.
-6. **Wildcard** — `WILDCARD.sessions`, same shape, plus `forWhat`. Study lists live in
-   `STUDY`, keyed by session id and merged in at load.
-7. **Requeue** — `REQUEUE`.
-8. **Recall** — `cardsOf` builds the drill deck from `study` and `steps`; `coldSort`,
-   `tally`, `recallBar` and `coldBand` are shared by the session, wildcard, drill and
-   sheet views.
-9. **State, routing and views** — everything below is generic and should rarely need
+1. **Config**: start date, storage key, tracks and their colours, short planner labels.
+2. **Resources**: `L` for the planned weeks and `R` for wildcard study lists. Add a link
+   once and reference it by key.
+3. **Diagrams**: `S`, a handful of SVG primitives, and `DIA`, each figure with a title, a
+   caption and a builder. Sessions reference figures by key.
+4. **Plan**: `PLAN`, five weeks of three sessions, plus any extra practice sessions. A
+   week's colour is read from its first three.
+5. **Wildcard**: `WILDCARD.sessions`, the same shape plus `forWhat` and, once an
+   interview has happened, `parked`. Study lists live in `STUDY`, keyed by session id and
+   merged into planned and wildcard sessions at load.
+6. **Pointers**: `SD` and `AL`, the links into the system design guide and the Alaap
+   plan. `AL` is generated between `AL:BEGIN` and `AL:END`.
+7. **Requeue**, **recall**, then **state, routing and views**, which should rarely need
    touching when content changes.
 
-To add wildcard sessions for a new loop: append to `WILDCARD.sessions`, add a `STUDY`
-entry and a `SHORT` label, set `WILDCARD.note`, then open the wildcard sheet and copy it
-as markdown into `STUDY-LIST.md` — that control generates it now, rather than typing it
-by hand — and add a `CHANGELOG.md` entry. `WILDCARD.md` has the session shape.
+To add sessions for a new interview loop: append to `WILDCARD.sessions`, add a `STUDY`
+entry and a `SHORT` label, set `WILDCARD.note`, generate `STUDY-LIST.md` from the
+wildcard sheet's copy-as-markdown control, and add a `CHANGELOG.md` entry.
 
-Conventions for any change: no emojis anywhere; every browser API call wrapped in
-try and catch with a logged error and a graceful fallback; content stays in data
-arrays rather than hardcoded into views; helpers stay reusable; no test code committed.
-To check the file still parses after an edit, extract the script and run it through
-`node --check`, or open it and watch the console.
+Conventions: no emojis anywhere; every browser API call wrapped in try and catch with a
+logged error and a fallback; content in data arrays, not in views; no test code
+committed. To check the file still parses, extract its script and run `node --check`.
 
 ## The one-line version
 
