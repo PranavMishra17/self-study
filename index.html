@@ -596,6 +596,7 @@
     .hero h1.next { font-size: 28px; }
     .traj .wl, .traj .wpl { display: none; }
   }
+  .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
   .sdrow { margin: 9px 0 3px; padding: 3px 0 3px 11px; border-left: 2px solid var(--flight); max-width: 78ch; }
   .sdrow .sdh { font-family: var(--display); font-stretch: 87.5%; font-size: 12px; color: var(--dim); margin-bottom: 3px; }
   .sdrow .sdp { font-size: 12.5px; line-height: 1.45; margin: 3px 0; }
@@ -644,8 +645,8 @@
     w3a: "Storage", w3b: "Matrices", w3c: "Nyquist",
     w4a: "Failure", w4b: "Gradients", w4c: "Attention",
     w5a: "Caching", w5b: "Probability", w5c: "Source\u2013filter",
-    wc1: "Oxus: design frame", wc2: "Oxus: control testing", wc3: "Oxus: ingestion",
-    wc4: "Oxus: flowchart, yearly base", wc5: "Oxus: past work, deep", wc6: "Oxus: mock and sleep",
+    wc1: "Oxus: design frame", wc2: "Design: control-testing agent", wc3: "Design: evidence ingestion",
+    wc4: "Design: flowchart, yearly base", wc13: "ZenML: your bench story", wc14: "ZenML: the critique, fixed", wc15: "ZenML: Kitaru internals", wc16: "ZenML: design replay evals", wc17: "ZenML: backend depth", wc5: "Oxus: past work, deep", wc6: "Oxus: mock and sleep",
     wc7: "ZenML: new room", wc8: "ZenML: side effects", wc9: "ZenML: multi-turn",
     wc10: "ZenML: DevEx", wc11: "ZenML: CTO context", wc12: "ZenML: full mock"
   };
@@ -1872,7 +1873,47 @@
               ans: "Early stopping first, because it costs nothing to add — I already track a held-out metric on every run in the eval harness, so watching it turn and stopping there is just using infrastructure that already exists, rather than an architecture change or a new hyperparameter to tune. Regularisation and dropout are both worth adding once early stopping alone is not enough, but they each require deciding a penalty strength or a drop rate ahead of time, and I would rather watch the overfitting happen once, with early stopping catching it, before guessing at those knobs." }
           ]
         }
-      ]
+      ,
+
+      {
+        id: "wc3", track: "Systems", len: "1h 30m", est: 90,
+        name: "Design: evidence ingestion from messy documents",
+        blurb: "PDFs, scans, screenshots, spreadsheets and recordings, without losing where anything came from.",
+        intro: "Either the second exercise or the deep dive inside the first. This is also where your real gap is, since you have not run OCR in production. The move is to own everything around the OCR model honestly and in detail.",
+        diagrams: ["oxusIngest"],
+        steps: [
+          { t: "Lay out the ingestion path by source type",
+            sd: [{ v: "notebooklm", a: "dataflow", why: "NotebookLM's ingestion pipeline: pdf, url, video and text in, chunks and embeddings out." }, { v: "overview", a: "pattern-large-blobs", why: "Presigned uploads, multipart and a metadata split, for documents too big to pass through the API." }],
+            d: "Upload, then type detection, then a parser per type. Native PDFs use the text layer. Scans and ERP screenshots go through OCR with layout analysis. Spreadsheets are read as cells, never flattened into text. Walkthrough recordings become transcripts with timestamps. Everything lands in one normalised document model." },
+          { t: "Make coordinates the core of the data model, and say why",
+            sd: [{ v: "prior-auth", a: "deepdives", why: "Evidence in three-hundred-page records: the same need to point at the exact passage." }],
+            d: "Every span carries document, page, bounding box, and for recordings a timestamp. Derived artifacts keep a pointer back to their source spans. This is the single most important decision in the whole system: if coordinates are dropped at parse time, citations become impossible later, and no amount of cleverness downstream recovers them." },
+          { t: "Handle tables and screenshots as structure, not text",
+            d: "Fixed-size chunking cuts tables in half and separates a value from its column header. Keep tables as structured objects with cell coordinates, so an extracted amount can be cited to an exact cell. MetaRAG is useful context here: you found chunking and metadata interact, and the right choice is corpus-dependent." },
+          { t: "Carry parser confidence forward",
+            d: "OCR gives per-region confidence. A low-confidence value that an attribute test depends on should push the result to insufficient or force a human check, rather than being quietly trusted. Then say the honest line: you have not run OCR in production, you have built the layers on both sides of it, and you would expect to be slow on the OCR specifics for a couple of weeks and fast on everything around them." },
+          { t: "Design retrieval per tenant, and hybrid",
+            sd: [{ v: "overview", a: "pattern-search", why: "Lexical, vector, and hybrid with a rerank: the techniques this step chooses between." }, { v: "notebooklm", a: "patterns", why: "Hybrid retrieval filtered by notebook and reranked from about forty candidates to twelve." }],
+            d: "One index per client engagement, never shared. Hybrid lexical and dense, because invoice numbers, dates and amounts must match exactly, which is what lexical search is good at and dense embeddings are bad at. The MetaRAG finding transfers: prefix metadata into the text before encoding rather than blending sparse and dense vectors that do not share a space." },
+          { t: "Cover isolation under VPC deployment",
+            sd: [{ v: "notebooklm", a: "deepdives", why: "Isolation, and prompt injection arriving inside a user's own sources." }],
+            d: "Per-tenant storage and encryption keys, no cross-tenant index or cache, and model calls either inside the tenant boundary or to a provider with zero data retention. Point out the consequence: isolation constrains which models you can use, which is a question worth asking of any vendor in this space." },
+          { t: "Do one back-of-envelope out loud",
+            d: "An engagement might mean tens of thousands of pages. Estimate OCR cost and time per page, storage per page with coordinates, and note that latency barely matters here because it is batch work, while correctness matters absolutely. Saying which constraint does not matter is as useful as saying which does." }
+        ],
+        quiz: [
+          { q: "What is the most important decision in the ingestion design?",
+            o: ["Which OCR vendor to use", "Keeping page and bounding-box coordinates on every span", "Chunk size", "Which embedding model"], a: 1,
+            why: "Everything downstream cites coordinates. Lose them at parse time and citations cannot be rebuilt later." },
+          { q: "Why use lexical search alongside dense retrieval for audit evidence?",
+            o: ["It is cheaper", "Invoice numbers, amounts and dates must match exactly, which dense embeddings handle poorly", "Dense retrieval cannot handle PDFs", "Regulators require it"], a: 1,
+            why: "Exact identifiers are where dense embeddings are weakest and where audit is least forgiving." },
+          { q: "An attribute test depends on a value the OCR read with low confidence. What happens?",
+            o: ["Trust it, OCR is usually right", "Result becomes insufficient or goes to a human check", "Rerun OCR until confidence rises", "Drop the item from the sample"], a: 1,
+            why: "Uncertainty is carried forward and surfaced, not hidden. Dropping the item would bias the sample." }
+        ]
+      }
+    ]
     },
 
     {
@@ -2149,7 +2190,39 @@
               ans: "Resampling a clip from 24 kHz down to 16 kHz moves the Nyquist frequency from 12 kHz down to 8 kHz, so every frequency the original recording had above 8 kHz has nowhere to go in the resampled version and disappears. Plotting both spectra side by side, the original shows content spread up toward 12 kHz, while the resampled one shows the identical shape below 8 kHz and then a hard vertical cliff at exactly 8 kHz, where content above it has been cut off rather than gradually rolling off — that cliff is Nyquist made visible." }
           ]
         }
-      ]
+      ,
+
+      {
+        id: "wc4", track: "Systems", len: "1h", est: 60,
+        name: "Design: walkthrough to flowchart, and the year-over-year base",
+        blurb: "The other half of an audit-automation product.",
+        intro: "Audit-automation products replace five to fifteen hours of manual flowcharting per process, and carries prior-year workpapers forward. It is the natural follow-up to any design that ingests audit evidence.",
+        diagrams: ["oxusKB"],
+        steps: [
+          { t: "Turn a walkthrough transcript into a process graph",
+            d: "Extract steps, actors, systems and controls as structured nodes, each cited to a timestamp in the recording. The graph itself is assembled by code; the model proposes nodes and edges with evidence, and anything without evidence is not added. The flowchart is rendered from the graph, never drawn by the model." },
+          { t: "Map controls to risks with the model proposing and a human confirming",
+            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop as a design element rather than an apology for the model." }],
+            d: "Use the firm's risk taxonomy as the fixed vocabulary. The model suggests a mapping with its reasoning; a human confirms it. The confirmation is logged, and confirmed mappings become next year's starting point." },
+          { t: "Version the graph and diff it year over year",
+            sd: [{ v: "overview", a: "pattern-consistency", why: "Event sourcing and change data capture: history you can diff instead of rows you overwrite." }],
+            d: "The diff is the valuable output. A new approver, a system swapped out, a manual step appearing where there used to be an automated one — these are where an auditor should look first, and surfacing them automatically is a real product, not a feature." },
+          { t: "Connect reviewer feedback to your memory system",
+            d: "Last year's reviewer comments are retrieved into this year's test of the same control. The lesson from your memory system applies directly: store facts with provenance and never let the model rewrite them, so memory accumulates rather than drifting." }
+        ],
+        quiz: [
+          { q: "Who draws the flowchart?",
+            o: ["The model, directly", "Code renders it from a graph whose nodes carry evidence", "The auditor, by hand", "A diagramming API"], a: 1,
+            why: "A model-drawn chart can include steps nobody said. A graph built from cited nodes cannot." },
+          { q: "What is the most valuable output of year-over-year comparison?",
+            o: ["A faster flowchart", "The diff: what changed in the process since last year", "A longer control inventory", "Lower storage cost"], a: 1,
+            why: "Change is where control risk concentrates, so the diff tells the auditor where to look first." },
+          { q: "How should prior-year reviewer feedback be stored?",
+            o: ["Summarised by the model each year", "As facts with provenance that the model can read but not rewrite", "Deleted after the audit", "Merged into the prompt"], a: 1,
+            why: "Letting the model rewrite memory each year is how it drifts. Provenance keeps it trustworthy." }
+        ]
+      }
+    ]
     },
 
     {
@@ -2454,7 +2527,52 @@
               ans: "Each attention score is a dot product q times k summed over d_k independent dimensions, and if the entries of q and k are roughly zero-mean with unit variance, each of the d_k product terms contributes about one unit of variance, so the variance of the whole sum grows linearly with d_k while its standard deviation grows with the square root of d_k. As d_k gets large the raw scores swing over an increasingly wide range, and once they are fed into softmax the largest one dominates — softmax saturates, one weight goes to nearly 1 and the rest to nearly 0, and the gradient through a saturated softmax is nearly zero everywhere. Dividing every score by the square root of d_k rescales the standard deviation back down to about 1 regardless of d_k, which keeps the scores in the range where softmax still has real gradient to learn from. That is the entire justification, and it is a variance argument, not an arbitrary constant." }
           ]
         }
-      ]
+      ,
+
+      {
+        id: "wc2", track: "Systems", len: "2h", est: 120,
+        name: "Design: an agent that tests a SOX control",
+        blurb: "The most likely exercise, because it is literally their product.",
+        intro: "Given a control, say that every journal entry over fifty thousand dollars is approved by a second person before posting, and a pile of evidence, produce a workpaper a reviewer will sign. Walk it end to end, then go deep on grounding.",
+        diagrams: ["oxusControl"],
+        steps: [
+          { t: "Walk the pipeline end to end, naming which stages are code and which are the model",
+            sd: [{ v: "prior-auth", a: "hld", why: "The closest worked design to this one: coverage criteria checked against a clinical record, uncertain cases routed to a clinician." }, { v: "prior-auth", a: "dataflow", why: "Its case pipeline, stage by stage, to set beside yours." }],
+            d: "Control definition, then a test plan with the attributes to check, then the population pulled by a query, then a sample, then evidence retrieved for each sampled item, then attribute testing, then citation verification, then exceptions, then a drafted conclusion, then the reviewer queue. Only attribute testing and the drafted narrative are the model. Everything that decides a fact is code. Say that split out loud; it is the whole design in one sentence." },
+          { t: "Design sample selection as seeded code",
+            d: "Random sampling with a stored seed, or judgmental sampling where a human records the reason. The seed, the population query and its row count all go into the workpaper, so anyone can rerun the selection and get the same items. Sample size comes from the firm's methodology table, not from a prompt. The general argument underneath is that a deterministic, side-effect-free step can simply be re-run, which is why it belongs in code and not in a model call.",
+            links: [bk("DDIA 2e - index: MapReduce; fault tolerance. The batch-processing chapter")] },
+          { t: "Design citation as constrained selection, not generation",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Citations, structured output and refusal: the pattern this design is one instance of." }],
+            d: "Evidence is chunked with its coordinates: document, page, bounding box, character span. The model sees chunks labelled E1 to En and must cite handles. It never writes a document name or page number. Code resolves each handle to coordinates and renders the red box. Then a verifier checks that the cited span actually contains the extracted value, by exact match for amounts, dates and IDs, and fails closed if it does not. That is the same structure as the opaque handles in your memory system, and you should say so." },
+          { t: "Make attribute results three-valued, with insufficient as a first-class answer",
+            sd: [{ v: "prior-auth", a: "deepdives", why: "Calibrating the auto-approve gate: when the system decides and when it hands the case to a person." }],
+            d: "Each sampled item gets a structured result per attribute: pass, fail, or insufficient, plus the cited handles, the extracted value and a short rationale. Insufficient is not an error. It is the honest answer when the evidence is thin, and it routes to a human. This is your WheelPrice coverage-score story in a new domain: a partial answer stated as partial beats a confident wrong one." },
+          { t: "Compute exceptions and constrain the conclusion",
+            d: "Exceptions are derived by code from attribute results. The conclusion's verdict comes from a rule over the exception count and severity; the model drafts the narrative around a verdict it cannot change. So the model can never write that a control is operating effectively when code has recorded an exception." },
+          { t: "Design the reviewer loop and the audit log",
+            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop and least privilege, for a system whose output someone signs." }, { v: "overview", a: "pattern-consistency", why: "Event sourcing: the audit log as the source of truth and the workpaper as a view of it." }],
+            d: "Every model call is logged with the handles it saw, its output, model version and prompt version. Every reviewer decision is logged too, including overrides. Overrides are the most valuable data the company has: they are labelled examples of exactly where the system is wrong, and they feed evaluation directly. The systems name for this is event sourcing: an append-only log of immutable facts, with the workpaper as a derived view that can be rebuilt from it. Say that sentence and the audit log stops sounding like logging.",
+            links: [bk("DDIA 2e - index: event sourcing; immutability. The stream-processing chapter")] },
+          { t: "Answer the evaluation question before it is asked",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: how a quality bar is enforced on every change." }],
+            d: "Build a gold set from past signed workpapers. Track attribute-level agreement with reviewers, not just end verdicts. Citation precision is fully deterministic — does the cited span contain the value — so it can gate releases. Watch the insufficient rate: rising means evidence retrieval got worse, falling suddenly may mean the model started guessing. Replay the gold set on every model or prompt change, which is your eval harness." },
+          { t: "Say the whole design out loud in eight minutes, then write its three weakest points",
+            d: "Use the Answer field for the weak points. Likely candidates: retrieval missing the right evidence entirely, which no verifier can catch; OCR errors on scanned evidence; and controls whose attributes are judgment calls rather than checkable facts." }
+        ],
+        quiz: [
+          { q: "How should the model reference evidence in a workpaper?",
+            o: ["Write the document name and page it believes it read", "Select opaque handles that code resolves to coordinates", "Paste quotes and let the reviewer find them", "Link to the whole document"], a: 1,
+            why: "If the model writes references, it can invent them. If it can only select from handles code gave it, a fabricated citation becomes impossible rather than unlikely." },
+          { q: "The evidence for one sampled journal entry is ambiguous. What should the attribute result be?",
+            o: ["Pass, since nothing contradicts it", "Fail, to be safe", "Insufficient, routed to a human", "Skip the item and sample another"], a: 2,
+            why: "Thin evidence is surfaced, never smoothed. Skipping would silently bias the sample, which is its own audit problem." },
+          { q: "Which metric can gate a release without any human labels?",
+            o: ["Reviewer satisfaction", "Citation precision: does the cited span contain the extracted value", "Conclusion fluency", "Number of exceptions found"], a: 1,
+            why: "It is checkable by string and number match against the source span, so it is deterministic and cheap." }
+        ]
+      }
+    ]
     },
 
     {
@@ -2734,212 +2852,13 @@
      Same shape as a planned session. Left empty until something lands. */
   var WILDCARD = {
     title: "Wildcard",
-    note: "Oxus technical on 23 Sep, then ZenML round 3 on Mon 28 Sep at 9 AM Eastern.",
+    note: "ZenML round 3: Mon 28 Sep, 9 AM Eastern, ninety minutes of in-depth technical questions with Hamza and Alex. Oxus happened on 23 Sep; its design sessions moved into weeks 2 to 4 and the rest are parked.",
     sessions: [
-
-      /* ============================== OXUS ============================== */
-
-      {
-        id: "wc1", track: "Systems", forWhat: "Oxus, 23 Sep", len: "45m", est: 45,
-        name: "The system design frame for this room",
-        blurb: "How to spend the thirty-five minutes, and what to say before drawing a box.",
-        intro: "Sixty minutes, split between your past work and one design exercise. The intro was behavioural, so this is Christine's first technical look at you, and she has an AI degree plus a consulting instinct. She will want requirements before boxes and a reason attached to every box.",
-        diagrams: ["oxusFrame"],
-        steps: [
-          { t: "Learn the thirty-five-minute shape and say it once out loud",
-            d: "About four minutes clarifying: who the user is, what the unit of work is, what counts as done. Four on requirements, with the non-functional ones first, because in audit software they are the product. Eight on the happy path end to end. Twelve on the single hard part, which for Oxus is almost always grounding. Five on failure modes and evaluation. Two on what you would build first. If she cuts in, follow her; the shape is for when she does not." },
-          { t: "Write the five non-functional requirements for audit software in your own words",
-            d: "Traceability: every assertion points at a document, a page and a value. Reproducibility: the same inputs give the same workpaper, which means seeds, pinned model and prompt versions. Reviewability: a human signs every output and can see why. Isolation: one client's evidence never touches another's. Auditability of the system itself: every model call and reviewer decision is logged. Use the Answer field." },
-          { t: "Memorise the spine, and three places it applies",
-            d: "The model is allowed to write the prose. It is never the source of the facts. It applies to citations, where the model selects a handle rather than writing a reference; to sample selection, which is seeded code; and to exceptions, which are computed from results rather than judged. This is also literally what you built in the memory system, so every design answer can land back on something you shipped." },
-          { t: "Prepare the one clarifying question that changes the design",
-            d: "Ask whether the output is a draft the internal auditor reviews, or something that goes to the external auditor directly. The first allows the system to be a strong assistant with a human gate. The second means every guarantee has to hold without a human catching it, which pushes almost everything toward deterministic code. Either answer shows her you know where the risk is." }
-        ],
-        quiz: [
-          { q: "In an audit system, why should sample selection be deterministic code rather than the model?",
-            o: ["The model is too slow", "A seeded, recorded selection can be reproduced and defended; a model's choice cannot", "Models cannot count", "Regulators ban models from sampling"], a: 1,
-            why: "The workpaper has to be reproducible for a reviewer or an external auditor. A seed stored with the workpaper does that. A model choosing samples gives a plausible selection nobody can rerun." },
-          { q: "Which requirement should you state first in an audit design?",
-            o: ["Latency under 200 ms", "Every assertion traceable to a document, page and value", "Horizontal scalability", "Support for many file types"], a: 1,
-            why: "In audit the traceability requirement is the product. Batch latency is rarely the constraint; defensibility always is." },
-          { q: "Your one-sentence principle for this room is:",
-            o: ["Use the largest model available", "The model writes the prose and is never the source of the facts", "Always fine-tune on customer data", "Let the reviewer fix whatever the model gets wrong"], a: 1,
-            why: "And you can prove you mean it, because the memory system at alfred_ is built exactly that way." }
-        ]
-      },
-
-      {
-        id: "wc2", track: "Systems", forWhat: "Oxus, 23 Sep", len: "2h", est: 120,
-        name: "Design: an agent that tests a SOX control",
-        blurb: "The most likely exercise, because it is literally their product.",
-        intro: "Given a control, say that every journal entry over fifty thousand dollars is approved by a second person before posting, and a pile of evidence, produce a workpaper a reviewer will sign. Walk it end to end, then go deep on grounding.",
-        diagrams: ["oxusControl"],
-        steps: [
-          { t: "Walk the pipeline end to end, naming which stages are code and which are the model",
-            sd: [{ v: "prior-auth", a: "hld", why: "The closest worked design to this one: coverage criteria checked against a clinical record, uncertain cases routed to a clinician." }, { v: "prior-auth", a: "dataflow", why: "Its case pipeline, stage by stage, to set beside yours." }],
-            d: "Control definition, then a test plan with the attributes to check, then the population pulled by a query, then a sample, then evidence retrieved for each sampled item, then attribute testing, then citation verification, then exceptions, then a drafted conclusion, then the reviewer queue. Only attribute testing and the drafted narrative are the model. Everything that decides a fact is code. Say that split out loud; it is the whole design in one sentence." },
-          { t: "Design sample selection as seeded code",
-            d: "Random sampling with a stored seed, or judgmental sampling where a human records the reason. The seed, the population query and its row count all go into the workpaper, so anyone can rerun the selection and get the same items. Sample size comes from the firm's methodology table, not from a prompt. The general argument underneath is that a deterministic, side-effect-free step can simply be re-run, which is why it belongs in code and not in a model call.",
-            links: [bk("DDIA 2e - index: MapReduce; fault tolerance. The batch-processing chapter")] },
-          { t: "Design citation as constrained selection, not generation",
-            sd: [{ v: "overview", a: "pattern-grounding", why: "Citations, structured output and refusal: the pattern this design is one instance of." }],
-            d: "Evidence is chunked with its coordinates: document, page, bounding box, character span. The model sees chunks labelled E1 to En and must cite handles. It never writes a document name or page number. Code resolves each handle to coordinates and renders the red box. Then a verifier checks that the cited span actually contains the extracted value, by exact match for amounts, dates and IDs, and fails closed if it does not. That is the same structure as the opaque handles in your memory system, and you should say so." },
-          { t: "Make attribute results three-valued, with insufficient as a first-class answer",
-            sd: [{ v: "prior-auth", a: "deepdives", why: "Calibrating the auto-approve gate: when the system decides and when it hands the case to a person." }],
-            d: "Each sampled item gets a structured result per attribute: pass, fail, or insufficient, plus the cited handles, the extracted value and a short rationale. Insufficient is not an error. It is the honest answer when the evidence is thin, and it routes to a human. This is your WheelPrice coverage-score story in a new domain: a partial answer stated as partial beats a confident wrong one." },
-          { t: "Compute exceptions and constrain the conclusion",
-            d: "Exceptions are derived by code from attribute results. The conclusion's verdict comes from a rule over the exception count and severity; the model drafts the narrative around a verdict it cannot change. So the model can never write that a control is operating effectively when code has recorded an exception." },
-          { t: "Design the reviewer loop and the audit log",
-            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop and least privilege, for a system whose output someone signs." }, { v: "overview", a: "pattern-consistency", why: "Event sourcing: the audit log as the source of truth and the workpaper as a view of it." }],
-            d: "Every model call is logged with the handles it saw, its output, model version and prompt version. Every reviewer decision is logged too, including overrides. Overrides are the most valuable data the company has: they are labelled examples of exactly where the system is wrong, and they feed evaluation directly. The systems name for this is event sourcing: an append-only log of immutable facts, with the workpaper as a derived view that can be rebuilt from it. Say that sentence and the audit log stops sounding like logging.",
-            links: [bk("DDIA 2e - index: event sourcing; immutability. The stream-processing chapter")] },
-          { t: "Answer the evaluation question before she asks it",
-            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: how a quality bar is enforced on every change." }],
-            d: "Build a gold set from past signed workpapers. Track attribute-level agreement with reviewers, not just end verdicts. Citation precision is fully deterministic — does the cited span contain the value — so it can gate releases. Watch the insufficient rate: rising means evidence retrieval got worse, falling suddenly may mean the model started guessing. Replay the gold set on every model or prompt change, which is your eval harness." },
-          { t: "Say the whole design out loud in eight minutes, then write its three weakest points",
-            d: "Use the Answer field for the weak points. Likely candidates: retrieval missing the right evidence entirely, which no verifier can catch; OCR errors on scanned evidence; and controls whose attributes are judgment calls rather than checkable facts." }
-        ],
-        quiz: [
-          { q: "How should the model reference evidence in a workpaper?",
-            o: ["Write the document name and page it believes it read", "Select opaque handles that code resolves to coordinates", "Paste quotes and let the reviewer find them", "Link to the whole document"], a: 1,
-            why: "If the model writes references, it can invent them. If it can only select from handles code gave it, a fabricated citation becomes impossible rather than unlikely." },
-          { q: "The evidence for one sampled journal entry is ambiguous. What should the attribute result be?",
-            o: ["Pass, since nothing contradicts it", "Fail, to be safe", "Insufficient, routed to a human", "Skip the item and sample another"], a: 2,
-            why: "Thin evidence is surfaced, never smoothed. Skipping would silently bias the sample, which is its own audit problem." },
-          { q: "Which metric can gate a release without any human labels?",
-            o: ["Reviewer satisfaction", "Citation precision: does the cited span contain the extracted value", "Conclusion fluency", "Number of exceptions found"], a: 1,
-            why: "It is checkable by string and number match against the source span, so it is deterministic and cheap." }
-        ]
-      },
-
-      {
-        id: "wc3", track: "Systems", forWhat: "Oxus, 23 Sep", len: "1h 30m", est: 90,
-        name: "Design: evidence ingestion from messy documents",
-        blurb: "PDFs, scans, screenshots, spreadsheets and recordings, without losing where anything came from.",
-        intro: "Either the second exercise or the deep dive inside the first. This is also where your real gap is, since you have not run OCR in production. The move is to own everything around the OCR model honestly and in detail.",
-        diagrams: ["oxusIngest"],
-        steps: [
-          { t: "Lay out the ingestion path by source type",
-            sd: [{ v: "notebooklm", a: "dataflow", why: "NotebookLM's ingestion pipeline: pdf, url, video and text in, chunks and embeddings out." }, { v: "overview", a: "pattern-large-blobs", why: "Presigned uploads, multipart and a metadata split, for documents too big to pass through the API." }],
-            d: "Upload, then type detection, then a parser per type. Native PDFs use the text layer. Scans and ERP screenshots go through OCR with layout analysis. Spreadsheets are read as cells, never flattened into text. Walkthrough recordings become transcripts with timestamps. Everything lands in one normalised document model." },
-          { t: "Make coordinates the core of the data model, and say why",
-            sd: [{ v: "prior-auth", a: "deepdives", why: "Evidence in three-hundred-page records: the same need to point at the exact passage." }],
-            d: "Every span carries document, page, bounding box, and for recordings a timestamp. Derived artifacts keep a pointer back to their source spans. This is the single most important decision in the whole system: if coordinates are dropped at parse time, citations become impossible later, and no amount of cleverness downstream recovers them." },
-          { t: "Handle tables and screenshots as structure, not text",
-            d: "Fixed-size chunking cuts tables in half and separates a value from its column header. Keep tables as structured objects with cell coordinates, so an extracted amount can be cited to an exact cell. MetaRAG is useful context here: you found chunking and metadata interact, and the right choice is corpus-dependent." },
-          { t: "Carry parser confidence forward",
-            d: "OCR gives per-region confidence. A low-confidence value that an attribute test depends on should push the result to insufficient or force a human check, rather than being quietly trusted. Then say the honest line: you have not run OCR in production, you have built the layers on both sides of it, and you would expect to be slow on the OCR specifics for a couple of weeks and fast on everything around them." },
-          { t: "Design retrieval per tenant, and hybrid",
-            sd: [{ v: "overview", a: "pattern-search", why: "Lexical, vector, and hybrid with a rerank: the techniques this step chooses between." }, { v: "notebooklm", a: "patterns", why: "Hybrid retrieval filtered by notebook and reranked from about forty candidates to twelve." }],
-            d: "One index per client engagement, never shared. Hybrid lexical and dense, because invoice numbers, dates and amounts must match exactly, which is what lexical search is good at and dense embeddings are bad at. The MetaRAG finding transfers: prefix metadata into the text before encoding rather than blending sparse and dense vectors that do not share a space." },
-          { t: "Cover isolation under VPC deployment",
-            sd: [{ v: "notebooklm", a: "deepdives", why: "Isolation, and prompt injection arriving inside a user's own sources." }],
-            d: "Per-tenant storage and encryption keys, no cross-tenant index or cache, and model calls either inside the tenant boundary or to a provider with zero data retention. Point out the consequence: isolation constrains which models you can use, which is one of the questions in your prep file worth asking her." },
-          { t: "Do one back-of-envelope out loud",
-            d: "An engagement might mean tens of thousands of pages. Estimate OCR cost and time per page, storage per page with coordinates, and note that latency barely matters here because it is batch work, while correctness matters absolutely. Saying which constraint does not matter is as useful as saying which does." }
-        ],
-        quiz: [
-          { q: "What is the most important decision in the ingestion design?",
-            o: ["Which OCR vendor to use", "Keeping page and bounding-box coordinates on every span", "Chunk size", "Which embedding model"], a: 1,
-            why: "Everything downstream cites coordinates. Lose them at parse time and citations cannot be rebuilt later." },
-          { q: "Why use lexical search alongside dense retrieval for audit evidence?",
-            o: ["It is cheaper", "Invoice numbers, amounts and dates must match exactly, which dense embeddings handle poorly", "Dense retrieval cannot handle PDFs", "Regulators require it"], a: 1,
-            why: "Exact identifiers are where dense embeddings are weakest and where audit is least forgiving." },
-          { q: "An attribute test depends on a value the OCR read with low confidence. What happens?",
-            o: ["Trust it, OCR is usually right", "Result becomes insufficient or goes to a human check", "Rerun OCR until confidence rises", "Drop the item from the sample"], a: 1,
-            why: "Uncertainty is carried forward and surfaced, not hidden. Dropping the item would bias the sample." }
-        ]
-      },
-
-      {
-        id: "wc4", track: "Systems", forWhat: "Oxus, 23 Sep", len: "1h", est: 60,
-        name: "Design: walkthrough to flowchart, and the year-over-year base",
-        blurb: "The other half of their product, likely as a follow-up question.",
-        intro: "Oxus replaces five to fifteen hours of manual flowcharting per process, and carries prior-year workpapers forward. Expect this as a follow-up, or as her answer to one of your questions.",
-        diagrams: ["oxusKB"],
-        steps: [
-          { t: "Turn a walkthrough transcript into a process graph",
-            d: "Extract steps, actors, systems and controls as structured nodes, each cited to a timestamp in the recording. The graph itself is assembled by code; the model proposes nodes and edges with evidence, and anything without evidence is not added. The flowchart is rendered from the graph, never drawn by the model." },
-          { t: "Map controls to risks with the model proposing and a human confirming",
-            sd: [{ v: "overview", a: "pattern-agent-safety", why: "Human in the loop as a design element rather than an apology for the model." }],
-            d: "Use the firm's risk taxonomy as the fixed vocabulary. The model suggests a mapping with its reasoning; a human confirms it. The confirmation is logged, and confirmed mappings become next year's starting point." },
-          { t: "Version the graph and diff it year over year",
-            sd: [{ v: "overview", a: "pattern-consistency", why: "Event sourcing and change data capture: history you can diff instead of rows you overwrite." }],
-            d: "The diff is the valuable output. A new approver, a system swapped out, a manual step appearing where there used to be an automated one — these are where an auditor should look first, and surfacing them automatically is a real product, not a feature." },
-          { t: "Connect reviewer feedback to your memory system",
-            d: "Last year's reviewer comments are retrieved into this year's test of the same control. The lesson from your memory system applies directly: store facts with provenance and never let the model rewrite them, so memory accumulates rather than drifting." }
-        ],
-        quiz: [
-          { q: "Who draws the flowchart?",
-            o: ["The model, directly", "Code renders it from a graph whose nodes carry evidence", "The auditor, by hand", "A diagramming API"], a: 1,
-            why: "A model-drawn chart can include steps nobody said. A graph built from cited nodes cannot." },
-          { q: "What is the most valuable output of year-over-year comparison?",
-            o: ["A faster flowchart", "The diff: what changed in the process since last year", "A longer control inventory", "Lower storage cost"], a: 1,
-            why: "Change is where control risk concentrates, so the diff tells the auditor where to look first." },
-          { q: "How should prior-year reviewer feedback be stored?",
-            o: ["Summarised by the model each year", "As facts with provenance that the model can read but not rewrite", "Deleted after the audit", "Merged into the prompt"], a: 1,
-            why: "Letting the model rewrite memory each year is how it drifts. Provenance keeps it trustworthy." }
-        ]
-      },
-
-      {
-        id: "wc5", track: "Interview", forWhat: "Oxus, 23 Sep", len: "1h 15m", est: 75,
-        name: "Your past work, at grilling depth",
-        blurb: "She has not probed any of it yet. Expect one system and a lot of how exactly.",
-        intro: "The intro stayed behavioural, so the experience half of tomorrow is a fresh technical examination. Christine will likely pick one system and keep asking how it works until she finds the edge of what you know. Have the edges prepared.",
-        steps: [
-          { t: "Memory system: two minutes, then the follow-ups",
-            sd: [{ v: "alfred", a: "hld", why: "Your own system, drawn: the stores and paths the follow-ups will probe." }],
-            d: "Two-minute version from your prep, section F question 1. Then the follow-ups: how candidates are generated for the menu; what an opaque handle actually is; what happens when the right candidate is not in the menu, which should be an abstention rather than a best guess; how the ground-truth audit loop graded briefs against live inboxes. Number to use: fabricated-recall and false-confirmation incidents down eighty percent." },
-          { t: "Decision layer: why deterministic risk scoring",
-            sd: [{ v: "email-agent", a: "deepdives", why: "Verdicts from deterministic risk scoring, argued as a deep dive." }, { v: "alfred", a: "deepdives", why: "How alfred_ does action safety without a risk score: the contrast to have ready." }],
-            d: "What the features are, how the five verdicts map to thresholds, and which error is worse — a false silent, where the agent acted and should have asked, or a false confirm, where it asked needlessly. The answer is that false silent is worse because it is a side effect the user did not approve, and the thresholds are tuned asymmetrically for that reason. Then the line from your prep: a model asked to judge itself gives you a plausible explanation, not the actual reason." },
-          { t: "Eval harness, reframed for audit",
-            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: the vocabulary to frame the harness in." }],
-            d: "Use the two-minute bench story from the ZenML critique, and end on completeness: because you own the snapshot, a case can assert that every event in a window appears in the output. That is checking against ground truth you hold, which is exactly what a control test is." },
-          { t: "MetaRAG, at the depth an AI degree will ask",
-            d: "Why prefix injection beat blending sparse and dense vectors: the two spaces are not aligned, so a weighted sum mixes incomparable quantities. What NDCG at ten measures and why you reported relative comparisons. How your silver standard is biased, and why relative claims survive that bias while absolute ones would not." },
-          { t: "Prepare the technical weakness question",
-            d: "Something like: which system you built are you least satisfied with? A good answer names a real flaw, what it cost, and what you would do now. The eval bench's authoring cost and the lack of a versioned base snapshot is a strong, honest candidate. Use the Answer field." }
-        ],
-        quiz: [
-          { q: "In your memory system, what should happen when the correct candidate is not in the menu?",
-            o: ["The model picks the closest one", "The model writes a new ID", "Abstain, and say nothing rather than something false", "Fall back to the raw email"], a: 2,
-            why: "The whole design is that the model cannot introduce facts. Picking the closest wrong candidate would reintroduce fabrication by another route." },
-          { q: "In the decision layer, which error is worse?",
-            o: ["Asking for confirmation unnecessarily", "Acting silently when it should have asked", "They are equally bad", "Refusing a valid request"], a: 1,
-            why: "A false silent is an unapproved side effect. A false confirm is friction. Thresholds are tuned asymmetrically because of that." },
-          { q: "Why did prefix injection beat blending sparse and dense vectors in MetaRAG?",
-            o: ["It was faster", "The two vector spaces are not aligned, so a weighted blend mixes incomparable quantities", "Sparse vectors were too large", "The corpus was too small"], a: 1,
-            why: "Putting metadata into the text before encoding lets one encoder handle both in one space." }
-        ]
-      },
-
-      {
-        id: "wc6", track: "Interview", forWhat: "Oxus, 23 Sep", len: "1h", est: 60,
-        name: "The last hour: mock, fixes, questions, sleep",
-        blurb: "A live mock, one factual fix to your prep, and your three questions.",
-        intro: "The final hour before you stop. A rehearsal under mild pressure is worth more than another hour of reading.",
-        steps: [
-          { t: "Run the live mock in chat: say run the Oxus mock",
-            d: "Christine's voice, fifty minutes, past work first, then one design exercise. Graded afterwards in the panel format." },
-          { t: "Fix the relocation line in your prep file",
-            d: "Section F question 7 opens with 'You're in New York.' You are in Indianapolis. A corrected opening: I'm in Indianapolis now, and yes, I'd relocate to SF for this. Then the rest of the answer as written, and only promise a timeline you can actually hold." },
-          { t: "Pick three questions, and lead with the citation one",
-            d: "From your prep, questions 1, 2 and 4. The first, whether citations are constrained selection or generated and verified afterwards, is now the natural end of your design answer, so it will land as a peer question rather than a prepared one." },
-          { t: "Watch the two-minute launch video and re-skim the platform page" },
-          { t: "Stop and sleep",
-            d: "A long design session followed by five hours of sleep performs worse than a shorter one followed by seven. Stop on time." }
-        ]
-      },
-
-      /* ============================== ZENML ============================== */
-
       {
         id: "wc7", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "1h", est: 60,
         name: "Round three is a different room",
-        blurb: "A CTO and the founding DevEx engineer, for ninety minutes.",
-        intro: "Round two was a backend engineer checking whether your claims survive how exactly and how big. Round three is Hamza, who co-founded ZenML and decides where Kitaru goes, and Alex, who writes, demos, ships the Claude Code skills that drive Kitaru's guided tour, and has a research background. They will test judgement about the product and whether you can explain it.",
+        blurb: "Friday, first. A ninety-minute technical round with Hamza and Alex, in depth.",
+        intro: "Round two went well. Round three is ninety minutes of in-depth technical questions with Hamza, who co-founded ZenML and decides where Kitaru goes, and Alex, who ships the Claude Code skills behind Kitaru's guided tour. Expect them to go down, not sideways: mechanism, storage, failure, and whether your claims survive. Friday: this, your bench story, the critique fixes, Kitaru's internals. Saturday: design replay evals, side effects, multi-turn. Sunday: backend depth, then the mock. If time runs short, trim the DevEx and ZenML-context sessions, never the technical ones.",
         steps: [
           { t: "Re-drill the two-minute bench story until the headline comes first every time",
             d: "From the round-two critique file. We run the real agent against a frozen snapshot of the user's world; only the outbound provider call is swapped. Headline, then mechanism, then the snapshot design, then the outcome.",
@@ -2991,9 +2910,406 @@
       },
 
       {
+        id: "wc13", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "1h 30m", est: 90,
+        name: "Your story: the alfred_ eval bench",
+        blurb: "Friday. Round two graded the substance a B and the delivery a C. This is the delivery.",
+        intro: "This is your story as you tell it, from the round-two critique. The numbers are yours to say as approximations: roughly, on the order of. Two rules carry the whole session: the headline comes first every time, and every architecture noun gets a number attached.",
+        steps: [
+          { t: "Say the headline in one breath", m: 10,
+            sd: [{ v: "kitaru", a: "deepdives", why: "The bench is drawn there as the other design, next to Kitaru's call log." }],
+            d: "We run the real agent against a frozen snapshot of the user's world. The agent's code, prompts and tools run exactly as in production; the only thing swapped is the outbound call to the provider. Say that before any history.",
+            ans: [
+              "We run the real agent against a frozen snapshot of the user's world",
+              "Code, prompts and tools all execute as in production",
+              "Only the outbound provider or MCP call is swapped, behind a harness flag, for a SQLite snapshot",
+              "Then, and only then, the history: no deterministic way to compare agent versions when you joined"
+            ],
+            close: [
+              { k: "short", q: "One sentence: what runs for real and what is swapped?", a: "The agent's code, prompts and tools run for real; only the outbound provider call is answered from a SQLite snapshot." },
+              { k: "pick", q: "The interviewer asks about the bench. What comes first?",
+                o: ["How you joined and what was missing", "The one-sentence mechanism", "The failure scanner"], a: 1,
+                why: "Round two lost two minutes to history before the mechanism. Headline, then mechanism, then history." },
+              { k: "word", q: "What is frozen in your design, in one word: the transcript or the world?", a: "The world." }
+            ] },
+          { t: "Learn the fact sheet cold", m: 20,
+            d: "5,000-plus active users. A daily scanner over real conversations with twelve failure classes, each flag carrying the user turn, the agent turn, tool traces, reasoning and two turns either side. An LLM judge built from a week of hand labels, a couple of hundred, now about three in four flags are genuine bugs, reconciled weekly. A hundred-plus cases. Nightly full run of about twenty-five to thirty minutes; subset runs of fifteen to thirty cases in under ten. About ten percent flaky, run three times. About twenty-five production instances per query type, six or seven tools seen against an ideal path of two or three. Authoring three to four hours a case early, forty-five to sixty minutes once automated. First version in three to four weeks, fifteen to twenty-five dollars in model spend per full run. Primary metric: tool calls per completed task, for example 2.5 down to 2.2.",
+            ans: [
+              "5,000+ active users; 12 failure classes; context: turns either side, tool traces, reasoning",
+              "Judge: a week of hand labels, a couple of hundred; about 3 in 4 flags genuine; reconciled weekly",
+              "100+ cases; nightly full run about 25 to 30 minutes; subset of 15 to 30 cases in under 10",
+              "About 10% flaky, run k = 3; about 25 production instances per query type; 6 or 7 tools seen against an ideal 2 or 3",
+              "Authoring 3 to 4 hours early, 45 to 60 minutes once automated; first version 3 to 4 weeks; $15 to $25 a full run",
+              "Headline metric: tool calls per completed task, for example 2.5 down to 2.2",
+              "Cautions: the 40% cost cut belongs to the rules engine, not the bench; say 'a rewrite of the multi-turn orchestration', never an internal version name, and name no colleague"
+            ],
+            close: [
+              { k: "num", q: "Roughly how many cases are in the bench?", a: "A hundred-plus." },
+              { k: "num", q: "About what share of judge flags turn out to be genuine bugs?", a: "About three in four." },
+              { k: "blank", q: "The headline metric is tool calls per ___ task.", a: "completed" },
+              { k: "why", q: "Why must the 40% cost cut never be attached to the bench?", a: "It belongs to the rules-engine matcher; attaching it to eval work is a claim that does not survive one follow-up." }
+            ] },
+          { t: "Deliver the two-minute version, three times, out loud", m: 20,
+            d: "Four beats. The problem: no reliable way to say a new agent version was better. The funnel: a scanner with cheap deterministic signals over twelve classes, a judge trained on your labels, genuine bugs fixed and promoted into a hundred-plus cases. Replay: the harness flag, real tool code, only the provider call routed to SQLite, and a snapshot covering every path from about twenty-five real instances plus deliberate ambiguity, three people named Michael. The outcome: scored on tool calls per completed task and assertions against the snapshot, run nightly, and used to sign off the multi-turn orchestration rewrite.",
+            ans: [
+              "Problem: no deterministic way to say a new version was better; people tried it and had opinions",
+              "Funnel: scanner, twelve classes, a judge trained on your labels, about three in four genuine, promoted into 100+ cases",
+              "Replay: real tools, provider call routed to SQLite; the snapshot covers every tool seen across about 25 instances, plus three Michaels",
+              "Outcome: tool calls per completed task plus snapshot assertions, nightly, used to sign off the orchestration rewrite"
+            ],
+            close: [
+              { k: "order", q: "Put the four beats of the two-minute version in order.",
+                o: ["Replay against a snapshot", "The problem", "The outcome", "The failure funnel"], a: [1, 3, 0, 2] },
+              { k: "short", q: "What does the snapshot hold besides the path production took?", a: "Every tool path seen across about twenty-five real instances of the query type, plus deliberate ambiguity such as three people named Michael." },
+              { k: "word", q: "What rewrite did the bench sign off?", a: "The multi-turn orchestration rewrite." }
+            ] },
+          { t: "Walk the five-minute version in nine beats", m: 20,
+            d: "The problem, finding failures, judging the flags, promotion, building the snapshot, replay, scoring, keeping it trustworthy and cheap, the outcome. The design points to land: the reconciler adds, updates or merges cases so the bench does not fill with duplicates; the base snapshot is append-only, so a case that used to pass and now fails is a signal about the agent, not the fixture; writes land in the case's SQLite, visible at the next turn, reset between cases; subset runs pick cases by the tools they touch.",
+            ans: [
+              "Nine beats: problem, finding failures, judging, promotion, snapshot, replay, scoring, trustworthy and cheap, outcome",
+              "Reconciler: add, update or merge, so no duplicate cases",
+              "Append-only base: old rows never move under old cases; a new Michael gets a new name",
+              "Writes visible within a case, reverted between cases, so multi-turn works",
+              "Subset selection by tools touched: 15 to 30 cases in under ten minutes"
+            ],
+            close: [
+              { k: "why", q: "Why does an append-only base snapshot matter?", a: "Old rows never change under old cases, so a case that used to pass and now fails points at the agent rather than the fixture." },
+              { k: "short", q: "What does the reconciler do with a newly confirmed bug?", a: "Adds a new case, updates an existing one, or merges it into a case that already covers the same failure." },
+              { k: "pick", q: "The agent creates a task at turn two. What does it see at turn three?",
+                o: ["Nothing, writes are dropped", "The task, because writes land in the case's SQLite", "A static canned result"], a: 1,
+                why: "Writes persist within a case and are reset between cases." }
+            ] },
+          { t: "Answer the follow-ups, number first", m: 20,
+            sd: [{ v: "kitaru", a: "deepdives", why: "The same follow-ups, set against Kitaru's design." }],
+            d: "Why SQLite: a file per case is isolated for free, copied from the base and thrown away, and you can open it to see what the agent saw. Why the provider boundary: most bugs lived between what a tool returned and how the model read it. Authoring cost: say it is an estimate first, three to four hours early, forty-five to sixty minutes once automated. Teaching to the test: never pin expected text; assertions are computed from the snapshot. Nondeterminism: flaky cases run three times and report a pass rate. Judge drift: weekly reconciliation on fresh labels. What it misses: anything not enumerable from the fixture, and anything the scanner never saw fail. Gating: informed releases and blocked the big ones, not a hard CI gate per commit. Differently: instrument authoring time from day one, and version the base snapshot.",
+            ans: [
+              "SQLite: isolation for free, one file per case, inspectable",
+              "Provider boundary: bugs lived in the seam between tool output and model interpretation",
+              "Authoring cost: an estimate, stated first: 3 to 4 hours early, 45 to 60 minutes automated",
+              "Not teaching to the test: assertions against ground truth the snapshot holds, never pinned output text",
+              "Nondeterminism: k = 3 on flaky cases; a case that flips without a code change is quarantined",
+              "Misses: non-enumerable answers like a meeting brief's usefulness, and failures the scanner never saw",
+              "Gating: nightly plus subset runs, blocked the big releases, not a per-commit CI gate",
+              "Differently: instrument authoring time, version the base snapshot explicitly"
+            ],
+            close: [
+              { k: "short", q: "Asked how long a case takes to author, what do you say first?", a: "That I never instrumented it, so this is an estimate: three to four hours early, forty-five to sixty minutes once automated." },
+              { k: "why", q: "Why is asserting completeness against the snapshot not teaching to the test?", a: "It checks against ground truth the fixture already holds, like the number of refunds in the window; teaching to the test would be pinning an expected answer." },
+              { k: "pick", q: "Why was the bench not a hard CI gate on every commit?",
+                o: ["It was too inaccurate", "A thirty-minute run with model variance on every push would slow the team more than it protected them", "Nobody asked for it"], a: 1,
+                why: "It gated the big releases and informed the rest." }
+            ] },
+          { t: "Draw the bench as a system, on paper", m: 10,
+            d: "Production conversations in Postgres, the daily scanner, the judge into a triage queue, a human fix, the reconciler, the case store in Postgres, the runner copying the base SQLite per case with the real agent and tool code, the scorer with deterministic assertions plus a judge for what is not enumerable, and a report diffing each case against a baseline. Then name three things that break at scale: authoring cost grows with cases, provider response shapes change silently, and the clock is live while the data is frozen.",
+            ans: [
+              "Postgres conversations, scanner, judge, triage, human fix, reconciler, case store, runner, scorer, report",
+              "Case store in Postgres so promotion is a row insert; snapshot as SQLite, one file per case",
+              "Breaks at scale: authoring cost is linear, provider shapes drift silently, the clock is live against frozen data, privacy of production-derived fixtures"
+            ] }
+        ],
+        quiz: [
+          { q: "What is the one-sentence headline of the bench?",
+            o: ["An LLM judge scores every conversation", "The real agent runs against a frozen snapshot of the user's world, with only the provider call swapped", "Recorded tool results are replayed by hash", "Users label failures in the app"], a: 1,
+            why: "Headline first, then mechanism, then history." },
+          { q: "How is authoring cost best stated?",
+            o: ["Deflect to how cases are discovered", "As an estimate stated first, with its basis", "As a measured figure", "By saying it is negligible"], a: 1,
+            why: "Round two lost points for dodging it twice. An honest bounded estimate is respected." },
+          { q: "What does a snapshot built from about twenty-five real instances buy you?",
+            o: ["Faster runs", "Truthful answers when the agent takes a path production never took", "Smaller files", "No need for a judge"], a: 1,
+            why: "Counterfactual tolerance is the property the whole design pays for." }
+        ]
+      },
+
+      {
+        id: "wc14", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "1h", est: 60,
+        name: "The round-two critique, fixed",
+        blurb: "Friday. Seven graded blocks, each with its best version. Drill the D and C grades first.",
+        intro: "The mock graded the Kitaru critique a D, your questions a D-plus, the false-signal story a C-minus. Those are the fastest points to win back. The running fixes: never mention alfred_'s funding, lead with the bench, attach a number to every noun, name artifacts instead of gesturing at them, drop filler openers, and say Lennart correctly.",
+        steps: [
+          { t: "Name three things in Kitaru that are wrong or oversold, without a compliment", m: 15,
+            sd: [{ v: "kitaru", a: "deepdives", why: "The provenance and time critiques are deep dives in the Kitaru design." }],
+            d: "Provenance first: under on_miss passthrough, or a tool with no policy, the call goes to the live provider and nothing on the node marks it, so a reader cannot tell recorded from live. Tie it to your anti-fabrication work: grounding claims against the real tool-execution record. Second, time: the tool results are frozen but the agent's clock is not, so anything about today drifts against an old snapshot. Third, evaluators run on the server and see only what the trace captured, so asserting on something the adapter did not record means re-running, not re-scoring. In reserve: provider-native tools bypass the policy, no repeat-run machinery exists, multi-turn replays only the last turn. If stuck, say give me a second; never answer with praise.",
+            ans: [
+              "Provenance: a passthrough or unpoliced call reaches the live provider and the node carries no mark, so recorded and live results are indistinguishable",
+              "Time: frozen data, live clock; replay should pin the session's original timestamp",
+              "Evaluators see only what the trace captured; imported sessions can truncate tool results",
+              "In reserve: native tools bypass policy; no repeat runs; multi-turn is last-turn only",
+              "Never answer 'what is wrong' with a compliment"
+            ],
+            close: [
+              { k: "short", q: "The provenance critique in one sentence.", a: "Under passthrough, or a tool with no policy, a live call leaves no mark on the node, so a replay reader cannot tell recorded results from live ones." },
+              { k: "why", q: "Why does a silent live call matter so much in an eval product?", a: "It is a hidden false pass: the product's whole value is that a replay result is trustworthy." },
+              { k: "word", q: "Which of your own alfred_ fixes does the provenance critique connect to?", a: "Anti-fabrication: grounding claims against the tool-execution record." }
+            ] },
+          { t: "Make the cache miss productive", m: 12,
+            d: "A miss is information: the agent's behaviour changed, which is what you were measuring. Ship first: fail loudly with a diff of recorded against attempted arguments, and one command to accept the variant as equivalent by writing a static alias; deterministic, auditable, and it produces labelled pairs. Second: enrichment at import, indexing argument variants seen across sessions of the same intent, defaulted off because it needs volume. Last: fuzzy matching, in shadow, then suggest, then opt-in per tool, with the ambiguous band as its own outcome. Knowing it is wrong later: a golden set of argument pairs with precision and recall every release, plus miss rate, fuzzy-hit share and ambiguous share, and every fuzzy hit stamped on the node.",
+            ans: [
+              "A miss is information, not an error to hide",
+              "First: a clear diff and one command to accept a variant as a static alias",
+              "Second: enrichment from other sessions of the same intent, off by default",
+              "Last: fuzzy matching in shadow, then suggest, then opt-in, with an ambiguous band",
+              "Detection: a golden set tracked every release; miss rate, fuzzy share, ambiguous share; every fuzzy hit stamped on the node"
+            ],
+            close: [
+              { k: "pick", q: "What would you ship first for cache misses?",
+                o: ["Embedding-based fuzzy matching", "A clear recorded-versus-attempted diff with one command to accept an alias", "Passthrough by default"], a: 1,
+                why: "Deterministic and auditable, and it generates labelled data for anything automatic later." },
+              { k: "short", q: "How would you notice a week later that a fuzzy threshold is wrong?", a: "Track precision and recall on a golden set of argument pairs each release, and watch miss rate, fuzzy-hit share and the ambiguous-band share." }
+            ] },
+          { t: "Tell the false-signal story: two missing refunds", m: 12,
+            d: "Lead with the case, never with 'I don't have one'. A ledger request produced a clean, well-formed ledger missing two refunds. Every surface check passed and it recurred on a later agent version. A user noticed, because the report path and frustration signals do not fire when an answer merely looks right. The lesson: nothing asserted completeness. For this class you can, because you own the snapshot: it knows how many financial events are in the window. That is asserting against ground truth you hold, not pinning an answer. Keep the honest half: it only works where the answer is enumerable.",
+            ans: [
+              "Case first: a clean ledger that silently omitted two refunds, and recurred on a later version",
+              "Found by a user, because nothing fires when an answer looks right",
+              "Scorer checked trajectory and shape; nothing checked completeness",
+              "Fix: assert every financial event in the snapshot window appears; ground truth you hold",
+              "Honest limit: only where the correct answer is enumerable from the fixture"
+            ],
+            close: [
+              { k: "blank", q: "The fix asserts against ground ___ the snapshot already holds.", a: "truth" },
+              { k: "why", q: "Why can Kitaru not make the same completeness check?", a: "A recorded transcript has no ground truth to count against; only a frozen world does." }
+            ] },
+          { t: "Re-say the intro and the ownership probe", m: 10,
+            d: "About forty seconds: founding engineer at alfred_, 5,000-plus active users, making an agent product reliable in production. Then the bench, in the first forty seconds: real production failures replayed against new versions with tools answered from a snapshot, so you have built a rough version of Kitaru and know where it broke. Then WheelPrice: Techstars-backed, two engineers, product, backend, ML and computer vision. Ownership: not urgently leaving; want AI infrastructure at the centre of the product. Public half: LinkedIn active, heavy reader on X; MetaRAG at INFORMS Analytics+ to 700-plus practitioners, hackathons, MockFlow-AI with its launch video. First post: import real traces, find a failure, prove the fix with a replay.",
+            ans: [
+              "Intro: alfred_, 5,000+ users, then the bench inside forty seconds, then WheelPrice",
+              "Ownership: not urgently leaving; want AI infrastructure at the centre of the product",
+              "Never funding or crunch",
+              "Named artifacts: INFORMS Analytics+ to 700+, MockFlow-AI launch video, hackathons",
+              "First post: import traces, find a failure, prove the fix with a replay"
+            ] },
+          { t: "Prepare your questions, one at a time", m: 11,
+            d: "For a technical round, ask about the system. When an unchanged replay diverges because the model sampled differently, is that noise, a finding, or a baseline failure? In multi-turn replays, when the reply changes at turn two, what happens to the recorded turn-three message, and is a simulated user in scope? How often do forked replays hit cache misses for early users? What has been hardest to get right in the replay path? If a minute remains: what should this seat have shipped by the end of month one? Name the thing each time; ask one, then wait.",
+            ans: [
+              "Divergence on an unchanged replay: noise, finding, or failure?",
+              "Multi-turn: what happens to the recorded next user turn, and is a simulated user in scope?",
+              "How often do forked replays hit misses in practice?",
+              "What has been hardest to get right in the replay path?",
+              "Month one: what should this seat have shipped?",
+              "One question at a time; name the thing; then wait"
+            ] }
+        ],
+        quiz: [
+          { q: "Asked what is wrong with Kitaru, what is the worst possible answer?",
+            o: ["The provenance critique", "A compliment about determinism", "Asking for a second to think", "The time-drift critique"], a: 1,
+            why: "The question is the taste-and-judgement criterion. Praise answers a different question." },
+          { q: "What was round two's biggest intro miss?",
+            o: ["Too short", "The bench never came up", "Too many numbers", "Mentioning WheelPrice"], a: 1,
+            why: "Interviewing for a replay-eval product without mentioning your replay-eval system." },
+          { q: "How should questions to the interviewer be asked?",
+            o: ["Two at once to save time", "One at a time, naming the thing, then wait", "Only strategy questions", "Only about compensation"], a: 1,
+            why: "Two in one breath means the easier one gets answered and the good one is lost." }
+        ]
+      },
+
+      {
+        id: "wc15", track: "Systems", forWhat: "ZenML round 3, 28 Sep", len: "2h", est: 120,
+        name: "Kitaru at mechanism depth",
+        blurb: "Friday. The teardown, until you can say every mechanism without the page.",
+        intro: "A technical round goes down, not sideways. This is Kitaru read from source: what executes where, what is stored, how a call is matched, and where the implementation and the pages disagree. Your teardown and KITARU.md are the references; the Kitaru design in your system design guide draws it. Ask about the gaps; never call them bugs.",
+        steps: [
+          { t: "Control plane and data plane", m: 15,
+            sd: [{ v: "kitaru", a: "hld", why: "The high-level design draws the server, the worker and the adapter." }],
+            d: "The server is FastAPI, Postgres and a blob store. It holds every record and hands out task specs, leases and tokens, and it executes no user code, ever. The worker runs in your environment and your virtualenv, polls the server's claim loop, heartbeats, spawns subprocesses and kills the process tree on teardown. Four task kinds: agent, evaluator, importer, analyzer. Evaluator and importer plugins get isolated per-plugin environments via uv; agent tasks run your command as is.",
+            ans: [
+              "Server: FastAPI, Postgres, blob store; holds records, hands out specs, leases, tokens; runs no user code",
+              "Worker: in your environment; claim loop, heartbeats, subprocesses, kill the process tree on teardown",
+              "Four task kinds: agent, evaluator, importer, analyzer",
+              "Evaluators and importers get isolated uv environments; agent tasks do not"
+            ],
+            close: [
+              { k: "word", q: "Does Kitaru's server ever execute user code?", a: "No." },
+              { k: "num", q: "How many task kinds are there?", a: "Four: agent, evaluator, importer, analyzer." },
+              { k: "short", q: "Which task kinds get isolated environments?", a: "Evaluator and importer plugins, via uv; agent tasks run as is." }
+            ] },
+          { t: "The execution model: there is no sandbox", m: 15,
+            d: "The worker builds the child's environment from its own, layers run, extra and secret variables, then injects the contract: KITARU_API_URL, KITARU_API_TOKEN scoped to one task and one attempt, KITARU_TASK_ID, KITARU_TASK_INPUTS if the JSON is at most 32 KB, and KITARU_REPLAY_ID, which is the entire replay trigger. Your agent imports the adapter, which installs two PydanticAI hooks: wrap_model_request applies overrides and wrap_tool_execute applies tool policy, posting tool_name, cache_key and occurrence to the tool-lookup endpoint. Isolation is the process tree, a timeout and kill_tree. A bare HTTP call that is not a registered tool is invisible and hits production.",
+            ans: [
+              "Injected: API URL, a token scoped to one task and attempt, task id, inputs up to 32 KB, and KITARU_REPLAY_ID",
+              "KITARU_REPLAY_ID present means replay; absent means an ordinary recording run",
+              "Adapter hooks: wrap_model_request for overrides, wrap_tool_execute for tool policy",
+              "Isolation: process tree, timeout, kill_tree; no container, jail, network namespace or DB snapshot",
+              "Anything outside a registered tool, like a bare requests.post, reaches production"
+            ],
+            close: [
+              { k: "word", q: "Which environment variable alone decides that a run is a replay?", a: "KITARU_REPLAY_ID." },
+              { k: "short", q: "What does a replay do to a raw HTTP call the agent makes outside a registered tool?", a: "Nothing: no hook fires, so it goes to production." },
+              { k: "num", q: "Above what size are task inputs not passed through the environment?", a: "32 KB." }
+            ] },
+          { t: "One recursive table, and the objects around it", m: 15,
+            sd: [{ v: "kitaru", a: "entities", why: "The core entities, with SessionNode as the one that carries the hard problem." }],
+            d: "Everything reduces to SessionNode, a self-referencing tree: node_type llm_call, tool_call, subagent_call or span; status in_progress, completed or failed; tool_name; cache_key, the replay join key; inputs and outputs; started_at, the ordering key for occurrence; attributes such as mocked, policy and provider_native; and selector fields, JSON paths into the payload so evaluators, human judgements and the UI pin the same coordinates. Around it: Agent and AgentVersion with a RunSpec, Session with origin imported, recorded or replay, Cohort and immutable CohortVersion, ReplayConfig, Replay, Experiment and numbered ExperimentRun, Job and Task.",
+            ans: [
+              "SessionNode: a self-referencing tree of llm, tool, subagent and span nodes",
+              "cache_key is the replay join key; started_at orders occurrence",
+              "Selectors: JSON paths into the payload, so every judgement points at the same coordinates",
+              "Session origins: imported, recorded, replay; cohorts freeze populations as immutable versions",
+              "Admire the selector design out loud: you hand-rolled a worse version"
+            ],
+            close: [
+              { k: "word", q: "Which SessionNode field is the replay join key?", a: "cache_key." },
+              { k: "short", q: "What is a selector, and why is it good design?", a: "A JSON path into the payload, so evaluators, human judgements and the UI all point at the same coordinates without copying text." }
+            ] },
+          { t: "Tool policy and on_miss, exactly", m: 15,
+            d: "A policy is a default plus per-tool configs, resolved by exact tool name, then the default. passthrough runs the real tool and is the default when nothing is set. history returns the recorded result by cache key within a scope. static returns ordered cases, first match wins, exact or subset matching. llm is modelled in the API and rejected at runtime by the PydanticAI adapter. on_miss takes three values: fail raises and the whole replay dies; error_result hands the model an error and it keeps running, so you are grading recovery from an error you invented; passthrough calls the real tool and sets no mocked attribute, which is the silent fidelity hole.",
+            ans: [
+              "Resolution: exact tool name, then default",
+              "Policies: passthrough (default), history, static (exact or subset cases), llm (rejected at runtime)",
+              "on_miss fail: the whole replay dies",
+              "on_miss error_result: the agent continues on an invented error",
+              "on_miss passthrough: live call, no mocked attribute on the node"
+            ],
+            close: [
+              { k: "word", q: "What is the default tool policy when none is set?", a: "passthrough." },
+              { k: "pick", q: "Under on_miss error_result, what are you actually grading?",
+                o: ["The agent's normal behaviour", "Its recovery from an error the replay invented", "Nothing, the run stops"], a: 1,
+                why: "The model receives a literal error object and keeps going." },
+              { k: "short", q: "Which policy exists in the API but is rejected when a PydanticAI replay runs?", a: "llm." }
+            ] },
+          { t: "The cache key, and what matches", m: 15,
+            sd: [{ v: "kitaru", a: "api", why: "The tool-lookup contract and the key it carries." }],
+            d: "SHA-256 of the tool name, a null byte, and the arguments serialised with sorted keys, compact separators and allow_nan false. Key order and JSON whitespace match. Whitespace inside a string does not; 1 against 1.0 does not; true against 1 does not; NaN, infinity or unserialisable arguments produce no key at all, which goes straight to on_miss with no diagnostic. There is no fuzzy matching and no subset matching on history. Non-ASCII matches within one language; the docs concede matching is guaranteed only within the same adapter implementation.",
+            ans: [
+              "sha256(name + null byte + canonical JSON args, sorted keys, compact, no NaN)",
+              "Matches: key order, formatting",
+              "Misses: inner whitespace, 1 versus 1.0, true versus 1",
+              "No key at all for NaN, infinity or unserialisable args, straight to on_miss, silently",
+              "No fuzzy or subset matching on history; cross-adapter matching is not guaranteed"
+            ],
+            close: [
+              { k: "pick", q: "The agent calls a tool with 1.0 where the recording had 1. Match?",
+                o: ["Yes, the values are equal", "No, the canonical JSON differs", "Only under subset matching"], a: 1,
+                why: "The hash is over serialised literals, not numeric values." },
+              { k: "short", q: "What happens when the arguments contain NaN?", a: "No cache key is produced, so no lookup happens and it goes straight to on_miss without a diagnostic." }
+            ] },
+          { t: "Occurrence flips with scope", m: 15,
+            d: "Under baseline scope the client keeps a counter per cache key and the server returns the nth recorded node, ordered by started_at then id, from completed and failed nodes: ordered consumption. Under agent or cohort-version scope occurrence is forced to None and the server returns the latest completed node, the same one every time. Two things you can ask about as questions: in the PydanticAI capability the counter is read, the lookup is awaited, then the counter is written, so two concurrent identical calls could both take occurrence zero; and the candidate sets differ, completed plus failed against completed only.",
+            ans: [
+              "Baseline: nth by cache key, ordered by started_at; completed and failed; client-side counter",
+              "Agent and cohort scope: latest completed, same row every time",
+              "Ask, never assert: read, await, write on the counter could let two concurrent identical calls both take occurrence zero",
+              "Candidate sets differ between the two queries"
+            ],
+            close: [
+              { k: "short", q: "What does agent scope return for a repeated identical call?", a: "The same latest completed node every time; occurrence is ignored." },
+              { k: "why", q: "Why raise the concurrency point as a question rather than a finding?", a: "It is open-source code the interviewer maintains; the Claude SDK docs already state the limitation, so it may be a known trade-off." }
+            ] },
+          { t: "Multi-turn, and what always runs live", m: 20,
+            sd: [{ v: "kitaru", a: "deepdives", why: "Multi-turn replay is one of the design's deep dives." }],
+            d: "An imported session splits into turns[:-1] and the final turn. Only the final turn re-executes. Prior turns are injected as frozen history: user messages as prompts, assistant replies as text only, with earlier tool calls and results dropped. No user simulation: the recorded next user message lands whatever the agent said. Model calls always go live, so an unchanged baseline replay is billed and not deterministic. Provider-native tools, like hosted web search, are recorded but never consult the policy, so a history policy on them is a silent no-op. No repeat-run machinery exists: an experiment run replays each session once.",
+            ans: [
+              "Only the final turn re-executes; earlier turns are frozen text, earlier tool activity dropped",
+              "No simulated user",
+              "Model calls always live: billed, nondeterministic even unchanged",
+              "Provider-native tools bypass tool policy",
+              "No k-runs or variance handling in experiments"
+            ],
+            close: [
+              { k: "pick", q: "In a multi-turn replay, what re-executes?",
+                o: ["Every turn", "Only the final turn", "Only turns with tool calls"], a: 1,
+                why: "Prior turns are injected as frozen history, without their tool calls." },
+              { k: "short", q: "Why is an unchanged baseline replay not deterministic?", a: "Model calls always go live; there is no recorded-completion mode." },
+              { k: "word", q: "Which kind of tool runs live under every policy?", a: "Provider-native tools, such as hosted web search." }
+            ] }
+        ],
+        quiz: [
+          { q: "Where does Kitaru intercept a tool call?",
+            o: ["At the network layer", "At the agent framework's tool-execution hook", "Inside a container", "At the database"], a: 1,
+            why: "Anything not routed through a registered tool is invisible to replay." },
+          { q: "What does on_miss passthrough leave on the node?",
+            o: ["A mocked attribute set to live", "Nothing marking it as unmocked", "An error", "A static result"], a: 1,
+            why: "That is the provenance hole." },
+          { q: "What does baseline scope do with repeated identical calls?",
+            o: ["Returns the latest every time", "Consumes recorded occurrences in order", "Fails", "Calls live"], a: 1,
+            why: "Agent and cohort scopes return the latest; baseline consumes the nth." }
+        ]
+      },
+
+      {
+        id: "wc16", track: "Systems", forWhat: "ZenML round 3, 28 Sep", len: "1h 30m", est: 90,
+        name: "Design: replay-based evals, from scratch, timed",
+        blurb: "Saturday. The whole product as a thirty-five-minute design, with your bench as the other answer.",
+        intro: "A technical round of ninety minutes is likely to include 'how would you build this'. Do not recite Kitaru back. Reason from first principles with the six steps, then use what you know about both designs in the deep dives. The worked version is the Kitaru design in your system design guide; try it cold first, then compare.",
+        steps: [
+          { t: "Requirements in five minutes", m: 10,
+            sd: [{ v: "kitaru", a: "requirements", why: "The worked requirements, with the numbers that change the design." }],
+            d: "Clarify first: reproducing a known failure, or testing a change? The design splits there. Functional: import or record agent sessions; replay a session or a cohort against a changed agent with the outside world answered from the recording; score and compare against a baseline. Non-functional: no replay silently touches production; a result says where every answer came from; ingestion is near free; the server never runs user code; cost and time per replay are bounded.",
+            ans: [
+              "Clarify: reproduce a failure, or test a change",
+              "Functional: ingest sessions; replay against a change with the world answered from the recording; score against a baseline",
+              "Non-functional: no silent production calls; provenance on every answer; cheap ingestion; no user code on the server; bounded cost per replay"
+            ],
+            close: [
+              { k: "short", q: "What is the one clarifying question that splits the design?", a: "Are we reproducing a known failure or testing a change?" },
+              { k: "why", q: "Why is 'no replay silently touches production' a requirement and not a feature?", a: "A silent live call is both a real side effect and a hidden false pass, which breaks the product's promise." }
+            ] },
+          { t: "Entities, API and the high-level design", m: 15,
+            sd: [{ v: "kitaru", a: "hld", why: "The drawn design to compare against." }],
+            d: "Entities: Agent and AgentVersion, Session and its node tree, Cohort and CohortVersion, ReplayConfig with a tool policy, Replay, Experiment and ExperimentRun, Task. API: import, register, create replay or experiment, and the one hot path, tool-lookup, posting a tool name, a cache key and an occurrence. HLD: a control plane that stores records and leases tasks and never runs user code; workers in the customer's environment that claim tasks and spawn the agent; an in-process adapter that intercepts tool calls.",
+            ans: [
+              "Entities: agent versions, sessions as node trees, frozen cohorts, replay configs, replays, experiments, tasks",
+              "The hot path: tool-lookup with name, key and occurrence",
+              "Control plane stores and leases; workers run in the customer's environment; the adapter intercepts in process"
+            ] },
+          { t: "Deep dive: divergence, the better the change the worse the replay", m: 15,
+            sd: [{ v: "kitaru", a: "deepdives", why: "The divergence deep dive, with both designs." }],
+            d: "Name the hard part before sketching: capture is easy; divergence is hard. Exact-argument keys punish the behaviour change you are measuring, and every on_miss escape is bad. Options: a productive miss with a one-command alias; enrichment from sessions of the same intent; fuzzy matching behind shadow mode. Then the structural answer from your own work: freezing the world instead of the transcript tolerates new paths at the price of authoring. The synthesis: promote a recorded session into a small queryable world on demand, so the common case stays free and only forked sessions pay.",
+            ans: [
+              "Name it first: capture is easy, divergence is hard",
+              "Exact keys punish the change being measured; fail, error_result and passthrough are all bad escapes",
+              "Options: productive miss, enrichment, fuzzy in shadow",
+              "Structural: freeze the world rather than the transcript, and pay in authoring",
+              "Synthesis: promote a session into a queryable world only when it is forked"
+            ],
+            close: [
+              { k: "short", q: "The one-line comparison of the two designs.", a: "Kitaru freezes the transcript, so ingestion is free and counterfactuals are brittle; the bench froze the world, so counterfactuals held and ingestion was expensive." },
+              { k: "why", q: "Why promote only forked sessions into a world?", a: "It keeps import free for the common case and spends authoring cost only on the sessions people actually explore." }
+            ] },
+          { t: "Deep dive: trust and provenance", m: 10,
+            d: "Stamp every node with how it was served: recorded, static, fuzzy with its distance, or live. Surface it in the diff a reviewer reads. Pin the session's original timestamp so date logic does not drift. Separate an unchanged-replay divergence caused by sampling from a real regression with k runs and a pass rate. Say why this ships first: small, and every other feature depends on a reader trusting where an answer came from.",
+            ans: [
+              "Served-by on every node: recorded, static, fuzzy with distance, live",
+              "Pinned clock per session",
+              "k runs and a pass rate to separate sampling noise from regression",
+              "Ships first because everything else depends on it"
+            ] },
+          { t: "Deep dive: the worker queue and concurrency", m: 10,
+            d: "Tasks are rows. Workers claim with SELECT ... FOR UPDATE SKIP LOCKED so claiming does not serialise the table; a lease with heartbeats, and a sweeper that reclaims tasks whose lease expired. Cancellation kills the process tree. Occurrence under concurrency: a per-key counter must be claimed atomically, or, as the Claude SDK docs admit, identical in-flight calls cannot get a deterministic ordinal. Idempotency for retried tasks: key by task and attempt, which the scoped token already carries.",
+            ans: [
+              "Claim with FOR UPDATE SKIP LOCKED; leases with heartbeats; a sweeper for expired leases",
+              "Cancellation kills the process tree",
+              "Occurrence needs an atomic counter, or accept non-determinism for identical in-flight calls",
+              "Retries keyed by task and attempt"
+            ],
+            close: [
+              { k: "word", q: "Which Postgres idiom lets many workers claim queue rows without blocking each other?", a: "SELECT ... FOR UPDATE SKIP LOCKED." },
+              { k: "short", q: "What reclaims a task whose worker died?", a: "A sweeper that finds tasks whose lease expired without a heartbeat." }
+            ] },
+          { t: "Say it in thirty-five minutes, then write its three weakest points", m: 30,
+            d: "Clock it. Requirements five, entities two, API five, flow five, HLD ten, deep dives eight. Then write three weaknesses you would volunteer: multi-turn still needs a simulated user; model calls stay live and cost money; authoring a world is expensive where it is used.",
+            ans: [
+              "Timed: 5, 2, 5, 5, 10, 8",
+              "Weakness 1: multi-turn needs a calibrated simulated user",
+              "Weakness 2: live model calls make every replay billed and nondeterministic",
+              "Weakness 3: promoted worlds cost expert time"
+            ] }
+        ],
+        quiz: [
+          { q: "What is the hard part of replay, in one phrase?",
+            o: ["Capturing traces", "Divergence from the recording", "Storing blobs", "Authentication"], a: 1,
+            why: "Say it before sketching: capture is easy, divergence is hard." },
+          { q: "What should ship first?",
+            o: ["Fuzzy matching", "Provenance on every node", "A simulated user", "A new UI"], a: 1,
+            why: "Small, and every other feature depends on trusting where an answer came from." },
+          { q: "How do workers claim tasks without serialising the table?",
+            o: ["A global lock", "SELECT ... FOR UPDATE SKIP LOCKED", "Polling every minute", "Advisory locks per row, held for the run"], a: 1,
+            why: "Skipped rows are left for other workers." }
+        ]
+      },
+
+      {
         id: "wc8", track: "Systems", forWhat: "ZenML round 3, 28 Sep", len: "2h", est: 120,
         name: "Side effects inside replay, in depth",
-        blurb: "Michael went here, which means round three goes further.",
+        blurb: "Saturday. Michael went here, which means round three goes further.",
         intro: "Michael dug into side effects and idempotency, so expect Hamza to push past where he stopped. This session also genuinely covers week four's material on retries and idempotency, so it is an honest fold candidate once closed.",
         diagrams: ["zenEffects"],
         steps: [
@@ -3072,7 +3388,7 @@
       {
         id: "wc9", track: "Systems", forWhat: "ZenML round 3, 28 Sep", len: "2h", est: 120,
         name: "Design: multi-turn replay when the conversation changes",
-        blurb: "The hardest open problem in replay evals, and a live one for them.",
+        blurb: "Saturday. The hardest open problem in replay evals, and a live one for them.",
         intro: "Conversational replay and adaptive multi-turn evaluation are on Kitaru's public roadmap right now. Your bench handles multi-turn because the world is stateful within a case. Turn that into a design you could defend to the people working on it. Ask about it as a genuine question; do not cite their issues or commits to them.",
         diagrams: ["passk", "multiturn"],
         steps: [
@@ -3133,9 +3449,94 @@
       },
 
       {
+        id: "wc17", track: "Systems", forWhat: "ZenML round 3, 28 Sep", len: "1h 30m", est: 90,
+        name: "Backend depth: where a technical round goes down",
+        blurb: "Sunday. Storage, failure and concurrency in your own systems, with a number each.",
+        intro: "The bar from round two still holds: every claim survives one 'how exactly?' and one 'how big?'. When pushed, go down, not sideways; volunteer the limit before they find it; reach for a number unprompted. These are the questions most likely when they go down into your work.",
+        steps: [
+          { t: "Why SQLite when production is Postgres", m: 12,
+            d: "Two reasons, one good and one you would revisit. Good: a snapshot is one file, trivial to capture, isolated per case by construction, no process to manage. Revisit: it is not the production engine, so no row-level security, different type affinity and dialect; it tests agent behaviour faithfully and database behaviour not at all. Rebuilt today: Postgres template databases, CREATE DATABASE ... TEMPLATE, cloning per case at near-SQLite speed on the real engine, at the cost of a server in the test path. Did the gap bite? Not that you caught, which is not quite the same thing.",
+            ans: [
+              "Good: one file, isolated per case, no process",
+              "Revisit: not the production engine; tests agent behaviour, not database behaviour",
+              "Rebuild: CREATE DATABASE ... TEMPLATE per case",
+              "'Not that I caught, which is not quite the same thing'"
+            ],
+            close: [
+              { k: "word", q: "Which Postgres feature clones a prepared database quickly per test case?", a: "Template databases: CREATE DATABASE ... TEMPLATE." },
+              { k: "short", q: "What fidelity did SQLite give up?", a: "Database behaviour: row-level security, Postgres types and dialect; agent behaviour was still tested faithfully." }
+            ] },
+          { t: "A side-effecting call fails halfway", m: 15,
+            sd: [{ v: "email-agent", a: "deepdives", why: "Exactly-once side effects for an agent whose effect is an email." }],
+            d: "Exactly-once against a third party you do not control does not exist; the goal is at-least-once delivery with effects safe to repeat. Write the intent to a tool-execution ledger before the call, so a crash mid-flight leaves a record; the same ledger is what anti-fabrication reads, so the agent cannot claim an action with no row. Side-effecting actions sit behind a confirm verdict with a bounded undo window. The design work is where the idempotency key lives. Send-succeeded-but-timed-out: reconcile by looking the effect up at the provider rather than retrying blind.",
+            ans: [
+              "At-least-once plus idempotent effects; exactly-once does not exist against a third party",
+              "Write intent to the ledger before the call",
+              "The ledger also grounds anti-fabrication",
+              "Confirm verdict and a bounded undo window for side effects",
+              "Timed out after success: reconcile at the provider before retrying"
+            ],
+            close: [
+              { k: "why", q: "Why write the intent before the call rather than after?", a: "If the process dies mid-flight there is still a record that the call may have happened, so recovery can reconcile instead of guessing." },
+              { k: "short", q: "What do you do when the send succeeded but the response timed out?", a: "Look the effect up at the provider, keyed by the idempotency key, before retrying." }
+            ] },
+          { t: "The queue, and polling to events", m: 12,
+            d: "If the pending-obligations queue is a Postgres table with a periodic drain, say exactly that; it is respectable at your scale. Where it strains: concurrent claiming, answered by FOR UPDATE SKIP LOCKED; and a cron drain's worst-case latency is the interval. That is the notification story: about ninety seconds down to about three by triggering on the event, with cron demoted to a backstop. Say the backstop explicitly; it shows you kept a safety net.",
+            ans: [
+              "Honest: a Postgres table with a drain",
+              "Strain: concurrent claiming, fixed with SKIP LOCKED",
+              "Cron's worst-case latency is its interval",
+              "Notifications: about 90 seconds to about 3, event-triggered, cron kept as a backstop"
+            ],
+            close: [
+              { k: "num", q: "Notification latency, before and after?", a: "About ninety seconds down to about three." },
+              { k: "why", q: "Why keep cron after moving to events?", a: "As a backstop: if an event is missed, the periodic sweep still catches the work." }
+            ] },
+          { t: "The SECURITY DEFINER story", m: 12,
+            d: "Agent-facing read functions in Postgres were SECURITY DEFINER RPCs, running with the definer's privileges so they can see past row-level security. Postgres grants EXECUTE to PUBLIC on a new function by default, so a function deliberately bypassing RLS was callable by any authenticated role: a cross-user leak class. Nothing was exploited; it came out of an adversarial design review. You fixed the grants and put it in the migration checklist. Automatic: a migration test asserting no SECURITY DEFINER function carries a PUBLIC execute grant.",
+            ans: [
+              "SECURITY DEFINER runs as the definer, past RLS",
+              "Default EXECUTE to PUBLIC made it callable by any role",
+              "Found in design review, not an incident",
+              "Fixed the class: migration checklist, and a test asserting no PUBLIC grant on definer functions"
+            ],
+            close: [
+              { k: "blank", q: "Postgres grants EXECUTE on a new function to ___ by default.", a: "PUBLIC" },
+              { k: "short", q: "How would you catch the class automatically?", a: "A migration test asserting no SECURITY DEFINER function has a PUBLIC execute grant." }
+            ] },
+          { t: "Schema drift and provider normalisation", m: 12,
+            d: "Schema change makes fixtures rot quietly: a fixture captured before a migration keeps passing or fails for reasons unrelated to agent quality. The fix: stamp each fixture with the schema version it was captured against and fail loudly on mismatch. Provider normalisation: Gmail, Outlook Graph and IMAP behind one internal model, each failing differently; the same problem as Kitaru's importers across Langfuse, LangSmith and Braintrust, with different nouns. Pick one concrete behavioural difference you can speak to and what it forced in your model.",
+            ans: [
+              "Fixtures rot quietly on schema change",
+              "Stamp the schema version and fail loudly on mismatch",
+              "Normalisation: one internal model over providers that fail differently",
+              "Have one concrete provider difference ready"
+            ] },
+          { t: "Say 'I don't know' well, then run one cold question", m: 27,
+            d: "Pattern: admit the boundary, reason anyway, say what you would check. Then pick one cold prompt and answer it with the spine: clarify, name the hard part, sketch, attack your own design, state the trade-off. Suggested cold prompt: design the importer that turns a Langfuse export into sessions, at ten thousand sessions a day.",
+            ans: [
+              "Admit, reason, say what you would verify; no bluffing, one clean admission",
+              "Spine: clarify, name the hard part, sketch, attack, trade-off",
+              "Importer: idempotent by source trace id, streaming parse, a node tree per trace, truncation flagged rather than hidden"
+            ] }
+        ],
+        quiz: [
+          { q: "What is the honest answer on exactly-once side effects?",
+            o: ["Use a distributed transaction", "At-least-once delivery with idempotent effects", "Retry until success", "It is not a concern"], a: 1,
+            why: "The design work is where the idempotency key lives." },
+          { q: "Why did the SECURITY DEFINER functions leak across users?",
+            o: ["A bug in RLS", "EXECUTE is granted to PUBLIC by default", "Weak passwords", "Missing indexes"], a: 1,
+            why: "The function deliberately bypassed RLS and anyone could call it." },
+          { q: "When pushed on a claim, which way do you go?",
+            o: ["Sideways, to another system", "Down, one more detail about the same system", "To philosophy", "Change the subject"], a: 1,
+            why: "Adding a detail builds credibility; adding a system reads as evasion." }
+        ]
+      },
+
+      {
         id: "wc10", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "1h 15m", est: 75,
         name: "DevEx: explaining Kitaru to a developer",
-        blurb: "Alex's lane: onboarding, writing, and agent-driven tours.",
+        blurb: "Sunday, if time allows. Alex's lane: onboarding, writing, and agent-driven tours.",
         intro: "Alex rebuilt ZenML's site with Claude Code, writes a great deal, came to engineering from a long research career, and ships the skills that let a coding agent drive Kitaru's tour. Expect questions about how you would explain something, what the first ten minutes should feel like, and what you would write.",
         steps: [
           { t: "Describe the first ten minutes as you actually experienced them",
@@ -3185,7 +3586,7 @@
       {
         id: "wc11", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "45m", est: 45,
         name: "ZenML context for the CTO",
-        blurb: "Why a pipeline company built an agent eval product.",
+        blurb: "Sunday, if time allows. Why a pipeline company built an agent eval product.",
         intro: "Hamza co-founded ZenML. Being able to explain why ZenML built Kitaru, and where you would take it, is the product-engineer half of this seat.",
         steps: [
           { t: "Know ZenML's core vocabulary at a working level",
@@ -3230,14 +3631,94 @@
       {
         id: "wc12", track: "Interview", forWhat: "ZenML round 3, 28 Sep", len: "1h 30m", est: 90,
         name: "The full ninety-minute mock",
-        blurb: "Hamza and Alex in one sitting, then one retake of the weakest block.",
-        intro: "Do this on Saturday or Sunday, not Monday morning. It should feel slightly harder than the real thing.",
+        blurb: "Sunday. Hamza and Alex in one sitting, then one retake of the weakest block.",
+        intro: "Sunday afternoon, not Monday morning. It should feel slightly harder than the real thing: ninety minutes of technical depth.",
         steps: [
           { t: "Run the live mock in chat: say run the ZenML round-three mock",
-            d: "Both voices, ninety minutes: product and strategy from Hamza, depth on side effects and multi-turn, then Alex on explanation and onboarding. Graded afterwards in the panel format." },
+            d: "Both voices, ninety minutes, technical: your bench at mechanism depth, Kitaru's internals, one design from scratch, side effects and multi-turn, then your questions. Graded afterwards in the panel format." },
           { t: "Retake the single weakest block the next day" },
           { t: "Monday morning: re-read the bench headline and your three questions, nothing else",
             d: "The call is at 9 AM Eastern. Do not start new material that morning." }
+        ]
+      },
+
+      {
+        id: "wc1", parked: true, track: "Systems", forWhat: "Oxus, 23 Sep", len: "45m", est: 45,
+        name: "The system design frame for this room",
+        blurb: "How to spend the thirty-five minutes, and what to say before drawing a box.",
+        intro: "Sixty minutes, split between your past work and one design exercise. The intro was behavioural, so this is Christine's first technical look at you, and she has an AI degree plus a consulting instinct. She will want requirements before boxes and a reason attached to every box.",
+        diagrams: ["oxusFrame"],
+        steps: [
+          { t: "Learn the thirty-five-minute shape and say it once out loud",
+            d: "About four minutes clarifying: who the user is, what the unit of work is, what counts as done. Four on requirements, with the non-functional ones first, because in audit software they are the product. Eight on the happy path end to end. Twelve on the single hard part, which for Oxus is almost always grounding. Five on failure modes and evaluation. Two on what you would build first. If she cuts in, follow her; the shape is for when she does not." },
+          { t: "Write the five non-functional requirements for audit software in your own words",
+            d: "Traceability: every assertion points at a document, a page and a value. Reproducibility: the same inputs give the same workpaper, which means seeds, pinned model and prompt versions. Reviewability: a human signs every output and can see why. Isolation: one client's evidence never touches another's. Auditability of the system itself: every model call and reviewer decision is logged. Use the Answer field." },
+          { t: "Memorise the spine, and three places it applies",
+            d: "The model is allowed to write the prose. It is never the source of the facts. It applies to citations, where the model selects a handle rather than writing a reference; to sample selection, which is seeded code; and to exceptions, which are computed from results rather than judged. This is also literally what you built in the memory system, so every design answer can land back on something you shipped." },
+          { t: "Prepare the one clarifying question that changes the design",
+            d: "Ask whether the output is a draft the internal auditor reviews, or something that goes to the external auditor directly. The first allows the system to be a strong assistant with a human gate. The second means every guarantee has to hold without a human catching it, which pushes almost everything toward deterministic code. Either answer shows her you know where the risk is." }
+        ],
+        quiz: [
+          { q: "In an audit system, why should sample selection be deterministic code rather than the model?",
+            o: ["The model is too slow", "A seeded, recorded selection can be reproduced and defended; a model's choice cannot", "Models cannot count", "Regulators ban models from sampling"], a: 1,
+            why: "The workpaper has to be reproducible for a reviewer or an external auditor. A seed stored with the workpaper does that. A model choosing samples gives a plausible selection nobody can rerun." },
+          { q: "Which requirement should you state first in an audit design?",
+            o: ["Latency under 200 ms", "Every assertion traceable to a document, page and value", "Horizontal scalability", "Support for many file types"], a: 1,
+            why: "In audit the traceability requirement is the product. Batch latency is rarely the constraint; defensibility always is." },
+          { q: "Your one-sentence principle for this room is:",
+            o: ["Use the largest model available", "The model writes the prose and is never the source of the facts", "Always fine-tune on customer data", "Let the reviewer fix whatever the model gets wrong"], a: 1,
+            why: "And you can prove you mean it, because the memory system at alfred_ is built exactly that way." }
+        ]
+      },
+
+      {
+        id: "wc5", parked: true, track: "Interview", forWhat: "Oxus, 23 Sep", len: "1h 15m", est: 75,
+        name: "Your past work, at grilling depth",
+        blurb: "She has not probed any of it yet. Expect one system and a lot of how exactly.",
+        intro: "The intro stayed behavioural, so the experience half of tomorrow is a fresh technical examination. Christine will likely pick one system and keep asking how it works until she finds the edge of what you know. Have the edges prepared.",
+        steps: [
+          { t: "Memory system: two minutes, then the follow-ups",
+            sd: [{ v: "alfred", a: "hld", why: "Your own system, drawn: the stores and paths the follow-ups will probe." }],
+            d: "Two-minute version from your prep, section F question 1. Then the follow-ups: how candidates are generated for the menu; what an opaque handle actually is; what happens when the right candidate is not in the menu, which should be an abstention rather than a best guess; how the ground-truth audit loop graded briefs against live inboxes. Number to use: fabricated-recall and false-confirmation incidents down eighty percent." },
+          { t: "Decision layer: why deterministic risk scoring",
+            sd: [{ v: "email-agent", a: "deepdives", why: "Verdicts from deterministic risk scoring, argued as a deep dive." }, { v: "alfred", a: "deepdives", why: "How alfred_ does action safety without a risk score: the contrast to have ready." }],
+            d: "What the features are, how the five verdicts map to thresholds, and which error is worse — a false silent, where the agent acted and should have asked, or a false confirm, where it asked needlessly. The answer is that false silent is worse because it is a side effect the user did not approve, and the thresholds are tuned asymmetrically for that reason. Then the line from your prep: a model asked to judge itself gives you a plausible explanation, not the actual reason." },
+          { t: "Eval harness, reframed for audit",
+            sd: [{ v: "overview", a: "pattern-grounding", why: "Eval gates and shadow runs: the vocabulary to frame the harness in." }],
+            d: "Use the two-minute bench story from the ZenML critique, and end on completeness: because you own the snapshot, a case can assert that every event in a window appears in the output. That is checking against ground truth you hold, which is exactly what a control test is." },
+          { t: "MetaRAG, at the depth an AI degree will ask",
+            d: "Why prefix injection beat blending sparse and dense vectors: the two spaces are not aligned, so a weighted sum mixes incomparable quantities. What NDCG at ten measures and why you reported relative comparisons. How your silver standard is biased, and why relative claims survive that bias while absolute ones would not." },
+          { t: "Prepare the technical weakness question",
+            d: "Something like: which system you built are you least satisfied with? A good answer names a real flaw, what it cost, and what you would do now. The eval bench's authoring cost and the lack of a versioned base snapshot is a strong, honest candidate. Use the Answer field." }
+        ],
+        quiz: [
+          { q: "In your memory system, what should happen when the correct candidate is not in the menu?",
+            o: ["The model picks the closest one", "The model writes a new ID", "Abstain, and say nothing rather than something false", "Fall back to the raw email"], a: 2,
+            why: "The whole design is that the model cannot introduce facts. Picking the closest wrong candidate would reintroduce fabrication by another route." },
+          { q: "In the decision layer, which error is worse?",
+            o: ["Asking for confirmation unnecessarily", "Acting silently when it should have asked", "They are equally bad", "Refusing a valid request"], a: 1,
+            why: "A false silent is an unapproved side effect. A false confirm is friction. Thresholds are tuned asymmetrically because of that." },
+          { q: "Why did prefix injection beat blending sparse and dense vectors in MetaRAG?",
+            o: ["It was faster", "The two vector spaces are not aligned, so a weighted blend mixes incomparable quantities", "Sparse vectors were too large", "The corpus was too small"], a: 1,
+            why: "Putting metadata into the text before encoding lets one encoder handle both in one space." }
+        ]
+      },
+
+      {
+        id: "wc6", parked: true, track: "Interview", forWhat: "Oxus, 23 Sep", len: "1h", est: 60,
+        name: "The last hour: mock, fixes, questions, sleep",
+        blurb: "A live mock, one factual fix to your prep, and your three questions.",
+        intro: "The final hour before you stop. A rehearsal under mild pressure is worth more than another hour of reading.",
+        steps: [
+          { t: "Run the live mock in chat: say run the Oxus mock",
+            d: "Christine's voice, fifty minutes, past work first, then one design exercise. Graded afterwards in the panel format." },
+          { t: "Fix the relocation line in your prep file",
+            d: "Section F question 7 opens with 'You're in New York.' You are in Indianapolis. A corrected opening: I'm in Indianapolis now, and yes, I'd relocate to SF for this. Then the rest of the answer as written, and only promise a timeline you can actually hold." },
+          { t: "Pick three questions, and lead with the citation one",
+            d: "From your prep, questions 1, 2 and 4. The first, whether citations are constrained selection or generated and verified afterwards, is now the natural end of your design answer, so it will land as a peer question rather than a prepared one." },
+          { t: "Watch the two-minute launch video and re-skim the platform page" },
+          { t: "Stop and sleep",
+            d: "A long design session followed by five hours of sleep performs worse than a shorter one followed by seven. Stop on time." }
         ]
       }
     ]
@@ -3508,11 +3989,11 @@
           { k: "pick", q: "An agent reads a control owner's interview transcript stating the control worked. Is that enough to close the test?",
             o: ["Yes, a first-hand explanation from the owner is sufficient", "No — inquiry alone is never enough; it needs inspection or re-performance behind it", "Yes, provided the transcript is dated"], a: 1,
             why: "Inquiry is a claim, not an independent check; it has to be paired with inspection or re-performance." },
-          { k: "short", q: "One sentence: which two methods do Oxus's agents mostly perform?",
+          { k: "short", q: "One sentence: which two methods does an audit agent mostly perform?",
             a: "Inspection, reading the evidence directly, and re-performance, recomputing what the control should have produced." },
           { k: "word", q: "What is it called when an agent recomputes what a control should have produced, rather than trusting a label?", a: "Re-performance." }
         ],
-        say: "Inquiry, observation, inspection, re-performance. Inquiry alone is never enough evidence. Oxus's agents mostly do inspection — reading the evidence — and some re-performance, recomputing what the control should have produced.",
+        say: "Inquiry, observation, inspection, re-performance. Inquiry alone is never enough evidence. An audit agent mostly does inspection — reading the evidence — and some re-performance, recomputing what the control should have produced.",
         res: [R.skill],
         do: [
           { a: "Read the operating-effectiveness line that lists the four methods", m: 2,
@@ -3525,12 +4006,12 @@
               "Re-performance — independently redoing what the control should have produced",
               "Inquiry — asking, which alone is never sufficient evidence"
             ] },
-          { a: "Say which two Oxus's agents mostly do, and why inquiry alone is never enough", m: 2,
+          { a: "Say which two an audit agent mostly does, and why inquiry alone is never enough", m: 2,
             out: "inspection, reading the evidence, and re-performance, recomputing it; inquiry alone is a claim with no independent check behind it",
-            ans: "Oxus's agents mostly do inspection — reading the evidence documents directly — and re-performance, recomputing what the control should have produced and checking that it matches. Inquiry alone is never enough evidence because it is just someone's claim that the control worked, with no independent check behind it." },
-          { a: "Use each of the four words in one sentence about Oxus, out loud, no notes", m: 2,
-            out: "four sentences, each naming a concrete Oxus action for that method",
-            ans: "Inspection: the agent reads the approval evidence attached to a journal entry and checks the second signature is there. Observation: for something like a physical inventory count, the closest Oxus gets is reviewing a recording of the walkthrough, since it is not present live. Re-performance: the agent recomputes the approval-threshold check itself rather than trusting a label that says it was checked. Inquiry: the agent can read what a control owner said in an interview transcript, but that alone never closes a test — it always needs inspection or re-performance behind it." }
+            ans: "An audit agent mostly does inspection — reading the evidence documents directly — and re-performance, recomputing what the control should have produced and checking that it matches. Inquiry alone is never enough evidence because it is just someone's claim that the control worked, with no independent check behind it." },
+          { a: "Use each of the four words in one sentence about an audit agent, out loud, no notes", m: 2,
+            out: "four sentences, each naming a concrete audit-agent action for that method",
+            ans: "Inspection: the agent reads the approval evidence attached to a journal entry and checks the second signature is there. Observation: for something like a physical inventory count, the closest an audit agent gets is reviewing a recording of the walkthrough, since it is not present live. Re-performance: the agent recomputes the approval-threshold check itself rather than trusting a label that says it was checked. Inquiry: the agent can read what a control owner said in an interview transcript, but that alone never closes a test — it always needs inspection or re-performance behind it." }
         ] },
       { t: "Population, and IPE: information produced by the entity",
         close: [
@@ -3719,7 +4200,7 @@
             why: "A valid pointer only proves the span exists, not that it supports the claim; a verifier has to check that separately and fail closed when it does not hold." },
           { k: "word", q: "What does a valid citation pointer prove, and what does it not prove?", a: "That the span exists; not that the span supports the claim." },
           { k: "blank", q: "Custom content documents let you define the ___ blocks the model can cite, rather than writing text directly.", a: "citable" },
-          { k: "short", q: "One sentence: which Oxus pipeline stage plays the verifier role that citations alone do not cover?",
+          { k: "short", q: "One sentence: which pipeline stage plays the verifier role that citations alone do not cover?",
             a: "The citation-verification stage, an exact-match check between the cited span and the extracted value, run in code." },
           { k: "word", q: "What is this constrained-citation pattern called earlier in the session, before it is shown as a Claude API feature?", a: "The opaque-handle pattern." }
         ],
@@ -3743,7 +4224,7 @@
           { a: "Say the one limit out loud: what a valid pointer does not prove", m: 2,
             out: "a valid pointer proves the span exists; it does not prove the span supports the claim, so a verifier is still needed",
             ans: "A citation being valid only proves the pointer resolves to a real span in the source document — it does not prove that span actually supports the claim being made about it. That gap is exactly why a verifier still has to run afterwards, checking the cited span against the extracted value rather than trusting that a valid pointer means a correct one." },
-          { a: "Write one sentence naming which Oxus stage plays the verifier role citations alone do not cover", m: 2,
+          { a: "Write one sentence naming which pipeline stage plays the verifier role citations alone do not cover", m: 2,
             out: "written into the Answer field: the exact-match check between cited span and extracted value, run in code after the model cites",
             ans: "That verifier role is the citation-verification stage in the pipeline: the exact-match check that confirms the cited span actually contains the extracted value, run in code right after the model produces its citation and before the result can reach an exception or a conclusion." }
         ] }
@@ -3827,7 +4308,7 @@
             a: "Because a red box built from only two of them is a box that points at the wrong thing some of the time." },
           { k: "figure", q: "In the ingestion figure, what signal travels forward from parsing and can force an insufficient result?", a: "Low OCR confidence." }
         ],
-        say: "Every item carries its source page, bounding box and character span. Walk through Docling's document model and map it onto what Oxus needs for red boxes.",
+        say: "Every item carries its source page, bounding box and character span. Walk through Docling's document model and map it onto what an audit product needs for red boxes.",
         res: [R.doclingDoc],
         do: [
           { a: "Read the ProvenanceItem class in Docling's reference", m: 3,
@@ -3879,7 +4360,7 @@
         close: [
           { k: "word", q: "What does BM25 handle better than dense embeddings — exact identifiers, or meaning?", a: "Exact identifiers, amounts and dates." },
           { k: "blank", q: "A bi-encoder embeds query and document ___, which is fast and indexable; a cross-encoder reads them together.", a: "separately" },
-          { k: "pick", q: "Where should the MetaRAG prefix-fusion finding be applied in Oxus's retrieval design?",
+          { k: "pick", q: "Where should the MetaRAG prefix-fusion finding be applied in the audit product's retrieval design?",
             o: ["Replace BM25 entirely with a single dense encoder", "Leave BM25 untouched for exact identifiers, and prefix metadata into the chunk text before encoding on the dense side", "Compute metadata as a separate TF-IDF vector and blend it in after encoding"], a: 1,
             why: "Prefix-fusion means one encoder represents content and metadata jointly; blending two independently computed vectors assumes an alignment that does not hold." },
           { k: "short", q: "One sentence: what combines rankings from lexical and dense retrieval into one list?",
@@ -3908,7 +4389,7 @@
           { a: "Reread why prefix-fusion beats TF-IDF weighting, in your own paper", m: 2,
             where: "E:/_Resume-Curator/job_search/profile/METARAG.md, section 2.2, the paragraph on why prefix-fusion beats TF-IDF weighting",
             ans: "Prefix-fusion lets the encoder read metadata and content as one input and learn the relationship between them. TF-IDF weighting instead blends two separately computed vectors by linear combination, which assumes the two spaces are aligned — they are not, and when metadata is sparse that blend drags the embedding toward irrelevant clusters. The vector-space evidence: prefix-fusion's Davies-Bouldin index was 3.12 against TF-IDF's 3.77." },
-          { a: "Say where that finding sits in Oxus's design, out loud", m: 3,
+          { a: "Say where that finding sits in the audit product's design, out loud", m: 3,
             out: "one sentence: BM25 stays untouched for exact identifiers, and the MetaRAG finding says the dense side should get metadata prefixed into the text before encoding, not blended in afterward as a separately weighted vector",
             ans: "BM25 stays untouched for exact identifiers like invoice numbers, dates and amounts, because that is where lexical matching wins outright. On the dense side, my MetaRAG finding applies directly: metadata should be prefixed into the chunk text before encoding so one encoder represents content and metadata jointly, rather than computed as a separate TF-IDF vector and blended in afterward. Blending two independently computed vectors assumes their spaces are aligned, and in my experiments they were not; prefix-fusion beat that weighted blend consistently." }
         ] },
@@ -3939,10 +4420,10 @@
             ans: [
               "Even with hashing, one very active key — a huge client engagement — can still overload a single shard",
               "Fixes: split a hot key across shards with a random suffix on writes, or detect and special-case hot keys instead of hashing them like everything else",
-              "For Oxus this is one enormous engagement outgrowing its shard, not a general scaling problem"
+              "For an audit product this is one enormous engagement outgrowing its shard, not a general scaling problem"
             ] },
           { a: "Say silo against pool out loud, anchored to your own RLS experience", m: 3,
-            out: "one sentence: which of the two Oxus should use for a VPC-deployed audit tool, and why isolation and blast radius decide it rather than raw scale",
+            out: "one sentence: which of the two an audit product should use for a VPC-deployed audit tool, and why isolation and blast radius decide it rather than raw scale",
             ans: "For a VPC-deployed audit tool I would silo by tenant, separate storage and index per client engagement, rather than pool with row-level isolation, because the failure mode that matters here is one client's evidence leaking into another's workpaper, not raw scale. I have shipped row-level security in a pooled Postgres schema at alfred_, including finding and closing a cross-user leak from a default PUBLIC execute grant on an agent-facing function, and that is exactly why I would not trust RLS alone for audit evidence: it reduces blast radius, but a physical silo removes the failure mode instead of just gating it." }
         ] },
       { t: "Zero data retention with model providers",
@@ -3980,21 +4461,21 @@
           { k: "word", q: "What does RCM stand for?", a: "Risk and control matrix." },
           { k: "blank", q: "A flowchart makes risks and controls easy to spot end to end; a narrative removes ___ but costs more to maintain.", a: "ambiguity" },
           { k: "pick", q: "A client wants only a flowchart, not a narrative, to save review time. What tradeoff would you flag?",
-            o: ["None — a flowchart alone is always sufficient", "A narrative removes ambiguity a flowchart cannot, but since Oxus generates both from one graph there is no real cost to keeping both", "Narratives are obsolete and should be dropped anyway"], a: 1,
+            o: ["None — a flowchart alone is always sufficient", "A narrative removes ambiguity a flowchart cannot, but since the product generates both from one graph there is no real cost to keeping both", "Narratives are obsolete and should be dropped anyway"], a: 1,
             why: "Since both come from one graph, declining the narrative gives up disambiguation for no real saving." },
           { k: "short", q: "One sentence: what does the RCM link each control to, in both directions?",
             a: "Back to the risk and assertion it addresses, and forward to how it is tested." },
           { k: "figure", q: "In the year-over-year figure, what step differs between the prior year's process and this year's?",
             a: "A manual edit step appears where there used to be a direct approve-to-post flow." }
         ],
-        say: "Auditors document each process as a narrative and a flowchart, and map risks to controls in a risk and control matrix. Oxus generates the first two from walkthroughs and builds the matrix.",
+        say: "Auditors document each process as a narrative and a flowchart, and map risks to controls in a risk and control matrix. An audit-automation product generates the first two from walkthroughs and builds the matrix.",
         res: [R.skill, R.auditboard],
         do: [
           { a: "Read 'What Is a Flowchart?' and 'What Is a Process Narrative?'", m: 5,
             where: "AuditBoard blog, 'SOX Process Narrative vs. Flowcharts: Which Is Better?', both named sections",
             url: "https://auditboard.com/blog/sox-process-narrative-vs-flowcharts",
             skip: "the author bio and the calls to action top and bottom",
-            out: "one line per format: a flowchart makes risks and controls easy to spot end to end, a narrative removes ambiguity but costs more to maintain — which is why Oxus generates both from one walkthrough",
+            out: "one line per format: a flowchart makes risks and controls easy to spot end to end, a narrative removes ambiguity but costs more to maintain — which is why An audit-automation product generates both from one walkthrough",
             ans: [
               "A flowchart makes risks and controls easy to spot end to end, but flowcharting software and training cost money",
               "A narrative documents the full process in context and removes ambiguity, but costs much more time to write, review and maintain",
@@ -4059,7 +4540,7 @@
           { k: "figure", q: "In the year-over-year figure, what does the dashed arrow into 'Flag for the auditor' represent?",
             a: "The new manual step this year's process introduced, surfaced as what to look at first." }
         ],
-        say: "Each year, prior documentation is carried forward and updated rather than rebuilt. That is exactly what Oxus's knowledge base automates, and the diff between years is where the value is.",
+        say: "Each year, prior documentation is carried forward and updated rather than rebuilt. That is exactly what an audit product's knowledge base automates, and the diff between years is where the value is.",
         res: [R.auditboard],
         do: [
           { a: "Reread your own step on versioning and diffing the graph", m: 3,
@@ -4070,7 +4551,7 @@
             out: "one worked example, spoken: a named control whose owner changed between two years, and what that change should surface to the auditor first",
             ans: "Example: the approver on the fifty-thousand-dollar journal-entry control changed from the controller to a new AP manager between last year and this year. The diff should surface that change first, before any sample is even pulled, because a new approver with no track record is exactly where a walkthrough should focus, not treated as a like-for-like carryover from last year's workpaper." },
           { a: "Write the update-not-rebuild line into the Answer field, in your own words", m: 4,
-            out: "one sentence distinguishing 'carried forward and updated' from 'rebuilt from scratch', in language you would use in the room",
+            out: "one sentence distinguishing 'carried forward and updated' from 'rebuilt from scratch', in language you would use out loud",
             ans: "Each year's process documentation should be carried forward and updated against this year's evidence, not rebuilt from a blank page, because rebuilding throws away exactly the year-over-year comparison that makes the diff valuable in the first place." }
         ] }
     ],
@@ -4811,9 +5292,9 @@
     wc12: []
   };
 
-  WILDCARD.sessions.forEach(function (s) {
-    if (STUDY[s.id]) { s.study = STUDY[s.id]; }
-  });
+  function attachStudy(s) { if (STUDY[s.id]) { s.study = STUDY[s.id]; } }
+  WILDCARD.sessions.forEach(attachStudy);
+  PLAN.forEach(function (w) { w.sessions.forEach(attachStudy); });
 
   var RELATED = {
     w1a: [
@@ -5394,7 +5875,7 @@
       /* A loop whose day has passed is over. Its unfinished sessions are not
          what to do next, however many of them were left unticked. */
       var when = loopDate(s);
-      if (when && when < today) { return; }
+      if (s.parked || (when && when < today)) { return; }
       if (!found && !sessionDone(s)) { found = { s: s, wi: wi, si: si, wild: true }; }
     });
     if (found) { return found; }
@@ -5442,7 +5923,7 @@
     return hit;
   }
   function scopeSessions(scope) {
-    if (scope === "wc") { return WILDCARD.sessions.slice(); }
+    if (scope === "wc") { return WILDCARD.sessions.filter(function (s) { return !s.parked; }); }
     if (scope && scope.indexOf("week") === 0) {
       var wi = parseInt(scope.slice(4), 10) - 1;
       return PLAN[wi] ? PLAN[wi].sessions.slice() : [];
@@ -5965,7 +6446,7 @@
     views: {
       overview: "The framework", notebooklm: "NotebookLM", "prior-auth": "Prior auth validator",
       "email-agent": "Email and calendar agent", "coding-agent": "Cloud coding agent",
-      ticketmaster: "Ticketmaster", alfred: "alfred_"
+      ticketmaster: "Ticketmaster", alfred: "alfred_", kitaru: "Kitaru"
     },
     anchors: {
       requirements: "requirements", entities: "core entities", api: "API", dataflow: "data flow",
@@ -6186,7 +6667,7 @@
   function sequence(week) {
     var out = [];
     if (week === "wc") {
-      WILDCARD.sessions.forEach(function (s, si) { out.push({ w: "wc", i: si, s: s }); });
+      WILDCARD.sessions.forEach(function (s, si) { if (!s.parked) { out.push({ w: "wc", i: si, s: s }); } });
     } else {
       PLAN.forEach(function (wk, wi) { wk.sessions.forEach(function (s, si) { out.push({ w: wi, i: si, s: s }); }); });
     }
@@ -6256,16 +6737,18 @@
 
     var wg = el("div", "grp");
     var wOpen = view.page === "wild" || (view.page === "session" && view.week === "wc");
-    var wClosed = WILDCARD.sessions.filter(function (s) { return sessionDone(s); }).length;
+    var wLive = WILDCARD.sessions.filter(function (s) { return !s.parked; });
+    var wClosed = wLive.filter(function (s) { return sessionDone(s); }).length;
     var wh = el("button", "gh" + (view.page === "wild" ? " on" : ""));
     wh.appendChild(el("span", "num", "W"));
     wh.appendChild(el("span", "nm", "Wildcard"));
-    wh.appendChild(el("span", "ct", WILDCARD.sessions.length ? wClosed + "/" + WILDCARD.sessions.length : "empty"));
+    wh.appendChild(el("span", "ct", wLive.length ? wClosed + "/" + wLive.length : "empty"));
     wh.addEventListener("click", function () { go("wild"); closeRail(); });
     wg.appendChild(wh);
     if (wOpen) {
       var lastFor = null;
       WILDCARD.sessions.forEach(function (s, si) {
+        if (s.parked) { return; }
         var f = s.forWhat || "";
         if (f !== lastFor) { wg.appendChild(el("div", "sub", f)); lastFor = f; }
         wg.appendChild(sessionItem(s, "wc", si));
@@ -6621,6 +7104,7 @@
     if (WILDCARD.sessions.length) {
       wc.appendChild(el("div", "wt", WILDCARD.note || "In progress"));
       WILDCARD.sessions.forEach(function (s) {
+        if (s.parked) { return; }
         var shut = sessionDone(s);
         var m = el("span", "mk " + tone(s.track) + (shut ? " shut" : ""));
         m.appendChild(document.createTextNode(SHORT[s.id] || s.name));
@@ -7517,7 +8001,8 @@
     }
 
     if (WILDCARD.note) { v.appendChild(el("p", "sm dim", WILDCARD.note)); }
-    v.appendChild(rubric("Sessions", WILDCARD.sessions.length + " in the slot"));
+    var live = WILDCARD.sessions.filter(function (s) { return !s.parked; });
+    v.appendChild(rubric("Sessions", live.length + " in the slot"));
     var t = el("table", "t");
     var hr = el("tr");
     ["Session", "For", "Est.", "Steps", "Posted"].forEach(function (x, i) {
@@ -7525,6 +8010,7 @@
     });
     t.appendChild(hr);
     WILDCARD.sessions.forEach(function (s, si) {
+      if (s.parked) { return; }
       var tr = el("tr", "clickable");
       var td = el("td");
       td.appendChild(document.createTextNode(s.name));
@@ -7538,6 +8024,24 @@
       t.appendChild(tr);
     });
     v.appendChild(t);
+
+    /* Parked: an interview that has happened. Its sessions still count toward
+       credit and hours, and stay openable, but they are no longer what to do. */
+    var parked = WILDCARD.sessions.filter(function (s) { return s.parked; });
+    if (parked.length) {
+      v.appendChild(rubric("Parked", parked.length + " from loops that have happened"));
+      var pl = el("ul", "visits");
+      WILDCARD.sessions.forEach(function (s, si) {
+        if (!s.parked) { return; }
+        var li = document.createElement("li");
+        var a = el("button", "linkish", s.name);
+        a.addEventListener("click", function () { go("session", "wc", si); });
+        li.appendChild(a);
+        li.appendChild(el("span", "w", (s.forWhat || "") + (state.done[s.id] ? ", closed " + state.done[s.id] : "")));
+        pl.appendChild(li);
+      });
+      v.appendChild(pl);
+    }
 
     var folded = Object.keys(state.folded);
     if (folded.length) {

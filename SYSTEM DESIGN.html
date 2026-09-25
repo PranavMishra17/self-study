@@ -561,13 +561,13 @@ const GUIDE = {
       tabPatterns: "Patterns",
       tabDesigns: "Designs",
       frameworkTitle: "System design delivery, worked end to end",
-      frameworkLede: "Six designs run through the six-step delivery framework. Every step shows what should be on your whiteboard when the step ends, how to reason your way there, and what to say out loud. Four designs are agentic, Ticketmaster is the classic baseline for contrast, and alfred_ is a shipped agent read from its own code.",
+      frameworkLede: "Seven designs run through the six-step delivery framework. Every step shows what should be on your whiteboard when the step ends, how to reason your way there, and what to say out loud. Four designs are agentic, Ticketmaster is the classic baseline for contrast, alfred_ is a shipped agent read from its own code, and Kitaru is an agent-eval product read from its source.",
       endProduct: "On the board: ",
       onwardTitle: "Where to go next",
       onwardPatterns: "Fifteen recurring deep-dive problems. Each one opens with a diagram, then every technique with its own mechanism diagram.",
-      onwardDesigns: "Six designs worked through all six steps, each ending with the patterns it uses and why.",
+      onwardDesigns: "Seven designs worked through all six steps, each ending with the patterns it uses and why.",
       designsTitle: "Worked designs",
-      designsLede: "Each design runs through the same six steps, then lists the deep-dive patterns it uses. Four are agentic, Ticketmaster is the classic baseline for contrast, and alfred_ is a shipped agent read from its own code.",
+      designsLede: "Each design runs through the same six steps, then lists the deep-dive patterns it uses. Four are agentic, Ticketmaster is the classic baseline for contrast, alfred_ is a shipped agent read from its own code, and Kitaru is an agent-eval product read from its source.",
       designsNav: "Designs",
       allDesigns: "All designs",
       stepsInDesign: "Steps in this design",
@@ -3261,6 +3261,259 @@ ToolDef {
   ]
 });
 
+GUIDE.examples.push({
+  id: "kitaru",
+  tabLabel: "Kitaru (replay evals)",
+  title: "Kitaru",
+  kind: "Replay-based evals for agents, read from source",
+  prompt: "Design a replay-based evaluation product for AI agents. Teams import or record real agent sessions, change their agent, and replay those sessions against the change, with the outside world answered from the recording, so they can see what the change would have done before it ships.",
+  lens: [
+    "Built from the Kitaru source (zenml-io/kitaru), not the marketing pages. Where the design below says 'today', it describes the implementation; the deep dives are where you would take it.",
+    "Your alfred_ eval bench is the other answer to the same problem. Kitaru freezes the transcript; the bench froze the world. They fail in opposite directions, and the deep dives use both.",
+    "Capture is the easy half. The hard half is what happens when the changed agent diverges from what was recorded."
+  ],
+  steps: {
+    requirements: {
+      board: [
+        { type: "list", title: "Functional (top 3)", ordered: true, items: [
+          "Ingest agent sessions, by importing traces from an observability tool or recording runs directly.",
+          "Replay a session, or a frozen cohort of sessions, against a changed agent, with tool calls answered from the recording.",
+          "Score replays with evaluators and compare each one against its baseline."
+        ]},
+        { type: "list", title: "Out of scope", items: [
+          "Hosting the customer's agent, building their sandbox, and simulating users. Say the last one out loud: it is the open problem."
+        ]},
+        { type: "defs", title: "Non-functional (quantified)", items: [
+          { term: "No silent production calls", desc: "A replay never reaches a live tool unless configured to, and every answer says how it was served." },
+          { term: "Cheap ingestion", desc: "Importing thousands of sessions is one command; case authoring cost is near zero." },
+          { term: "No user code on the server", desc: "The control plane stores and schedules; agents, evaluators and importers run on workers in the customer's environment." },
+          { term: "Faithful under change", desc: "A replay of an improved agent should not fail merely because the improvement changed its tool calls." },
+          { term: "Bounded cost per replay", desc: "Model calls are live and billed, so cost scales with cohort size times steps." }
+        ]},
+        { type: "math", title: "Capacity math that changes the design", lines: [
+          "Illustrative: a cohort of 500 sessions at 15 model calls each is 7,500 live model calls per experiment run.",
+          "At a few cents a call that is on the order of a few hundred dollars a run, before any repeat runs for variance.",
+          "Tool calls are lookups against Postgres, cheap by comparison, so the tool path is not the cost problem."
+        ], conclusion: "Cost and nondeterminism come from the model calls, not the tool path. That decides where caching and repeat runs belong." }
+      ],
+      reasoning: [
+        "Clarify first: reproducing a known failure, or testing a change? The design splits there.",
+        "The quality requirement is trust: a pass must mean the change passed, not that a call quietly went live.",
+        "Say the product's own tension now: ingestion is free because the transcript is frozen, and that is also why divergence hurts."
+      ],
+      script: [
+        "Before I draw anything: are we reproducing a known failure or testing a change? I will assume testing a change, since that is where the value is.",
+        "Three things: ingest real sessions, replay them against a changed agent with the outside world answered from the recording, and score each replay against its baseline.",
+        "The non-functional I care most about is trust: no replay silently reaches production, and every answer says where it came from. Then cheap ingestion, no user code on the server, and bounded cost, which is really about model calls."
+      ],
+      contrast: "Your bench had the opposite requirements profile: expensive ingestion, hours per case, but faithful answers when the agent took a path production never took."
+    },
+
+    entities: {
+      board: [
+        { type: "defs", title: "Core entities (first draft)", items: [
+          { term: "Agent, AgentVersion", desc: "A registered command plus a RunSpec: working directory, environment, secrets, timeout, capabilities." },
+          { term: "Session", desc: "One agent run, with origin imported, recorded or replay." },
+          { term: "SessionNode", desc: "A self-referencing tree of llm, tool, subagent and span nodes, each with a cache_key, payloads, started_at and selector paths. The entity that carries the hard problem." },
+          { term: "Cohort, CohortVersion", desc: "A frozen, immutable list of sessions." },
+          { term: "ReplayConfig", desc: "Overrides, a tool policy, and evaluators." },
+          { term: "Replay, Experiment, ExperimentRun", desc: "One baseline session and one config; a numbered run replays each cohort session once." },
+          { term: "Job, Task", desc: "Agent, evaluator, importer or analyzer work, leased to a worker." }
+        ]}
+      ],
+      reasoning: [
+        "Call out SessionNode: it is both the recording and the lookup index, through cache_key.",
+        "Selectors are worth naming: JSON paths into the payload, so human judgements, evaluators and the UI point at the same coordinates."
+      ],
+      script: [
+        "Agents and versions, sessions made of a tree of nodes, frozen cohorts, a replay config, replays and experiments, and tasks for the workers.",
+        "The node is the interesting one. It is the recording and the index at the same time: every tool call node carries a cache key, which is how a replay finds the recorded answer."
+      ],
+      contrast: "The bench's core entity was the case: a query type, the user turns, a snapshot reference, the tools touched, and assertions. Kitaru's is the recorded node."
+    },
+
+    api: {
+      board: [
+        { type: "code", title: "Contracts (the lookup is the real hot path; the rest is sketched)", code: `
+POST /api/v1/sessions/import      trace export -> importer task -> Session[]
+POST /api/v1/replays              { baseline_session_id, replay_config } -> Replay
+POST /api/v1/experiments          { cohort_version_id, replay_config }   -> ExperimentRun
+
+# called by the adapter inside the agent process, once per tool call
+POST /api/v1/replays/{id}/tool-lookup
+  body: { tool_name, cache_key, occurrence }
+  -> recorded output | recorded failure | miss  (then on_miss decides)
+
+# injected into the agent subprocess by the worker
+KITARU_API_URL, KITARU_API_TOKEN (one task, one attempt),
+KITARU_TASK_ID, KITARU_TASK_INPUTS (<= 32 KB), KITARU_REPLAY_ID
+` },
+        { type: "code", title: "The cache key", code: `
+sha256(tool_name + "\\0" + json.dumps(args, sort_keys=True,
+                                     separators=(",", ":"), allow_nan=False))
+# key order and formatting match; 1 vs 1.0, true vs 1, inner whitespace do not
+# NaN, Infinity or unserialisable args: no key, straight to on_miss
+` },
+        { type: "list", title: "Choices to state out loud", items: [
+          "The replay trigger is one environment variable. Absent, the same agent code records normally.",
+          "The token is scoped to one task and one attempt, which is least privilege for a process you do not control.",
+          "Matching is exact by design: deterministic and cheap, and brittle under change."
+        ]}
+      ],
+      reasoning: [
+        "Two contracts: the user-facing API, and the adapter's lookup, which is the hot path.",
+        "Write the cache key on the board; every later deep dive refers to it."
+      ],
+      script: [
+        "Import, replay and experiment endpoints for users. The hot path is the adapter's tool lookup: tool name, cache key and occurrence in, recorded result or a miss out.",
+        "The key is a SHA-256 of the tool name and the canonical JSON of the arguments. Exact, which makes it deterministic and cheap, and brittle as soon as the agent phrases a call differently."
+      ],
+      contrast: "The bench had no lookup at all: the tool ran for real against a SQLite snapshot, so there was nothing to miss."
+    },
+
+    dataflow: {
+      board: [
+        { type: "list", title: "One experiment run, end to end", ordered: true, items: [
+          "**Import** traces through an importer plugin in an isolated environment. `code`",
+          "**Map** each trace into a session node tree, with cache keys on tool nodes. `code`",
+          "**Freeze** a cohort version: an immutable list of sessions. `code`",
+          "**Claim**: a worker in the customer's environment leases the replay task and heartbeats. `code`",
+          "**Spawn** the agent as a subprocess with KITARU_REPLAY_ID set; the adapter installs its hooks. `code`",
+          "**Model calls** go live, with overrides applied. `model`",
+          "**Tool calls** hash the arguments, look up the recording, and on a miss apply on_miss. `code`",
+          "**Score**: evaluators run as their own tasks against the recorded nodes. `code or model`",
+          "**Compare** each replay against its baseline, by session and in aggregate. `code`"
+        ]}
+      ],
+      reasoning: [
+        "Tag each step: only the model calls and model-based evaluators are nondeterministic.",
+        "Say that an unchanged baseline replay is still billed and still nondeterministic, because the model is live."
+      ],
+      script: [
+        "Import and map into node trees, freeze a cohort, and hand replay tasks to workers in the customer's environment.",
+        "The worker spawns the agent with the replay variable set. Model calls go live; tool calls are answered from the recording by hash; a miss follows on_miss. Evaluators score, and each replay is compared with its baseline."
+      ],
+      contrast: "The bench's loop started earlier, at a scanner over production that decided which sessions deserved to become cases at all."
+    },
+
+    hld: {
+      board: [
+        { type: "diagram", title: "Kitaru high-level design", nodes: [
+          { id: "dev", label: "Developer", sub: "CLI, MCP, UI", col: 0, row: 0, tone: "human" },
+          { id: "src", label: "Trace sources", sub: "Langfuse, LangSmith", col: 0, row: 1, tone: "external" },
+          { id: "api", label: "Kitaru server", sub: "FastAPI, no user code", col: 1, row: 0, tone: "orchestrator" },
+          { id: "tasks", label: "Task queue", sub: "leases, heartbeats", col: 1, row: 1, tone: "queue" },
+          { id: "pg", label: "Postgres", sub: "sessions, nodes, cohorts", col: 2, row: 0, tone: "store" },
+          { id: "blob", label: "Blob store", sub: "large payloads", col: 3, row: 0, tone: "store" },
+          { id: "worker", label: "Worker", sub: "customer env, venv", col: 1, row: 2, tone: "service" },
+          { id: "plug", label: "Importers, evaluators", sub: "isolated uv envs", col: 0, row: 2, tone: "service" },
+          { id: "agent", label: "Agent subprocess", sub: "adapter hooks", col: 2, row: 2, tone: "service" },
+          { id: "model", label: "Model provider", sub: "always live", col: 3, row: 2, tone: "model" },
+          { id: "live", label: "Live tools", sub: "passthrough only", col: 3, row: 1, tone: "external" }
+        ], edges: [
+          { from: "dev", to: "api" },
+          { from: "api", to: "pg" },
+          { from: "api", to: "blob" },
+          { from: "api", to: "tasks", label: "enqueue" },
+          { from: "worker", to: "tasks", label: "claim" },
+          { from: "worker", to: "plug", label: "spawn" },
+          { from: "src", to: "plug", label: "export", async: true },
+          { from: "worker", to: "agent", label: "spawn, REPLAY_ID" },
+          { from: "agent", to: "api", label: "tool-lookup" },
+          { from: "agent", to: "model" },
+          { from: "agent", to: "live", label: "on miss", async: true }
+        ]},
+        { type: "list", title: "Walk each request through it", ordered: true, items: [
+          "**Import.** A worker runs the importer plugin in its own uv environment; sessions and nodes land in Postgres, large payloads in the blob store.",
+          "**Replay.** The server enqueues a task; a worker claims it with a lease and spawns the registered command with the contract variables, including KITARU_REPLAY_ID.",
+          "**Tool call.** The adapter's wrap_tool_execute hook resolves the tool's policy, hashes the arguments and posts a lookup; history returns the recorded node, static returns a matching case, passthrough runs the real tool.",
+          "**Teardown.** On timeout or cancel the worker kills the process tree. That, plus the timeout, is the whole isolation story.",
+          "**Score.** Evaluators run as separate tasks on the recorded nodes, pinned to selectors."
+        ]},
+        { type: "defs", title: "Fields worth writing next to the stores", items: [
+          { term: "SessionNode (Postgres)", desc: "`id, session_id, parent_id, node_type, status, tool_name, cache_key, started_at, attributes{mocked, policy, provider_native}, *_selector`" },
+          { term: "Task (Postgres)", desc: "`task_id, kind, spec, lease_expires_at, attempt, status`" }
+        ]}
+      ],
+      reasoning: [
+        "Put the control-plane and data-plane split on the board first; it answers security questions before they are asked.",
+        "Draw the one arrow that can reach production: a tool call on a miss under passthrough."
+      ],
+      script: [
+        "A control plane of FastAPI, Postgres and a blob store that holds every record and schedules work, and never runs user code.",
+        "Workers run in the customer's environment, claim tasks with leases, and spawn the agent as a subprocess. An adapter inside the agent intercepts tool calls at the framework's tool hook and asks the server for the recorded answer.",
+        "Model calls always go to the provider. The only path to a live tool is passthrough, and that is the arrow I would watch."
+      ],
+      probes: [
+        "What stops a raw HTTP call inside the agent from reaching production?",
+        "What happens to a leased task when the worker dies?",
+        "Why no container or network isolation?"
+      ],
+      contrast: "The bench intercepted at the provider boundary rather than the tool hook: the tool's own code ran, and only its outbound call was answered from SQLite."
+    },
+
+    deepdives: {
+      board: [
+        { type: "dive", title: "Divergence: the better the change, the worse the replay", nfr: "Faithful under change", problem: "Exact-argument keys mean an improved agent that rephrases a search or adds a disambiguation step misses the cache, and every escape is bad: fail throws the run away, passthrough calls production, error_result grades recovery from an invented error.", options: [
+          { name: "Exact keys plus on_miss (today)", take: "Deterministic and cheap; punishes exactly the change you are measuring." },
+          { name: "A productive miss", take: "Fail with a diff of recorded against attempted arguments and one command to accept the variant as a static alias. Deterministic, auditable, and it produces labelled pairs." },
+          { name: "Freeze the world (the alfred_ bench)", take: "Tools run real queries against a queryable snapshot built from about twenty-five real instances plus distractors; any path gets a truthful answer. Costs hours of authoring per case." },
+          { name: "Promote on fork", take: "Keep import free; when a forked session misses, offer to promote that one session into a small queryable world from its recording plus sessions with the same intent." }
+        ], pick: "Ship the productive miss first, then promote-on-fork, so the common case stays free and only the sessions people explore pay the authoring cost." },
+        { type: "dive", title: "Provenance: no silent live calls", nfr: "No silent production calls", problem: "Under on_miss passthrough, or a tool with no policy, the call reaches the live provider and the node carries no mocked attribute, so a reader cannot tell recorded from live. Provider-native tools bypass the policy entirely.", options: [
+          { name: "Status quo", take: "Correct behaviour, invisible to the reader: a hidden false pass." },
+          { name: "Stamp served-by on every node", take: "recorded, static, fuzzy with distance, or live, shown in the diff a reviewer reads." },
+          { name: "Default write tools to fail", take: "Classify tools by effect; anything with an external effect never passes through by default." }
+        ], pick: "Served-by on every node first, then effect classes for defaults. Small, and everything else depends on a reader trusting where an answer came from." },
+        { type: "dive", title: "Repeated calls, scope and concurrency", nfr: "Faithful under change", problem: "Under baseline scope the nth identical call returns the nth recorded node, ordered by started_at; under agent or cohort scope it is the latest completed node every time. The client reads its occurrence counter, awaits the lookup, then writes, so two concurrent identical calls could take the same ordinal.", options: [
+          { name: "Client-side counter (today)", take: "Simple; ambiguous for concurrent identical calls, a limitation the Claude SDK docs state openly." },
+          { name: "Server-assigned occurrence", take: "The server claims the next ordinal atomically per replay and key, so concurrency cannot double-consume." },
+          { name: "Unify the candidate sets", take: "The ordinal query sees completed and failed nodes, the latest query completed only; one rule avoids scope-dependent answers." }
+        ], pick: "Ask it as a question in the room. If designing, claim the ordinal server-side in the same transaction as the lookup." },
+        { type: "dive", title: "Multi-turn when the conversation changes", nfr: "Faithful under change", problem: "Only the final turn re-executes; earlier turns are injected as frozen text with their tool calls dropped, and the recorded next user message lands whatever the agent said.", options: [
+          { name: "Last-turn replay (today)", take: "Honest about shape, blind to changes in earlier turns." },
+          { name: "Stateful world across turns (the bench)", take: "Writes at turn two are visible at turn three; still no answer when the user would have replied differently." },
+          { name: "A calibrated simulated user", take: "Goal and persona from the recording, judged against real replies before it is trusted." }
+        ], pick: "A simulated user behind calibration, scoped to sessions that actually fork at an early turn." },
+        { type: "dive", title: "Nondeterminism and cost", nfr: "Bounded cost per replay", problem: "Model calls are always live, so an unchanged replay is billed and not deterministic, and an experiment run replays each session exactly once.", options: [
+          { name: "One run per session (today)", take: "Cheap, but a flip may be sampling noise." },
+          { name: "k runs with a pass rate", take: "Separates regressions from noise; k times the cost, so reserve it for sessions that flip." },
+          { name: "Recorded completions for unchanged prompts", take: "Replay the model's recorded answer when the prompt and model are unchanged, so the baseline is free and deterministic." }
+        ], pick: "k runs only for sessions that flip between versions, and a recorded-completion mode for the unchanged baseline." },
+        { type: "defs", title: "The two designs, side by side", items: [
+          { term: "What is frozen", desc: "Kitaru: the transcript, a call log keyed by argument hash. The bench: the world, a queryable SQLite snapshot." },
+          { term: "Intercept point", desc: "Kitaru: the framework's tool hook. The bench: the provider boundary, with the tool's code running." },
+          { term: "Ingestion", desc: "Kitaru: near free, one import. The bench: three to four hours a case early, under an hour automated." },
+          { term: "Off-path call", desc: "Kitaru: a miss, handled by on_miss. The bench: a truthful answer from the snapshot." },
+          { term: "Completeness checks", desc: "Kitaru: no ground truth to count against. The bench: assert against what the fixture holds." },
+          { term: "Scale", desc: "Kitaru: designed for thousands of sessions and frozen cohorts. The bench: a hundred-plus cases." }
+        ]}
+      ],
+      reasoning: [
+        "Lead with divergence; it is the product's defining trade-off.",
+        "Then provenance, because it protects the promise that a result is trustworthy.",
+        "Use the bench as evidence, not as a pitch: it shows the other end of the trade and what it cost."
+      ],
+      script: [
+        "The defining problem is divergence. Keys are exact, so an improved agent misses the cache, and every miss policy is a bad escape. I would ship a productive miss first, a diff and one command to accept a variant, and then let a forked session be promoted into a small queryable world, which is what I built at alfred_ by hand.",
+        "Second, provenance: a passthrough call leaves no mark on the node today. I would stamp every node with how it was served, because a silent live call in an eval product is a hidden false pass.",
+        "Then the smaller ones: server-assigned occurrence for concurrency, a calibrated simulated user for multi-turn, and k runs only for sessions that flip."
+      ],
+      probes: [
+        "How would you know a fuzzy-matching threshold was wrong a week later?",
+        "Which of these would you ship in your first month, and why that one?",
+        "What does promote-on-fork cost the user, and when is it not worth it?"
+      ],
+      contrast: "Freezing the world did not fix user divergence either: a forked turn-two question makes the recorded turn-three reply as wrong in the bench as in Kitaru."
+    }
+  },
+  refs: [
+    { label: "Kitaru on GitHub", url: "https://github.com/zenml-io/kitaru" },
+    { label: "Introducing the new Kitaru", url: "https://www.zenml.io/blog/introducing-the-new-kitaru" },
+    { label: "Kitaru deterministic evaluations", url: "https://docs.zenml.io/kitaru/guides/deterministic-evaluations" }
+  ]
+});
+
 GUIDE.patternUsage = {
   "notebooklm": {
     uses: [
@@ -3572,6 +3825,43 @@ GUIDE.patternUsage = {
       { groups: ["search"], why: "Semantic search is out of scope for this interview." },
       { groups: ["geo"], why: "No location in the product." }
     ]
+  },
+  "kitaru": {
+    intro: "Kitaru is mostly a durable-execution and evaluation system wrapped around someone else's agent. The patterns below are what it uses today, and where the deep dives would take it.",
+    uses: [
+      { group: "agent-durability", why: "A replay is a recorded transcript re-driven against a changed agent, run by leased workers.", techniques: [
+        { id: "transcript-checkpoint", how: "Each session's node tree is the transcript; tool results are answered from it by cache key." },
+        { id: "unknown-results", how: "A call the recording never saw is a decision, on_miss: fail, error_result or passthrough." },
+        { id: "worker-leases", how: "Workers claim tasks with leases and heartbeats, and kill the process tree on teardown." }
+      ]},
+      { group: "long-running", why: "Imports, replays and evaluations are background work, not requests.", techniques: [
+        { id: "async-job", how: "Every import, replay and evaluator run is a Task of one of four kinds." },
+        { id: "worker-pool", how: "Workers in the customer's environment pull tasks with a concurrency setting." },
+        { id: "leases", how: "A lease expiry is how a dead worker's task becomes claimable again." }
+      ]},
+      { group: "contention", why: "Many workers claim from one queue, and identical tool calls race for an ordinal.", techniques: [
+        { id: "claim-skip-locked", how: "The natural way to let many workers claim task rows without serialising the table." },
+        { id: "atomic", how: "Assigning occurrence atomically on the server would stop two concurrent identical calls taking the same ordinal." }
+      ]},
+      { group: "agent-safety", why: "The server runs no user code, and a replay must not reach production silently.", techniques: [
+        { id: "least-privilege", how: "The injected token is scoped to one task and one attempt; an inherited API key is dropped." },
+        { id: "effect-classes", how: "Tools with external effects should never pass through by default; the deep dive stamps how every call was served." }
+      ]},
+      { group: "grounding", why: "The product is an evaluation gate: baseline against fork, scored by evaluators.", techniques: [
+        { id: "eval-gate", how: "Experiments replay a frozen cohort against a change and compare each session with its baseline." },
+        { id: "shadow-online", how: "Any fuzzy matching ships in shadow first, logging what it would have matched without changing a verdict." }
+      ]},
+      { group: "large-blobs", why: "Trace payloads can be large; records and bytes live apart.", techniques: [
+        { id: "metadata-split", how: "Sessions and nodes in Postgres, large payloads in the blob store." }
+      ]},
+      { group: "llm-cost", why: "Model calls are always live, so they are the whole cost of a replay.", techniques: [
+        { id: "response-cache", how: "A recorded-completion mode for unchanged prompts would make the baseline free and deterministic." }
+      ]}
+    ],
+    notNeeded: [
+      { groups: ["geo", "search"], why: "Nothing is located or searched; lookups are exact hashes." },
+      { groups: ["real-time"], why: "Results are read after a run, not pushed while it happens." }
+    ]
   }
 };
 
@@ -3588,25 +3878,25 @@ GUIDE.accelerate = {
     "agent-durability": [
       {
         "label": "ZenML: round three is a different room",
-        "href": "index.html#/w/7"
+        "href": "index.html#/w/1"
       },
       {
         "label": "ZenML: side effects inside replay",
-        "href": "index.html#/w/8"
+        "href": "index.html#/w/6"
       }
     ],
     "agent-safety": [
       {
-        "label": "Oxus: an agent that tests a SOX control",
-        "href": "index.html#/w/2"
+        "label": "Week 4: design an agent that tests a SOX control",
+        "href": "index.html#/s/4/4"
       },
       {
-        "label": "Oxus: walkthrough to flowchart",
-        "href": "index.html#/w/4"
+        "label": "Week 3: design walkthrough to flowchart",
+        "href": "index.html#/s/3/4"
       },
       {
         "label": "ZenML: side effects inside replay",
-        "href": "index.html#/w/8"
+        "href": "index.html#/w/6"
       }
     ],
     "consistency": [
@@ -3615,30 +3905,26 @@ GUIDE.accelerate = {
         "href": "index.html#/s/5/1"
       },
       {
-        "label": "Oxus: an agent that tests a SOX control",
-        "href": "index.html#/w/2"
+        "label": "Week 4: design an agent that tests a SOX control",
+        "href": "index.html#/s/4/4"
       },
       {
-        "label": "Oxus: walkthrough to flowchart",
-        "href": "index.html#/w/4"
+        "label": "Week 3: design walkthrough to flowchart",
+        "href": "index.html#/s/3/4"
       },
       {
         "label": "ZenML: side effects inside replay",
-        "href": "index.html#/w/8"
+        "href": "index.html#/w/6"
       }
     ],
     "grounding": [
       {
-        "label": "Oxus: an agent that tests a SOX control",
-        "href": "index.html#/w/2"
-      },
-      {
-        "label": "Oxus: your past work at grilling depth",
-        "href": "index.html#/w/5"
+        "label": "Week 4: design an agent that tests a SOX control",
+        "href": "index.html#/s/4/4"
       },
       {
         "label": "ZenML: round three is a different room",
-        "href": "index.html#/w/7"
+        "href": "index.html#/w/1"
       }
     ],
     "large-blobs": [
@@ -3647,8 +3933,8 @@ GUIDE.accelerate = {
         "href": "index.html#/s/3/1"
       },
       {
-        "label": "Oxus: evidence ingestion from messy documents",
-        "href": "index.html#/w/3"
+        "label": "Week 2: design evidence ingestion",
+        "href": "index.html#/s/2/4"
       }
     ],
     "long-running": [
@@ -3664,7 +3950,7 @@ GUIDE.accelerate = {
       },
       {
         "label": "ZenML: side effects inside replay",
-        "href": "index.html#/w/8"
+        "href": "index.html#/w/6"
       }
     ],
     "reliability": [
@@ -3678,7 +3964,7 @@ GUIDE.accelerate = {
       },
       {
         "label": "ZenML: side effects inside replay",
-        "href": "index.html#/w/8"
+        "href": "index.html#/w/6"
       }
     ],
     "scaling-reads": [
@@ -3711,8 +3997,8 @@ GUIDE.accelerate = {
         "href": "index.html#/s/3/1"
       },
       {
-        "label": "Oxus: evidence ingestion from messy documents",
-        "href": "index.html#/w/3"
+        "label": "Week 2: design evidence ingestion",
+        "href": "index.html#/s/2/4"
       }
     ]
   }
