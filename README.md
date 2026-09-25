@@ -25,6 +25,13 @@ it is at the other address, and a banner at the top of every page says which one
 If the shortcut is ever lost, it points at `study.cmd` and takes its picture from
 `brand/accelerate.ico`.
 
+**Online**, from any machine, through GitHub Pages:
+[the tracker](https://pranavmishra17.github.io/self-study/),
+[the system design guide](https://pranavmishra17.github.io/self-study/SYSTEM%20DESIGN.html),
+[the Alaap and TrenTorch plan](https://pranavmishra17.github.io/self-study/ALAAP.html).
+Every push to `main` republishes them. Progress ticked online is kept separately from
+`localhost:8000`; carry it across with Export and Import on the Data page.
+
 ## The four pages
 
 | | Page | What it is |

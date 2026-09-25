@@ -207,3 +207,12 @@ them, "What comes after" lists each milestone's stages, and six more mathematics
 point at the stage that uses them. As sequenced, milestone 2 is about 40 hours of this
 work against the roadmap's twenty for TrenTorch alone; the milestone 2 re-plan decides
 what moves. Milestone 1 is unchanged, with Alaap still capped at four hours.
+
+**2026-09-25 — Public, and on GitHub Pages.**
+The repo is public and the three pages are published at
+https://pranavmishra17.github.io/self-study/, republished on every push to `main`.
+This was a deliberate choice, made knowing it exposes the alfred_ design, the interview
+preparation and the personal plan along with the full history; the history was scanned
+for secrets first and none were found. Progress stays in each browser, so the online copy
+starts empty and carries progress across only through Export and Import. The tracker's
+address banner says so when opened online.

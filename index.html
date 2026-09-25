@@ -6416,7 +6416,11 @@
     var here = whereAmI();
     var before = state.origin;
     var msg = null;
-    if (here === "file") {
+    if (/\.github\.io$/.test(here)) {
+      msg = "This is the online copy at " + here + ". Progress ticked here is kept separately from " +
+        HOME_ORIGIN + ". To carry it across, export it from the Data page at one address and " +
+        "import it at the other.";
+    } else if (here === "file") {
       msg = "Opened directly as a file. Anything saved here is kept separately from " +
         HOME_ORIGIN + ", so it will look empty and anything you tick now will not appear " +
         "there. Close this and double-click study.cmd instead.";
