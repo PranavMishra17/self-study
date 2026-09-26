@@ -306,3 +306,77 @@ EMPHASIS = [
     "WheelPrice", "INFORMS Analytics+", "MockFlow-AI", "MetaRAG", "not looking to urgently leave",
 ]
 
+
+# Prep tab: what each technical question rests on, so an answer is something to understand
+# before it is something to say. Keyed by the start of the question. Figures are keys into
+# figures/figures.js; reading URLs are the checked ones in data/reading.js (labels and
+# minutes come from there); guide links resolve through extract.js.
+QA_EXTRA = {
+    "Walk me through your day-to-day": {
+        "sd": [{"v": "alfred", "a": "deepdives", "why": "The system you own, drawn from your own code."}]},
+    "When you replay a case": {
+        "figs": ["harnessSeam"],
+        "read": ["https://docs.zenml.io/kitaru/core-concepts/replay"],
+        "sd": [{"p": "agent-durability", "t": "env-snapshots", "why": "The frozen world the tools answer from."}]},
+    "How long does one case take to author": {
+        "figs": ["benchLoop"],
+        "read": ["https://hamel.dev/blog/posts/evals/index.html"]},
+    "Why SQLite when production is Postgres": {
+        "figs": ["sqliteTemplate"],
+        "read": ["https://www.postgresql.org/docs/current/manage-ag-templatedbs.html", "https://www.sqlite.org/datatype3.html"],
+        "sd": [{"p": "agent-durability", "t": "env-snapshots", "why": "Two ways to give every case its own world."}]},
+    "What happens when the production schema changes": {
+        "sd": [{"p": "consistency", "t": "event-sourcing", "why": "Append-only is why an old case never moves under you."}]},
+    "How do you stop teaching to the test": {
+        "figs": ["completeness"],
+        "read": ["https://www.sitepen.com/blog/snapshot-testing-benefits-and-drawbacks"],
+        "sd": [{"p": "reliability", "t": "monitoring", "why": "A completeness check against ground truth you hold."}]},
+    "How do you deal with nondeterminism": {
+        "figs": ["passk"],
+        "read": ["https://arxiv.org/abs/2406.12045"],
+        "sd": [{"p": "agent-safety", "t": "policy-gate", "why": "Why the gating decision is scored, not sampled."}]},
+    "How do you know the judge is still right": {
+        "read": ["https://eugeneyan.com/writing/llm-evaluators/"],
+        "sd": [{"p": "grounding", "t": "shadow-online", "why": "The signals the judge sits on, and why they drift."}]},
+    "How do you decide what becomes an eval case": {
+        "figs": ["benchLoop"],
+        "read": ["https://hamel.dev/blog/posts/evals/index.html"],
+        "sd": [{"p": "grounding", "t": "eval-gate", "why": "What the cases become once they are in."}]},
+    "What doesn't the bench catch": {
+        "figs": ["completeness"],
+        "read": ["https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"]},
+    "Was it gating deploys": {
+        "sd": [{"p": "grounding", "t": "eval-gate", "why": "Eval suites as release gates, and what a hard gate costs."}]},
+    "A side-effecting tool call fails halfway": {
+        "figs": ["zenEffects"],
+        "read": ["https://stripe.com/blog/idempotency", "https://brandur.org/idempotency-keys"],
+        "sd": [{"p": "multi-step", "t": "idempotency", "why": "Where the key lives decides whether a retry is safe."},
+               {"p": "agent-durability", "t": "unknown-results", "why": "The send succeeded but the response timed out."}]},
+    "Tell me about the queue": {
+        "figs": ["skipLocked"],
+        "read": ["https://www.postgresql.org/docs/current/sql-select.html", "https://www.crunchydata.com/blog/message-queuing-using-native-postgresql"],
+        "sd": [{"p": "contention", "t": "claim-skip-locked", "why": "The idiom to name."},
+               {"p": "real-time", "t": "polling", "why": "Why a cron drain's worst case is its interval."}]},
+    "Hardest bug you've debugged": {
+        "figs": ["definerGrant"],
+        "read": ["https://www.postgresql.org/docs/current/sql-createfunction.html", "https://supabase.com/docs/guides/database/postgres/row-level-security"],
+        "sd": [{"p": "agent-safety", "t": "least-privilege", "why": "Least privilege failing by default."}]},
+    "How do you normalise Gmail, Outlook and IMAP": {
+        "read": ["https://developers.google.com/workspace/gmail/api/guides/sync", "https://learn.microsoft.com/en-us/graph/delta-query-messages"],
+        "sd": [{"v": "email-agent", "a": "hld", "why": "The providers behind one model."}]},
+    "What's the difference between LangChain, LangGraph and LangSmith": {
+        "sd": [{"p": "agent-durability", "t": "transcript-checkpoint", "why": "What LangGraph's checkpointers are, in the guide's terms."}]},
+    "What's your experience with trace stores": {
+        "sd": [{"v": "kitaru", "a": "hld", "why": "Where imported traces land in Kitaru."}]},
+    "What's hard about replay": {
+        "figs": ["forkReplay", "kitaruFreeze"],
+        "read": ["https://docs.temporal.io/workflow-execution"],
+        "sd": [{"v": "kitaru", "a": "deepdives", "why": "Divergence, drawn for both designs."}]},
+    "Multi-turn: the agent's reply changes at turn two": {
+        "figs": ["multiturn"],
+        "read": ["https://arxiv.org/abs/2406.12045"],
+        "sd": [{"v": "kitaru", "a": "deepdives", "why": "Multi-turn replay is one of the deep dives."}]},
+    "If you ran Kitaru for a quarter": {
+        "figs": ["missFlow"],
+        "sd": [{"v": "kitaru", "a": "deepdives", "why": "Provenance and misses, as design problems."}]},
+}

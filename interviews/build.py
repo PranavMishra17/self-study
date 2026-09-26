@@ -79,6 +79,26 @@ def build(module_name):
         s["quiz_src"] = s.get("quiz")
         s["hasTrackerQuiz"] = bool(s.get("quiz"))
         s["quiz"] = quiz_for(s)
+    # Prep: what each technical question rests on (figures, checked reading, guide links).
+    qx = getattr(m, "QA_EXTRA", {})
+    if qx:
+        rj = io.open(os.path.join(HERE, "..", "data", "reading.js"), encoding="utf-8").read()
+        known = {}
+        for v in json.loads(rj[rj.index("var READING = ") + 14: rj.index(";\n/*SD_TECH*/")]).values():
+            for r in v.get("read", []) + v.get("aieng", []):
+                if r.get("url"):
+                    known.setdefault(r["url"], r)
+        sd = json.loads(subprocess.run(["node", os.path.join(HERE, "extract.js"), "--sd"], input=json.dumps({k: v.get("sd", []) for k, v in qx.items()}),
+                                       capture_output=True, text=True, encoding="utf-8", check=True).stdout)
+        for g in m.QA:
+            for it in g["items"]:
+                k = next((k for k in qx if it["q"].startswith(k)), None)
+                if not k:
+                    continue
+                missing = [u for u in qx[k].get("read", []) if u not in known]
+                if missing:
+                    sys.exit("QA_EXTRA reading not in data/reading.js: %s" % missing)
+                it["learn"] = {"figs": qx[k].get("figs", []), "read": [known[u] for u in qx[k].get("read", [])], "sdLinks": sd[k]}
     mocks_path = os.path.join(HERE, module_name + ".mocks.json")
     mocks = json.load(io.open(mocks_path, encoding="utf-8")) if os.path.exists(mocks_path) else []
     data = {

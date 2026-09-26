@@ -174,20 +174,26 @@ td:first-child { font-weight: 700; padding-right: 20px; }
 .step > summary .sm { color: var(--muted); font-size: 14.5px; padding-top: 3px; white-space: nowrap; }
 .tick { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted); background: transparent; color: var(--bg); display: grid; place-items: center; font-size: 13px; margin-top: 3px; padding: 0; cursor: pointer; }
 .tick.on { background: var(--ok); border-color: var(--ok); }
-.sbody { padding: 0 0 22px 44px; }
-.sbody > p.d { margin: 0 0 14px; }
-.sbody .lab { font-size: 14.5px; color: var(--muted); margin: 18px 0 6px; }
-.reading { margin: 0; padding-left: 20px; font-size: 16.5px; }
-.reading li { margin: 7px 0; }
-.reading .w { color: var(--muted); font-size: 15px; }
-.reading .why { display: block; color: var(--soft); font-size: 15px; }
-.sbody figure { margin: 14px 0 6px; }
-details.say { margin-top: 18px; }
-details.say > summary { cursor: pointer; color: var(--accent); font-size: 15.5px; list-style: none; }
+.sbody { padding: 0 0 24px 44px; font-size: 17px; line-height: 1.65; }
+.sbody > p.d { margin: 0 0 4px; }
+.sbody > p.point { margin: 0 0 4px; font-size: 18px; }
+.sbody .lab { font-size: 14px; font-weight: 700; color: var(--muted); margin: 20px 0 6px; }
+.reading { margin: 0; padding: 0; list-style: none; font-size: 16px; line-height: 1.5; }
+.reading li { margin: 0 0 10px; padding-left: 14px; position: relative; }
+.reading li::before { content: ""; position: absolute; left: 0; top: .7em; width: 5px; height: 1.5px; background: var(--muted); }
+.reading a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px; }
+.reading a:hover { text-decoration-color: var(--ink); }
+.reading .w { color: var(--muted); font-size: 14px; margin-left: 8px; white-space: nowrap; }
+.reading .why { display: block; color: var(--soft); font-size: 14px; margin-top: 2px; }
+.sbody figure { margin: 16px 0 6px; }
+details.say { margin-top: 22px; }
+details.say > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 700; color: var(--soft); padding: 7px 14px; border: 1px solid var(--rule); border-radius: 6px; }
 details.say > summary::-webkit-details-marker { display: none; }
-details.say > summary::before { content: "+ "; }
-details.say[open] > summary::before { content: "- "; }
-details.say .transcript { margin-top: 10px; }
+details.say > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-top: -3px; }
+details.say[open] > summary::after { transform: rotate(-135deg); margin-top: 3px; }
+details.say > summary:hover { color: var(--ink); border-color: var(--muted); }
+details.say .transcript { margin-top: 12px; }
+details.item > .sbody { padding-left: 0; }
 @media (max-width: 700px) { .sbody { padding-left: 0; } }
 /* the tracker's own figures, drawn with its classes, always on white */
 figure.trk { --faint: #a2a09a; --dim: #6b6a65; --line: #c3c0b7; --ink: #1a1a19; --live: #fffdf5; }
@@ -486,8 +492,11 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
       var gh = el("h3", "qgroup", esc(g.group)); gh.id = "qa-" + gi; s.appendChild(gh);
       nav.push(["qa-" + gi, g.group, true]);
       g.items.forEach(function (q) {
-        var c = item(null, q.q, q.tests ? "They are testing: " + inl(q.tests.charAt(0).toLowerCase() + q.tests.slice(1)) : "",
-          transcript(q.a, "You", q.land ? "<b>Land it.</b> " + inl(q.land) : ""));
+        var qb = el("div", "sbody");
+        if (q.land) { qb.appendChild(el("p", "point", "<b>The point.</b> " + inl(q.land))); }
+        learn(qb, q.learn || {});
+        qb.appendChild(sayToggle("What you would say", transcript(q.a, "You", "")));
+        var c = item(null, q.q, q.tests ? "They are testing: " + inl(q.tests.charAt(0).toLowerCase() + q.tests.slice(1)) : "", qb);
         s.appendChild(c);
         items.push({ node: c, text: (q.q + " " + q.a.join(" ")).toLowerCase() });
       });
@@ -584,9 +593,34 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
     fig.appendChild(el("figcaption", "", f.cap));
     return fig;
   }
-  function linkLi(r) {
-    if (r.book) { return el("li", "", esc(r.book)); }
-    return el("li", "", '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.label) + "</a>");
+  /* What an item rests on: its figures, what to read (with minutes), and where it sits in
+     the system design guide. Shared by session steps and Prep questions. */
+  function learn(body, x) {
+    (x.figs || []).forEach(function (k) { var f = figNode(k, 0); if (f) { body.appendChild(f); } });
+    var read = el("ul", "reading"), seen = {};
+    (x.read || []).forEach(function (r) {
+      var k = r.url || r.book || r.label;
+      if (!k || seen[k]) { return; }
+      seen[k] = 1;
+      read.appendChild(el("li", "", (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + inl(r.label || r.url) + "</a>" : inl(r.book || r.label)) +
+        (r.m ? '<span class="w">' + r.m + " min</span>" : "") + (r.why ? '<span class="why">' + inl(r.why) + "</span>" : "")));
+    });
+    if (read.children.length) { body.appendChild(el("div", "lab", "Read")); body.appendChild(read); }
+    if (x.sdLinks && x.sdLinks.length) {
+      body.appendChild(el("div", "lab", "In your system design guide"));
+      var sd = el("ul", "reading");
+      x.sdLinks.forEach(function (q) {
+        sd.appendChild(el("li", "", '<a href="' + esc(q.href) + '" target="_blank" rel="noopener">' + esc(q.label) + "</a>" +
+          (q.why ? '<span class="why">' + inl(q.why) + "</span>" : "")));
+      });
+      body.appendChild(sd);
+    }
+  }
+  function sayToggle(label, node) {
+    var d = el("details", "say");
+    d.appendChild(el("summary", "", esc(label)));
+    d.appendChild(node);
+    return d;
   }
   /* A step opens to what it is, what to read, where it sits in the system design guide
      and the figure that draws it. What you would say stays shut until you have tried. */
@@ -614,47 +648,18 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
 
     var body = el("div", "sbody");
     if (!isStudy && it.d) { body.appendChild(el("p", "d", inl(it.d))); }
-    (it.figs || []).forEach(function (k) { var f = figNode(k, 0); if (f) { body.appendChild(f); } });
+    learn(body, { figs: it.figs || [] });
 
-    var read = el("ul", "reading"), nRead = 0, seen = {};
+    var pre = [];
     if (isStudy && it.do) {
       it.do.forEach(function (d) {
-        if (d.url) { seen[d.url] = 1; }
-        read.appendChild(el("li", "", (d.url ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + inl(d.a) + "</a>" : inl(d.a)) +
-          (d.m ? ' <span class="w">' + d.m + " min</span>" : "") + (d.where ? '<span class="why">' + inl(d.where) + "</span>" : "")));
-        nRead++;
+        pre.push({ url: d.url, label: d.a, m: d.m, why: d.where });
       });
     }
-    if (!isStudy && (it.where || it.url)) {
-      if (it.url) { seen[it.url] = 1; }
-      read.appendChild(el("li", "", it.url ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + inl(it.where || it.url) + "</a>" : inl(it.where)));
-      nRead++;
-    }
-    [].concat(isStudy ? (it.res || []) : (it.links || []), it.read || []).forEach(function (r) {
-      var k = r.url || r.book;
-      if (seen[k]) { return; }
-      seen[k] = 1;
-      read.appendChild(linkLi(r)); nRead++;
-    });
-    if (nRead) { body.appendChild(el("div", "lab", "Read")); body.appendChild(read); }
-
-    if (it.sdLinks && it.sdLinks.length) {
-      body.appendChild(el("div", "lab", "In your system design guide"));
-      var sd = el("ul", "reading");
-      it.sdLinks.forEach(function (p) {
-        sd.appendChild(el("li", "", '<a href="' + esc(p.href) + '" target="_blank" rel="noopener">' + esc(p.label) + "</a>" +
-          (p.why ? '<span class="why">' + inl(p.why) + "</span>" : "")));
-      });
-      body.appendChild(sd);
-    }
-
+    if (!isStudy && (it.where || it.url)) { pre.push(it.url ? { url: it.url, label: it.where || it.url } : { book: it.where }); }
+    learn(body, { figs: [], read: pre.concat(isStudy ? (it.res || []) : (it.links || []), it.read || []), sdLinks: it.sdLinks });
     var say = isStudy ? it.say : it.ans;
-    if (say) {
-      var sayBox = el("details", "say");
-      sayBox.appendChild(el("summary", "", isStudy ? "The idea, in the words you would use" : "What you would say, once you have tried it yourself"));
-      sayBox.appendChild(transcript(Array.isArray(say) ? say : [say], "", ""));
-      body.appendChild(sayBox);
-    }
+    if (say) { body.appendChild(sayToggle(isStudy ? "The idea, in the words you would use" : "What you would say", transcript(Array.isArray(say) ? say : [say], "", ""))); }
     row.appendChild(body);
     return row;
   }

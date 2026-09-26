@@ -46,6 +46,13 @@ function withSd(key, x) {
   x.figs = r.figs || [];
   return x;
 }
+if (process.argv[2] === "--sd") {
+  /* node extract.js --sd < {"key": [guide refs]}  ->  {"key": [{href, label, why}]} */
+  const input = JSON.parse(fs.readFileSync(0, "utf8")), res = {};
+  for (const k in input) { res[k] = input[k].map(p => ({ href: sdHref(p), label: sdLabel(p), why: p.why || "" })); }
+  process.stdout.write(JSON.stringify(res));
+  process.exit(0);
+}
 const want = (process.argv[2] || "").split(",").filter(Boolean);
 const out = want.map(id => {
   const s = WILDCARD.sessions.find(x => x.id === id);

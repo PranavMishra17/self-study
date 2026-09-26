@@ -201,59 +201,72 @@
 
   .step { border-bottom: 1px solid var(--hair); }
   .step:first-child { border-top: 1px solid var(--line); }
-  .srow { display: grid; grid-template-columns: 22px 1fr auto auto auto; gap: 12px; align-items: start;
-    padding: 13px 2px; }
   .bx { width: 14px; height: 14px; border: 1.5px solid var(--ink); background: none; margin-top: 4px;
     cursor: pointer; padding: 0; position: relative; }
   .bx.on { background: var(--ink); }
   .bx.on::after { content: ""; position: absolute; left: 3px; top: 0px; width: 4px; height: 8px;
     border: solid var(--sheet); border-width: 0 1.5px 1.5px 0; transform: rotate(42deg); }
-  .srow .tx { font-size: 14.5px; line-height: 1.5; }
   .srow .tx.off { color: var(--faint); }
-  .srow .ts { font-size: 11.5px; color: var(--mark); white-space: nowrap; padding-top: 3px;
-    font-variant-numeric: tabular-nums; }
   .srow .xp { background: none; border: none; color: var(--dim); font-size: 12px; cursor: pointer; padding: 2px 0 0; }
   .srow .xp:hover { color: var(--ink); }
-  .expand { padding: 0 2px 15px 34px; max-width: 78ch; }
   .answer { padding: 0 2px 16px 34px; }
   .answer textarea { min-height: 150px; background: var(--live); }
   .answer .meta { display: flex; justify-content: space-between; gap: 14px; font-size: 11.5px;
     color: var(--faint); padding-top: 6px; font-variant-numeric: tabular-nums; }
   .srow .xp.has { color: var(--mark); }
-  .expand p { font-size: 14px; color: var(--mid); margin: 0 0 10px; }
   .res { display: flex; gap: 8px; flex-wrap: wrap; }
   .res a, .res span.bk { font-size: 12.5px; border: 1px solid var(--line); padding: 4px 10px;
     text-decoration: none; color: var(--sys); background: var(--sheet); }
   .res span.bk { color: var(--dim); }
   .res a:hover { border-color: var(--sys); }
 
-  /* a session as a list: every step collapses */
-  .sxlist { max-width: 820px; margin-top: 18px; font-family: "Atkinson Hyperlegible", var(--sans); }
-  .sxbulk { display: flex; gap: 16px; margin: 10px 0 6px; }
-  .sxg { font-size: 19px; margin: 26px 0 4px; }
+  /* a session as a list: every step collapses. One face, three sizes (17 / 16 / 14),
+     three greys (ink, mid, dim), one label style, one list style. */
+  .sxlist { max-width: 820px; margin-top: 18px; font-family: "Atkinson Hyperlegible", var(--sans); color: var(--ink); }
+  .sxlist * { font-family: inherit; }
+  .sxbulk { display: flex; gap: 18px; margin: 10px 0 8px; }
+  .sxg { font-size: 19px; font-weight: 700; margin: 28px 0 6px; }
   .sx { border-top: 1px solid var(--line); }
   .sx:last-of-type { border-bottom: 1px solid var(--line); }
-  .sx > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 14px; gap: 12px; align-items: start; padding: 14px 0; }
+  .sx > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 14px; gap: 12px; align-items: start; padding: 15px 0; }
   .sx > summary::-webkit-details-marker { display: none; }
-  .sx > summary::after { content: ""; width: 8px; height: 8px; margin-top: 6px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); }
-  .sx[open] > summary::after { transform: rotate(-135deg); margin-top: 10px; }
-  .sx > summary:hover .sxh { text-decoration: underline; text-underline-offset: 3px; }
-  .sxh { font-weight: 700; font-size: 17px; line-height: 1.4; }
+  .sx > summary::after { content: ""; width: 8px; height: 8px; margin-top: 7px; border-right: 1.5px solid var(--dim); border-bottom: 1.5px solid var(--dim); transform: rotate(45deg); }
+  .sx[open] > summary::after { transform: rotate(-135deg); margin-top: 11px; }
+  .sxh { font-weight: 700; font-size: 17px; line-height: 1.45; }
+  .sx > summary:hover .sxh { color: var(--mid); }
   .sx.done .sxh { color: var(--dim); }
-  .sxm { color: var(--dim); font-size: 14px; padding-top: 2px; white-space: nowrap; }
-  .sxt { width: 20px; height: 20px; border: 1.5px solid var(--dim); background: var(--live); padding: 0; margin-top: 2px; cursor: pointer; display: grid; place-items: center; font-size: 12px; color: var(--live); }
-  .sxt.on { background: var(--math); border-color: var(--math); }
-  .sxb { padding: 0 26px 20px 40px; font-size: 16px; line-height: 1.65; }
-  .sxd { margin: 0 0 12px; }
-  .sxl { font-size: 13.5px; color: var(--dim); margin: 16px 0 4px; }
-  .rlist { margin: 0; padding-left: 18px; }
-  .rlist li { margin: 5px 0; }
-  .rlist .rm { color: var(--dim); font-size: 13.5px; margin-left: 8px; }
-  .sxb .plate { margin: 10px 0 14px; }
-  .sxb .sdrow { margin-top: 14px; }
-  .sxs { margin-top: 16px; }
-  .sxs > summary { cursor: pointer; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
-  .sxs .wb-model { margin-top: 10px; }
+  .sxm { color: var(--dim); font-size: 14px; padding-top: 3px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sxt { width: 20px; height: 20px; border: 1.5px solid var(--dim); background: var(--live); padding: 0; margin-top: 3px; cursor: pointer; display: grid; place-items: center; font-size: 12px; color: var(--live); }
+  .sxt.sm { width: 16px; height: 16px; font-size: 10px; margin-top: 4px; }
+  .sxt.on { background: var(--ink); border-color: var(--ink); }
+  .sxb { padding: 0 26px 22px 40px; font-size: 16px; line-height: 1.65; }
+  .sxd { margin: 0 0 4px; }
+  .sxl { font-size: 14px; font-weight: 700; color: var(--dim); margin: 18px 0 6px; }
+  .sxb a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .sxb a:hover { text-decoration-color: var(--ink); }
+  .sxmeta { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 6px 16px; margin: 16px 0 0; font-size: 14px; line-height: 1.55; }
+  .sxk { color: var(--dim); }
+  .sxv { color: var(--mid); }
+  .rlist, .sxdo { margin: 0; padding: 0; list-style: none; font-size: 16px; line-height: 1.5; }
+  .rlist li { margin: 0 0 10px; padding-left: 14px; position: relative; }
+  .rlist li::before { content: ""; position: absolute; left: 0; top: .7em; width: 5px; height: 1.5px; background: var(--dim); }
+  .rm { color: var(--dim); font-size: 14px; margin-left: 8px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .rwhy { color: var(--mid); font-size: 14px; line-height: 1.5; margin-top: 2px; }
+  .sxdo li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; margin: 0 0 10px; }
+  .sxdo li.done .sxdt { color: var(--dim); }
+  .sxb .plate { margin: 14px 0 6px; background: var(--live); border: 1px solid var(--hair); padding: 14px 16px; }
+  .sxb .plate .pn { font-size: 14px; font-weight: 700; color: var(--mid); margin-bottom: 8px; }
+  .sxb .plate .cap { font-size: 14px; line-height: 1.55; color: var(--mid); margin-top: 10px; }
+  .sxs { margin-top: 20px; }
+  .sxs > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--mid); padding: 7px 14px; border: 1px solid var(--line); background: var(--live); }
+  .sxs > summary::-webkit-details-marker { display: none; }
+  .sxs > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid var(--mid); border-bottom: 1.5px solid var(--mid); transform: rotate(45deg); margin-top: -3px; }
+  .sxs[open] > summary::after { transform: rotate(-135deg); margin-top: 3px; }
+  .sxs > summary:hover { border-color: var(--ink); color: var(--ink); }
+  .sxs .wb-model { margin-top: 12px; font-size: 16px; line-height: 1.65; border-left: 2px solid var(--ink); background: none; padding: 2px 0 2px 16px; }
+  .sxs .wb-model ul { padding-left: 18px; }
+  .sxs .wb-rate { margin-top: 12px; }
+  .sxs .wb-quiet { font-size: 14px; }
   .sxfin { margin-top: 30px; padding-top: 4px; }
   .sxfin .wb-phase { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 4px 18px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 16px; line-height: 1.6; }
   .sxfin .wb-phase > * { grid-column: 2; }
@@ -335,8 +348,6 @@
   .visits li a:hover { text-decoration: underline; }
 
   /* quiz */
-  .quiz { border: 1px solid var(--line); background: var(--sheet); padding: 20px 22px; margin-top: 26px; }
-  .quiz.shut { border-style: dashed; background: none; color: var(--dim); }
   .qq { margin-bottom: 20px; }
   .qq .qt { font-size: 15.5px; font-weight: 600; margin-bottom: 10px; }
   .opts { display: flex; flex-direction: column; gap: 6px; }
@@ -385,9 +396,6 @@
     .planner { grid-template-columns: repeat(2, 1fr); }
     .credit { display: block; }
     .board .hd, .board .rw { grid-template-columns: 64px repeat(7, 1fr); }
-    .expand { padding-left: 2px; }
-    .srow { grid-template-columns: 22px 1fr auto; }
-    .srow .ts { grid-column: 2; }
     .answer { padding-left: 2px; }
   }
   /* -------- recall: cold band, drill card, print sheet -------- */
@@ -460,21 +468,9 @@
   }
   /* w3-floor-time: session clock and ten-minute floor */
   .clockbox, .floorbox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-  .floorbox { flex-direction: column; align-items: stretch; }
-  .floorbox textarea { min-height: 64px; margin-bottom: 8px; }
   .clockcorr { width: 68px; border: 1px solid var(--line); background: var(--sheet);
     padding: 8px 9px; font: inherit; font-size: 13.5px; color: inherit; }
-  .floor { margin-top: 14px; }
   .fig-wild { border-left: 2px solid var(--iv); }
-  .quiz .rate { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-  .quiz .rate button { font-size: 13.5px; padding: 9px 18px; border: 1px solid var(--line);
-    background: var(--sheet); cursor: pointer; color: var(--ink); }
-  .quiz .rate button:hover { border-color: var(--ink); }
-  .quiz .rate button.g { box-shadow: inset 3px 0 0 var(--math); }
-  .quiz .rate button.s { box-shadow: inset 3px 0 0 var(--req); }
-  .quiz .rate button.n { box-shadow: inset 3px 0 0 var(--mark); }
-  .quiz .was { font-size: 11.5px; color: var(--faint); margin-top: 8px; }
-  .quiz .qhist { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--hair); }
   /* -------- the map: every milestone through 2027 -------- */
   .maplg { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; font-size: 11.5px;
     color: var(--mid); margin: 12px 0 8px; }
@@ -518,34 +514,15 @@
   @media print { .mapwrap, .maplg { display: none !important; } }  .clockbox { border: 1px solid var(--hair); background: var(--sheet); padding: 10px 14px;
     margin: 14px 0 0; font-size: 13px; display: flex; align-items: center; gap: 10px;
     flex-wrap: wrap; }
-  .clockbox b { font-variant-numeric: tabular-nums; }  .dolist { margin: 9px 0 2px; }
-  .doitem { display: grid; grid-template-columns: 15px 1fr; gap: 9px; align-items: start;
-    padding: 5px 0 5px; border-top: 1px dotted var(--hair); }
-  .doitem:first-child { border-top: 1px solid var(--hair); }
+  .clockbox b { font-variant-numeric: tabular-nums; }
   .doitem.off .dbody { opacity: 0.45; }
-  .dbx { width: 11px; height: 11px; border: 1.25px solid var(--dim); background: none;
-    margin-top: 4px; padding: 0; cursor: pointer; }
   .dbx.on { background: var(--dim); border-color: var(--dim); }
-  .dhead { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
   .da { font-size: 13px; color: var(--ink); line-height: 1.4; }
-  .dm { font-size: 11px; color: var(--mark); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .dw { font-size: 11.5px; color: var(--dim); margin-top: 2px; }
-  .dw a { font-size: 11.5px; color: var(--sys); margin-left: 7px; }
-  .dout { font-size: 11.5px; color: var(--math); margin-top: 2px; }
-  .dskip { font-size: 11.5px; color: var(--faint); margin-top: 2px; }
   .sheetdo { margin-top: 3px; padding-left: 9px; border-left: 1px solid var(--hair); }
   .sheetdo div { font-size: 10.5px; color: var(--dim); line-height: 1.4; }
-  .stepdo { margin-top: 3px; }
-  .dnlm { font-size: 11.5px; color: var(--alaap); margin-top: 2px; }
-  .srow .tx .dhead { gap: 14px; }  .abox { margin: 7px 0 4px; max-width: 74ch; }
-  .abox textarea { min-height: 96px; background: var(--live); font-size: 13px; }
+  .srow .tx .dhead { gap: 14px; }
   .abox .meta { display: flex; justify-content: space-between; gap: 12px;
     font-size: 11px; color: var(--faint); margin-top: 3px; }
-  .abox .amodel { border-left: 3px solid var(--math); background: var(--sheet);
-    padding: 9px 13px; margin-top: 9px; }
-  .abox .amodel .alab { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase;
-    color: var(--math); margin-bottom: 4px; }
-  .abox .amodel p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink); }
   .abox > button.sec { margin-top: 7px; font-size: 12px; padding: 5px 12px; }
   .doitem .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
     cursor: pointer; padding: 3px 0 0; display: block; }
@@ -554,46 +531,19 @@
   .stepdo .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
     cursor: pointer; padding: 3px 0 0; display: block; }
   .stepdo .xp:hover { color: var(--ink); }
-  .stepdo .xp.has { color: var(--mark); }  .abox .amodel ul { margin: 0; padding-left: 17px; }
-  .abox .amodel li { font-size: 13px; line-height: 1.5; color: var(--ink); padding: 1px 0; }  /* -------- the closer -------- */
-  .closerwrap { margin: 9px 0 3px; }
-  .closerbtn { background: var(--sheet); border: 1px solid var(--line); font-size: 11.5px;
-    padding: 4px 11px; cursor: pointer; color: var(--mid); }
-  .closerbtn:hover { border-color: var(--ink); color: var(--ink); }
+  .stepdo .xp.has { color: var(--mark); }
   .closerbtn.full { border-color: var(--math); color: var(--math); }
   .closer { border: 1px solid var(--mark); background: var(--live); padding: 12px 15px 14px;
     max-width: 78ch; }
-  .closerh { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px;
-    border-bottom: 1px solid var(--hair); margin-bottom: 10px; }
-  .closerh b { font-size: 13px; }
   .closerh .xp { margin-left: auto; background: none; border: none; color: var(--dim);
     font-size: 11.5px; cursor: pointer; }
-  .cq { padding: 9px 0; border-top: 1px dotted var(--hair); }
-  .cq:first-of-type { border-top: none; padding-top: 0; }
-  .cqh { display: flex; gap: 8px; align-items: baseline; }
-  .cqn { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
-  .cqk { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mark); }
-  .cqq { font-size: 13.5px; line-height: 1.45; margin: 3px 0 6px; }
-  .cta { width: 100%; background: var(--sheet); font-size: 13px; min-height: 0; }
-  .corder { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
-  .cchip { font-size: 12px; padding: 4px 10px; border: 1px solid var(--line);
-    background: var(--sheet); cursor: pointer; color: var(--ink); }
   .cchip.on { border-color: var(--ink); background: var(--board); font-weight: 600; }
-  .copts { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
-  .copt { text-align: left; font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--line);
-    background: var(--sheet); cursor: pointer; color: var(--ink); }
   .copt.sel { box-shadow: inset 3px 0 0 var(--ink); }
   .copt.yes { border-color: var(--math); box-shadow: inset 3px 0 0 var(--math); }
   .copt.no { border-color: var(--mark); box-shadow: inset 3px 0 0 var(--mark); }
   .cq .xp { background: none; border: none; color: var(--dim); font-size: 11.5px;
     cursor: pointer; padding: 3px 0 0; }
   .cq .xp:hover { color: var(--ink); }
-  .cans { border-left: 3px solid var(--math); padding: 5px 11px; margin-top: 6px;
-    font-size: 13px; line-height: 1.5; background: var(--sheet); }
-  .cwhy { font-size: 11.5px; color: var(--dim); margin-top: 4px; }
-  .crate { display: flex; gap: 7px; margin-top: 7px; }
-  .crb { font-size: 11.5px; padding: 3px 10px; border: 1px solid var(--line);
-    background: none; cursor: pointer; color: var(--mid); }
   .crb.got.on { border-color: var(--math); color: var(--math); font-weight: 600; }
   .crb.no.on { border-color: var(--mark); color: var(--mark); font-weight: 600; }
   .carry { border: 1px solid var(--mark); background: var(--sheet); padding: 11px 14px; margin-bottom: 14px; }
@@ -735,7 +685,6 @@
   var START = new Date(2026, 8, 21);
   var KEY = "selfstudy.m1.planner";
   var LIFE = ["Gym", "Read", "Make", "Alaap"];
-  var DUNNO = "I do not know";
   var TRACK = { Systems: "sys", Mathematics: "math", Alaap: "alaap", Requeue: "req", Interview: "iv" };
   var SHORT = {
     w1a: "Queues", w1b: "Logarithms", w1c: "Orientation",
@@ -762,7 +711,7 @@
     jitter: { label: "Backoff and jitter", url: "https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/" },
     latency: { label: "Latency numbers", url: "https://colin-scott.github.io/personal_website/research/interactive_latency.html" }
   };
-  function ddia(ch) { return { book: "DDIA — " + ch }; }
+  function ddia(ch) { return { book: "DDIA, 2e: " + ch }; }
 
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -799,7 +748,7 @@
               where: "DDIA 2e - index: percentiles; response time; tail latency amplification. Sections 'Describing Performance', 'Latency and Response Time', 'Average, Median, and Percentiles'. Not in 2e chapter 1, which is Trade-Offs in Data Systems Architecture; the nonfunctional-requirements chapter carries it",
               out: "p50, p95 and p99 defined in your own words, and one sentence on why an average hides the tail",
               skip: "The rest of chapter 1. Reliability and maintainability are not what this week is about.",
-              links: [ddia("2e - look up: percentiles")],
+              links: [ddia("look up percentiles")],
               ans: [
                 "p50 (the median): half of all requests finish faster than this",
                 "p95 and p99: the latency that 95 or 99 percent of requests beat — where the slow tail lives",
@@ -1068,7 +1017,7 @@
               m: 45,
               where: "DDIA 2e chapter 7, 'Sharding' (confirmed) - index: sharding; partitioning; hot spots; skewed workload; rebalancing. Read the key-value sharding sections, then skewed workloads and relieving hot spots, then request routing. Secondary Indexes, Rebalancing Partitions, Request Routing",
               out: "key-range versus hash partitioning distinguished in your own words, plus what a rebalancing strategy must avoid",
-              links: [ddia("2e chapter 7, Sharding")],
+              links: [ddia("chapter 7, Sharding")],
               ans: [
                 "Key-range partitioning: each partition owns a contiguous range of keys, which keeps range queries efficient but concentrates load if access is skewed toward one range",
                 "Hash partitioning: a hash of the key picks the partition, which spreads load evenly but destroys the ability to do efficient range scans",
@@ -1356,7 +1305,7 @@
               where: "DDIA 2e - index: LSM-tree; B-tree; hash index; log-structured storage. The storage-and-retrieval chapter, from hash indexes through the B-tree and LSM-tree comparison, plus the short other-indexing sectructures after it",
               out: "your own sentence on why writes are cheap in an LSM-tree and reads can span layers, and the reverse for a B-tree",
               skip: "From 'Transaction Processing or Analytics?' onward — column-oriented storage and OLAP schemas are a different session",
-              links: [ddia("2e - look up: LSM-tree, B-tree")],
+              links: [ddia("look up LSM-tree and B-tree")],
               ans: [
                 "A basic hash index keeps an in-memory map from key to byte offset in an append-only log — fast point lookups, but it must fit in memory and cannot do range queries",
                 "An LSM-tree makes writes cheap because they are sequential appends to an in-memory structure, flushed to sorted files and merged later by background compaction",
@@ -1666,7 +1615,7 @@
               out: "one sentence each on what makes networks, clocks and 'truth' unreliable in a distributed system",
               skip: "In chapter 11: Transmitting Event Streams, Databases and Streams, and the rest of Processing Streams — only Fault Tolerance is this session's target",
               nlm: "Does the timeout-versus-failure distinction in chapter 8 depend on the network protocol, or does it hold for any unreliable network? Does 'Fault Tolerance' in chapter 11 assume idempotent processing, or does it also cover the non-idempotent case?",
-              links: [ddia("2e chapter 9, plus idempotence")],
+              links: [ddia("chapter 9, plus idempotence")],
               ans: [
                 "Networks are unreliable: packets can be delayed, dropped, reordered or duplicated, and a timeout cannot tell a slow response from a lost one",
                 "Clocks are unreliable: they drift and can jump during resynchronisation, so wall-clock timestamps cannot be trusted to order events across machines",
@@ -2013,7 +1962,7 @@
               where: "DDIA 2e - index: replication lag; read-your-writes consistency; eventual consistency. The problems-with-replication-lag sections, read-your-writes in particular",
               out: "one sentence: what a client can see immediately after its own write, and why that is a staleness problem before it is ever a caching problem",
               skip: "Leader election, multi-leader conflict resolution and leaderless replication — this pass only needs the staleness argument, not the rest of the chapter",
-              links: [ddia("2e - look up: replication lag")],
+              links: [ddia("look up replication lag")],
               ans: [
                 "Replication lag is the delay between a write landing on the leader and that write becoming visible on a follower",
                 "Read-your-writes consistency guarantees a user immediately sees their own write, even when reads are served from a lagging replica",
@@ -5215,17 +5164,6 @@
       String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
   }
   function stampShort(s) { return s ? s.split(" ").slice(0, 2).join(" ") : ""; }
-  function ageDays(stamp) {
-    if (!stamp) { return null; }
-    var parts = stamp.split(" ");
-    var day = parseInt(parts[0], 10);
-    var mi = MON.indexOf(parts[1]);
-    if (isNaN(day) || mi < 0) { return null; }
-    var now = new Date();
-    var d = new Date(now.getFullYear(), mi, day);
-    if (d.getTime() - now.getTime() > 3 * 864e5) { d.setFullYear(d.getFullYear() - 1); }
-    return Math.floor((now.getTime() - d.getTime()) / 864e5);
-  }
   function currentWeek() {
     var d = Math.floor((Date.now() - START.getTime()) / (7 * 864e5));
     return d < 0 ? 0 : (d > PLAN.length - 1 ? PLAN.length - 1 : d);
@@ -5458,369 +5396,10 @@
     it.do.forEach(function (d) { m += (d.m || 0); });
     return m;
   }
-  function doDone(sid, i, it) {
-    if (!it.do || !it.do.length) { return 0; }
-    var n = 0, j;
-    for (j = 0; j < it.do.length; j++) { if (state.steps[doKey(sid, i, j)]) { n += 1; } }
-    return n;
-  }
-  function studyMinutes(s) {
-    if (!s.study) { return 0; }
-    var m = 0;
-    s.study.forEach(function (it) { m += doMinutes(it); });
-    return m;
-  }
   function mins(n) {
     if (n < 60) { return n + "m"; }
     var h = Math.floor(n / 60), r = n % 60;
     return r ? h + "h " + r + "m" : h + "h";
-  }
-
-  /* A planned step is already an action, so it carries its instructions inline
-     rather than nesting a do array: how long, exactly where, what is true when it
-     is finished, and what to skip. These sit above the fold on purpose. Knowing
-     what to do should never be behind a toggle; only the model answer is. */
-  function stepDo(s, st, noAns) {
-    if (!st.where && !st.url && !st.out && !st.skip && !st.nlm) { return null; }
-    var box = el("div", "stepdo");
-    if (st.where || st.url) {
-      var w = el("div", "dw");
-      if (st.where) { w.appendChild(document.createTextNode(st.where)); }
-      if (st.url) {
-        var a = document.createElement("a");
-        a.href = st.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-        a.textContent = st.where ? "open" : st.url;
-        a.addEventListener("click", function () { logVisit(s.id, st.where || st.url, st.url); });
-        w.appendChild(a);
-      }
-      box.appendChild(w);
-    }
-    if (st.out) { box.appendChild(el("div", "dout", "Done when: " + st.out)); }
-    if (st.skip) { box.appendChild(el("div", "dskip", "Skip: " + st.skip)); }
-    if (st.nlm) { box.appendChild(el("div", "dnlm", "Ask NotebookLM: " + st.nlm)); }
-    if (st.ans && !noAns) {
-      var akey = sKey(s.id, s.steps.indexOf(st)) + ":a";
-      var held = state.answers[akey];
-      var ab = el("button", "xp" + (held && held.text ? " has" : ""),
-        open[akey] ? "Close" : (held && held.text ? "Answer kept" : "Answer, then check"));
-      ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
-      box.appendChild(ab);
-      if (open[akey]) { box.appendChild(answerBox(akey, st.ans, null)); }
-    }
-    return box;
-  }
-  function stepMinutes(s) {
-    if (!s.steps) { return 0; }
-    var m = 0;
-    s.steps.forEach(function (st) { m += (st.m || 0); });
-    return m;
-  }
-
-  /* An action that says "say this out loud" needs two things a stopping condition
-     cannot give it: somewhere to put your own attempt, and the actual answer to
-     check it against. Same pedagogy as the practice steps, so the model answer
-     stays shut until something is written or it is asked for outright. */
-  /* ------------------------------------------------------- the closer
-
-     A pointer you have just finished is the only moment you can cheaply find
-     out whether you actually got it. So closing one opens a short set of
-     questions: one word, one sentence, a blank, an ordering, a figure read.
-     Two minutes, not a test.
-
-     They stay hidden until the pointer is closed, because seeing the questions
-     first turns the reading into a hunt for answers. After that they sit behind
-     a small button and can be reopened. Anything marked missed carries forward
-     into the session's own closing quiz. */
-
-  var CLOSEKIND = {
-    word: "one word",
-    short: "one sentence",
-    blank: "fill the blank",
-    num: "a number",
-    why: "say why",
-    figure: "from the figure",
-    order: "put in order",
-    pick: "spot it"
-  };
-
-  function closeRec(key) {
-    if (!state.closer[key]) { state.closer[key] = { resp: {}, rated: {} }; }
-    return state.closer[key];
-  }
-  function closeScore(key, list) {
-    var r = state.closer[key];
-    if (!r) { return null; }
-    var got = 0, n = 0, i;
-    for (i = 0; i < list.length; i++) {
-      if (r.rated[i]) { n += 1; if (r.rated[i] === "got") { got += 1; } }
-    }
-    return n ? { got: got, of: n, all: list.length } : null;
-  }
-  function missedCarry() {
-    var out = [];
-    function walk(s) {
-      (s.study || []).forEach(function (it, i) {
-        if (!it.close) { return; }
-        var k = s.id + ":s" + i;
-        var r = state.closer[k];
-        if (!r) { return; }
-        it.close.forEach(function (q, qi) {
-          if (r.rated[qi] === "no") { out.push({ q: q, from: it.t }); }
-        });
-      });
-      (s.steps || []).forEach(function (st, i) {
-        if (!st.close) { return; }
-        var k = sKey(s.id, i);
-        var r = state.closer[k];
-        if (!r) { return; }
-        st.close.forEach(function (q, qi) {
-          if (r.rated[qi] === "no") { out.push({ q: q, from: st.t }); }
-        });
-      });
-    }
-    return out;
-  }
-  function missedIn(s) {
-    var out = [];
-    function collect(list, keyfor) {
-      (list || []).forEach(function (x, i) {
-        if (!x.close) { return; }
-        var r = state.closer[keyfor(i)];
-        if (!r) { return; }
-        x.close.forEach(function (q, qi) {
-          if (r.rated[qi] === "no") { out.push({ q: q, from: x.t }); }
-        });
-      });
-    }
-    collect(s.study, function (i) { return s.id + ":s" + i; });
-    collect(s.steps, function (i) { return sKey(s.id, i); });
-    return out;
-  }
-
-  /* one question, rendered by kind */
-  function closeQuestion(key, q, qi, rec) {
-    var box = el("div", "cq");
-    var head = el("div", "cqh");
-    head.appendChild(el("span", "cqn", String(qi + 1)));
-    head.appendChild(el("span", "cqk", CLOSEKIND[q.k] || "answer"));
-    box.appendChild(head);
-    box.appendChild(el("div", "cqq", q.q));
-
-    var shownKey = key + ":" + qi + ":show";
-
-    if (q.k === "order" && q.items) {
-      var picked = rec.resp[qi] ? String(rec.resp[qi]).split("|") : [];
-      var chips = el("div", "corder");
-      q.items.forEach(function (item) {
-        var on = picked.indexOf(item) >= 0;
-        var b = el("button", "cchip" + (on ? " on" : ""),
-          (on ? (picked.indexOf(item) + 1) + ". " : "") + item);
-        b.addEventListener("click", function () {
-          var cur = rec.resp[qi] ? String(rec.resp[qi]).split("|") : [];
-          var at = cur.indexOf(item);
-          if (at >= 0) { cur.splice(at, 1); } else { cur.push(item); }
-          rec.resp[qi] = cur.join("|");
-          save(); draw();
-        });
-        chips.appendChild(b);
-      });
-      box.appendChild(chips);
-    } else if (q.k === "pick" && q.o) {
-      var opts = el("div", "copts");
-      q.o.forEach(function (text, oi) {
-        var chosen = rec.resp[qi] === oi;
-        var cls = "copt" + (chosen ? " sel" : "");
-        if (open[shownKey]) {
-          if (oi === q.a) { cls += " yes"; }
-          else if (chosen) { cls += " no"; }
-        }
-        var b = el("button", cls, text);
-        b.addEventListener("click", function () {
-          if (open[shownKey]) { return; }
-          rec.resp[qi] = oi; save(); draw();
-        });
-        opts.appendChild(b);
-      });
-      box.appendChild(opts);
-    } else {
-      var ta = document.createElement("textarea");
-      ta.className = "cta";
-      ta.rows = q.k === "short" || q.k === "why" ? 2 : 1;
-      ta.value = rec.resp[qi] || "";
-      ta.placeholder = q.k === "word" ? "one word" : q.k === "num" ? "a number" : "say it, then type it";
-      ta.addEventListener("input", function () {
-        rec.resp[qi] = ta.value; save();
-      });
-      box.appendChild(ta);
-    }
-
-    if (!open[shownKey]) {
-      var rv = el("button", "xp", "Check");
-      rv.addEventListener("click", function () { open[shownKey] = true; draw(); });
-      box.appendChild(rv);
-    } else {
-      var ansText = q.k === "pick" ? (q.o ? q.o[q.a] : "") : q.a;
-      var ab = el("div", "cans");
-      ab.appendChild(el("span", "", ansText));
-      if (q.why) { ab.appendChild(el("div", "cwhy", q.why)); }
-      box.appendChild(ab);
-      var rate = el("div", "crate");
-      [["got", "Had it"], ["no", "Missed it"]].forEach(function (r) {
-        var b = el("button", "crb " + r[0] + (rec.rated[qi] === r[0] ? " on" : ""), r[1]);
-        b.addEventListener("click", function () {
-          rec.rated[qi] = r[0]; rec.at = stampNow(); save(); draw();
-        });
-        rate.appendChild(b);
-      });
-      box.appendChild(rate);
-    }
-    return box;
-  }
-
-  /* the whole closer for one pointer */
-  function closerPanel(key, list) {
-    var rec = closeRec(key);
-    var box = el("div", "closer");
-    var sc = closeScore(key, list);
-    var h = el("div", "closerh");
-    h.appendChild(el("b", "", "Closer"));
-    h.appendChild(el("span", "sm dim", list.length + " questions, about two minutes" +
-      (sc ? "   \u00b7   " + sc.got + " of " + sc.of + " had" : "")));
-    var shut = el("button", "xp", "Close");
-    shut.addEventListener("click", function () { open[key + ":closer"] = false; draw(); });
-    h.appendChild(shut);
-    box.appendChild(h);
-    list.forEach(function (q, qi) { box.appendChild(closeQuestion(key, q, qi, rec)); });
-    return box;
-  }
-
-  /* the button, and the auto-open on first completion */
-  function closerFor(key, list, isDone) {
-    if (!list || !list.length) { return null; }
-    var rec = state.closer[key];
-    if (isDone && !rec) { closeRec(key).opened = stampNow(); open[key + ":closer"] = true; }
-    if (!isDone && !open[key + ":closer"]) { return null; }
-    var wrap = el("div", "closerwrap");
-    if (open[key + ":closer"]) {
-      wrap.appendChild(closerPanel(key, list));
-    } else {
-      var sc = closeScore(key, list);
-      var b = el("button", "closerbtn" + (sc && sc.got === sc.all ? " full" : ""),
-        sc ? "Closer, " + sc.got + " of " + sc.all + " had" : "Closer, " + list.length + " questions");
-      b.addEventListener("click", function () { open[key + ":closer"] = true; draw(); });
-      wrap.appendChild(b);
-    }
-    return wrap;
-  }
-
-  function answerBox(key, model, placeholder) {
-    var wrap = el("div", "abox");
-    var rec = state.answers[key];
-    var mine = el("div", "amine");
-
-    var ta = document.createElement("textarea");
-    ta.value = (rec && rec.text) || "";
-    ta.placeholder = placeholder || "Say it, then write what you actually said.";
-    var meta = el("div", "meta");
-    var wc = el("span", "", "");
-    var when = el("span", "", rec && rec.at ? "last written " + rec.at : "");
-    function count() {
-      var t = ta.value.trim();
-      wc.textContent = (t ? t.split(/\s+/).length : 0) + " words";
-    }
-    count();
-    ta.addEventListener("input", function () {
-      var v = ta.value;
-      if (v.trim()) { state.answers[key] = { text: v, at: stampNow(), via: "typed" }; }
-      else { delete state.answers[key]; }
-      count();
-      when.textContent = v.trim() ? "last written " + stampNow() : "";
-      save();
-    });
-    meta.appendChild(wc);
-    meta.appendChild(when);
-    mine.appendChild(ta);
-    mine.appendChild(meta);
-    wrap.appendChild(mine);
-
-    if (model) {
-      var mkey = key + ":model";
-      var written = rec && rec.text && rec.text.trim();
-      if (open[mkey] || written) {
-        var mb = el("div", "amodel");
-        mb.appendChild(el("div", "alab", "The answer"));
-        if (Object.prototype.toString.call(model) === "[object Array]") {
-          var ul = document.createElement("ul");
-          model.forEach(function (line) {
-            var li = document.createElement("li");
-            li.textContent = line;
-            ul.appendChild(li);
-          });
-          mb.appendChild(ul);
-        } else {
-          mb.appendChild(el("p", "", model));
-        }
-        wrap.appendChild(mb);
-      } else {
-        var sh = el("button", "sec", "Show the answer");
-        sh.addEventListener("click", function () { open[mkey] = true; draw(); });
-        wrap.appendChild(sh);
-      }
-    }
-    return wrap;
-  }
-
-  function doList(s, it, i, noAns) {
-    if (!it.do || !it.do.length) { return null; }
-    var ol = el("div", "dolist");
-    it.do.forEach(function (d, j) {
-      var key = doKey(s.id, i, j);
-      var li = el("div", "doitem" + (state.steps[key] ? " off" : ""));
-
-      var bx = el("button", "dbx" + (state.steps[key] ? " on" : ""));
-      bx.setAttribute("aria-label", "Mark this action done");
-      bx.addEventListener("click", function () {
-        if (state.steps[key]) { delete state.steps[key]; delete state.steps[key + ":at"]; }
-        else { state.steps[key] = true; state.steps[key + ":at"] = stampNow(); }
-        save(); draw();
-      });
-      li.appendChild(bx);
-
-      var body = el("div", "dbody");
-      var head = el("div", "dhead");
-      head.appendChild(el("span", "da", d.a));
-      if (d.m) { head.appendChild(el("span", "dm", mins(d.m))); }
-      body.appendChild(head);
-
-      if (d.where || d.url) {
-        var w = el("div", "dw");
-        if (d.where) { w.appendChild(document.createTextNode(d.where)); }
-        if (d.url) {
-          var a = document.createElement("a");
-          a.href = d.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-          a.textContent = d.where ? "open" : d.url;
-          a.addEventListener("click", function () { logVisit(s.id, d.where || d.url, d.url); });
-          w.appendChild(a);
-        }
-        body.appendChild(w);
-      }
-      if (d.out) { body.appendChild(el("div", "dout", "Done when: " + d.out)); }
-      if (d.skip) { body.appendChild(el("div", "dskip", "Skip: " + d.skip)); }
-
-      if (!noAns) {
-        var akey = doKey(s.id, i, j) + ":a";
-        var held = state.answers[akey];
-        var ab = el("button", "xp" + (held && held.text ? " has" : ""),
-          open[akey] ? "Close" : (held && held.text ? "Answer kept" : (d.ans ? "Answer, then check" : "Answer")));
-        ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
-        body.appendChild(ab);
-        if (open[akey]) { body.appendChild(answerBox(akey, d.ans, null)); }
-      }
-
-      li.appendChild(body);
-      ol.appendChild(li);
-    });
-    return ol;
   }
 
   /* ------------------------------------------ where the progress lives
@@ -6009,31 +5588,6 @@
       return p.a ? "The framework, " + (SD.anchors[p.a] || p.a) : "The six-step framework";
     }
     return (SD.views[p.v] || p.v) + (p.a ? ", " + (SD.anchors[p.a] || p.a) : "");
-  }
-  function sdRow(s, list) {
-    return guideRow(s, list, "In your system design guide", "sdrow", "System design: ", sdHref, sdLabel);
-  }
-  function alRow(s, list) {
-    return guideRow(s, list, "In your Alaap and TrenTorch plan", "sdrow alrow", "Alaap plan: ",
-      function (p) { return alHref(p.p); }, function (p) { return alLabel(p.p); });
-  }
-  function guideRow(s, list, head, cls, logAs, hrefOf, labelOf) {
-    if (!list || !list.length) { return null; }
-    var box = el("div", cls);
-    box.appendChild(el("div", "sdh", head));
-    list.forEach(function (p) {
-      var line = el("div", "sdp");
-      var a = document.createElement("a");
-      a.href = hrefOf(p);
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.textContent = labelOf(p);
-      a.addEventListener("click", function () { logVisit(s.id, logAs + labelOf(p), a.href); });
-      line.appendChild(a);
-      if (p.why) { line.appendChild(el("span", "why", p.why)); }
-      box.appendChild(line);
-    });
-    return box;
   }
 
   function tone(track) { return TRACK[track] || "flat"; }
@@ -6281,13 +5835,6 @@
   var MONTHNAME = ["January", "February", "March", "April", "May", "June", "July",
     "August", "September", "October", "November", "December"];
 
-  function stampDate(stamp) {
-    if (!stamp) { return null; }
-    var p = String(stamp).split(" ");
-    var mi = MON.indexOf(p[1]);
-    if (mi < 0) { return null; }
-    return new Date(START.getFullYear(), mi, parseInt(p[0], 10));
-  }
 
   function flightPath() {
     var X0 = 40, X1 = 800, XE = 996, Y0 = 244, Y1 = 66, DAYS = PLAN.length * 7;
@@ -7223,16 +6770,78 @@
       if (!k || seen[k]) { return; }
       seen[k] = true;
       var li = document.createElement("li");
-      if (r.url) {
-        var a = document.createElement("a");
-        a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = r.label || r.url;
-        a.addEventListener("click", function () { logVisit(s.id, r.label || r.url, r.url); });
-        li.appendChild(a);
-      } else { li.appendChild(document.createTextNode(r.book)); }
+      if (r.url) { li.appendChild(linkTo(s, r.url, r.label || r.url)); }
+      else { li.appendChild(document.createTextNode(r.book)); }
       if (r.m) { li.appendChild(el("span", "rm", mins(r.m))); }
       ul.appendChild(li);
     });
     return ul.children.length ? ul : null;
+  }
+  function section(body, label, node) {
+    if (!node) { return; }
+    if (label) { body.appendChild(el("div", "sxl", label)); }
+    body.appendChild(node);
+  }
+  function linkTo(s, url, text, logAs) {
+    var a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = text;
+    a.addEventListener("click", function () { logVisit(s.id, (logAs || "") + text, url); });
+    return a;
+  }
+  /* where to find it, when it is done, what to skip: one quiet grid */
+  function metaRows(s, st) {
+    var rows = [];
+    if (st.where || st.url) {
+      var v = el("span", "");
+      if (st.where) { v.appendChild(document.createTextNode(st.where + (st.url ? " " : ""))); }
+      if (st.url) { v.appendChild(linkTo(s, st.url, st.where ? "Open" : st.url)); }
+      rows.push(["Where", v]);
+    }
+    if (st.out) { rows.push(["Done when", document.createTextNode(st.out)]); }
+    if (st.skip) { rows.push(["Skip", document.createTextNode(st.skip)]); }
+    if (st.nlm) { rows.push(["Ask NotebookLM", document.createTextNode(st.nlm)]); }
+    if (!rows.length) { return null; }
+    var g = el("div", "sxmeta");
+    rows.forEach(function (r) { g.appendChild(el("div", "sxk", r[0])); var c = el("div", "sxv"); c.appendChild(r[1]); g.appendChild(c); });
+    return g;
+  }
+  /* a study item's actions, each with its own tick */
+  function doRows(s, it, i) {
+    if (!it.do || !it.do.length) { return null; }
+    var ul = el("ul", "sxdo");
+    it.do.forEach(function (d, j) {
+      var k = doKey(s.id, i, j);
+      var li = el("li", state.steps[k] ? "done" : "");
+      var bx = el("button", "sxt sm" + (state.steps[k] ? " on" : ""), state.steps[k] ? "&#10003;" : "");
+      bx.setAttribute("aria-label", "Mark done: " + d.a);
+      bx.addEventListener("click", function () {
+        if (state.steps[k]) { delete state.steps[k]; delete state.steps[k + ":at"]; }
+        else { state.steps[k] = true; state.steps[k + ":at"] = stampNow(); }
+        markSession(s); save(); draw();
+      });
+      li.appendChild(bx);
+      var tx = el("div", "");
+      var t = el("div", "sxdt");
+      if (d.url) { t.appendChild(linkTo(s, d.url, d.a)); } else { t.appendChild(document.createTextNode(d.a)); }
+      if (d.m) { t.appendChild(el("span", "rm", mins(d.m))); }
+      tx.appendChild(t);
+      var sub1 = [d.where, d.out ? "Done when: " + d.out : "", d.skip ? "Skip: " + d.skip : ""].filter(Boolean).join(". ");
+      if (sub1) { tx.appendChild(el("div", "rwhy", sub1)); }
+      li.appendChild(tx);
+      ul.appendChild(li);
+    });
+    return ul;
+  }
+  function guideList(s, list, hrefOf, labelOf, logAs) {
+    if (!list || !list.length) { return null; }
+    var ul = el("ul", "rlist");
+    list.forEach(function (q) {
+      var li = document.createElement("li");
+      li.appendChild(linkTo(s, hrefOf(q), labelOf(q), logAs));
+      if (q.why) { li.appendChild(el("div", "rwhy", q.why)); }
+      ul.appendChild(li);
+    });
+    return ul;
   }
   function stepItem(s, key, it, isStudy, i) {
     var x = extraOf(key);
@@ -7257,21 +6866,18 @@
     var body = el("div", "sxb");
     if (!isStudy && it.d && !s.study) { body.appendChild(el("p", "sxd", it.d)); }
     (x.figs || []).forEach(function (k, n) { var f = plate(k, n + 1); if (f) { body.appendChild(f); } });
-    var act = isStudy ? doList(s, it, i, true) : stepDo(s, it, true);
-    if (act) { body.appendChild(act); }
-    var reads = readList(s, [].concat(isStudy ? (it.res || []) : (it.links || []), x.read || [], x.aieng || []));
-    if (reads) { body.appendChild(el("div", "sxl", "Read")); body.appendChild(reads); }
-    var sds = sdRow(s, [].concat(it.sd || [], x.sd || []));
-    if (sds) { body.appendChild(sds); }
-    var als = alRow(s, it.al);
-    if (als) { body.appendChild(als); }
+    if (isStudy) { section(body, "Do", doRows(s, it, i)); }
+    else { section(body, null, metaRows(s, it)); }
+    section(body, "Read", readList(s, [].concat(isStudy ? (it.res || []) : (it.links || []), x.read || [], x.aieng || [])));
+    section(body, "In your system design guide", guideList(s, [].concat(it.sd || [], x.sd || []), sdHref, sdLabel, "System design: "));
+    section(body, "In your Alaap and TrenTorch plan", guideList(s, it.al, function (q) { return alHref(q.p); }, function (q) { return alLabel(q.p); }, "Alaap plan: "));
 
     var model = isStudy ? it.say : modelOf(s, it);
     if (model) {
       var say = el("details", "sxs");
       say.open = !!open[key + ":say"];
       say.addEventListener("toggle", function () { open[key + ":say"] = say.open; });
-      say.appendChild(el("summary", "", isStudy ? "The idea, in the words you would use" : "What you would say, once you have tried it yourself"));
+      say.appendChild(el("summary", "", isStudy ? "The idea, in the words you would use" : "What you would say"));
       var mb = el("div", "wb-model");
       if (Array.isArray(model)) {
         var ul = el("ul");
@@ -7552,143 +7158,6 @@
     v.appendChild(acts);
   }
 
-  function quizPanel(s) {
-    var allDone = stepsDone(s) === s.steps.length && studyDone(s) === studyLen(s);
-    var rec = state.quiz[s.id] || null;
-    var mine = picks[s.id] || {};
-    var submitted = mine.__submitted === true;
-
-    if (!allDone && !rec) {
-      var shut = el("div", "quiz shut");
-      shut.appendChild(el("p", "", "The closing quiz opens once the study list and the practice above are done. Three questions, pass is two."));
-      return shut;
-    }
-
-    var box = el("div", "quiz");
-    box.appendChild(el("h2", "", "Close off this session"));
-
-    /* Anything marked missed in a pointer's closer comes back here. It is the
-       cheapest question set in the file, because you already wrote it off once. */
-    var carried = missedIn(s);
-    if (carried.length) {
-      var cb = el("div", "carry");
-      cb.appendChild(el("div", "ch", "You marked these missed, earlier in this session"));
-      var cul = document.createElement("ul");
-      carried.forEach(function (c) {
-        var li = document.createElement("li");
-        li.textContent = c.q.q;
-        var em = document.createElement("em");
-        em.textContent = "  " + c.from;
-        em.style.color = "var(--faint)";
-        em.style.fontStyle = "normal";
-        em.style.fontSize = "11px";
-        li.appendChild(em);
-        cul.appendChild(li);
-      });
-      cb.appendChild(cul);
-      cb.appendChild(el("p", "sm dim", "Answer these out loud before you take the quiz. They are the ones you already know you did not have."));
-      box.appendChild(cb);
-    }
-
-    if (rec && rec.passed && !submitted) {
-      box.appendChild(el("div", "score ok", "Passed, " + rec.score + " of " + s.quiz.length));
-      if (rec.at) { box.appendChild(el("p", "sm dim", "Taken " + rec.at + ". Taking it again adds to the history below.")); }
-      var again = el("button", "sec", "Take it again");
-      again.addEventListener("click", function () {
-        picks[s.id] = {};
-        delete state.quiz[s.id];
-        markSession(s);
-        save(); draw();
-      });
-      box.appendChild(again);
-      var hist1 = renderQuizHistory(s);
-      if (hist1) { box.appendChild(hist1); }
-      return box;
-    }
-
-    s.quiz.forEach(function (q, qi) {
-      var wrap = el("div", "qq");
-      wrap.appendChild(el("div", "qt", (qi + 1) + ". " + q.q));
-      var opts = el("div", "opts");
-      q.o.concat([DUNNO]).forEach(function (text, oi) {
-        var cls = "opt" + (text === DUNNO ? " dunno" : "");
-        if (submitted) {
-          if (oi === q.a) { cls += " yes"; }
-          else if (mine[qi] === oi) { cls += " no"; }
-        } else if (mine[qi] === oi) { cls += " sel"; }
-        var b = el("button", cls, text);
-        b.addEventListener("click", function () {
-          if (submitted) { return; }
-          mine[qi] = oi;
-          picks[s.id] = mine;
-          draw();
-        });
-        opts.appendChild(b);
-      });
-      wrap.appendChild(opts);
-      if (!submitted) { wrap.appendChild(floorPanel(s.id + ":q" + qi)); }
-      if (submitted) { wrap.appendChild(el("div", "why", q.why)); }
-      box.appendChild(wrap);
-    });
-
-    var free = QUIZ_FREE[s.id];
-    if (free) {
-      var fk = s.id + ":qf";
-      var fwrap = el("div", "qq");
-      fwrap.appendChild(el("div", "qt", (s.quiz.length + 1) + ". " + free.q));
-      if (!open[fk]) {
-        fwrap.appendChild(el("p", "sm dim", "Say or write it out loud first. Open question, self-rated, and it does not count toward the pass score."));
-        var reveal = el("button", "sec", "Reveal the model answer");
-        reveal.addEventListener("click", function () { open[fk] = true; draw(); });
-        fwrap.appendChild(reveal);
-      } else {
-        fwrap.appendChild(el("div", "why", free.a));
-        var frate = el("div", "rate");
-        [["got", "g", "Said it clean"], ["shaky", "s", "Roughly, with gaps"], ["no", "n", "Could not say it"]]
-          .forEach(function (r) {
-            var b = el("button", r[1], r[2]);
-            b.addEventListener("click", function () { rateCard(fk, r[0]); draw(); });
-            frate.appendChild(b);
-          });
-        fwrap.appendChild(frate);
-        var fwas = state.recall[fk];
-        fwrap.appendChild(el("div", "was", fwas
-          ? "Last rated " + fwas.r + " on " + fwas.at + ", seen " + fwas.n + (fwas.n === 1 ? " time." : " times.")
-          : "First time through this one."));
-      }
-      box.appendChild(fwrap);
-    }
-
-    var acts = el("div", "row-act");
-    if (!submitted) {
-      var sub = el("button", "act", "Submit");
-      sub.addEventListener("click", function () {
-        var score = 0;
-        var missed = [];
-        s.quiz.forEach(function (q, qi) { if (mine[qi] === q.a) { score += 1; } else { missed.push(qi); } });
-        mine.__submitted = true;
-        picks[s.id] = mine;
-        var qrec = { score: score, passed: score >= Math.ceil(s.quiz.length * 2 / 3), at: stampNow(), missed: missed };
-        state.quiz[s.id] = qrec;
-        state.quizHistory[s.id] = (state.quizHistory[s.id] || []).concat([qrec]);
-        markSession(s);
-        save(); draw();
-      });
-      acts.appendChild(sub);
-      acts.appendChild(el("span", "sm dim", "The unknown option is an honest answer and is recorded as one."));
-    } else {
-      var r2 = state.quiz[s.id];
-      acts.appendChild(el("span", "score " + (r2 && r2.passed ? "ok" : "no"),
-        (r2 && r2.passed ? "Passed, " : "Not yet, ") + (r2 ? r2.score : 0) + " of " + s.quiz.length));
-      var retry = el("button", "sec", "Take it again");
-      retry.addEventListener("click", function () { picks[s.id] = {}; draw(); });
-      acts.appendChild(retry);
-    }
-    box.appendChild(acts);
-    var hist2 = renderQuizHistory(s);
-    if (hist2) { box.appendChild(hist2); }
-    return box;
-  }
 
   function viewWild() {
     var v = document.getElementById("view");
@@ -8315,23 +7784,6 @@
     });
   }
 
-  var spacedFlip = false;
-  function pickSpaced() {
-    var best = null, bestAge = -1;
-    function consider(s) {
-      if (!sessionClosed(s)) { return; }
-      cardsOf(s).forEach(function (c) {
-        var r = state.recall[c.k];
-        if (!r || r.r !== "got") { return; }
-        var age = ageDays(r.at);
-        if (age === null || age < 14) { return; }
-        if (age > bestAge) { best = c; bestAge = age; }
-      });
-    }
-    eachSession(consider);
-    eachWild(consider);
-    return best;
-  }
 
   var diaWalk = { scope: null, entry: null, keys: null, i: 0, flip: false };
   function diaNav(scope) {
@@ -8833,60 +8285,6 @@
 
   /* ------------------------------------------- w3-floor-time: ten-minute floor */
 
-  var FLOOR_PROMPTS = [
-    { k: "know", t: "What you know" },
-    { k: "stop", t: "Where it stops" },
-    { k: "missing", t: "What exactly is missing" }
-  ];
-  function floorRec(key) {
-    if (!state.floor[key]) {
-      state.floor[key] = { startedAt: null, minutes: 0, know: "", stop: "", missing: "" };
-    }
-    return state.floor[key];
-  }
-  function floorPanel(key) {
-    var existing = state.floor[key];
-    var written = existing && (existing.know || existing.stop || existing.missing);
-    var wrap = el("div", "floor");
-    var link = el("button", "xp" + (written ? " has" : ""),
-      open["floor:" + key] ? "Hide the ten-minute floor" : (written ? "Ten-minute floor: written" : "Give it ten minutes first"));
-    link.addEventListener("click", function () { open["floor:" + key] = !open["floor:" + key]; draw(); });
-    wrap.appendChild(link);
-    if (open["floor:" + key]) {
-      var r = floorRec(key);
-      var live = r.startedAt ? Math.max(0, Math.round((Date.now() - r.startedAt) / 60000)) : 0;
-      var box = el("div", "credit floorbox");
-      box.appendChild(el("p", "sm dim",
-        "Ten minutes of written attempt before this counts as unknown \u2014 what you know, where it stops, what exactly is missing."));
-      var timeLine = el("span", "", "Time on this: ");
-      var timeNum = document.createElement("b");
-      timeNum.id = "floorElapsed_" + key;
-      timeNum.textContent = fmtMinutes(r.minutes + live) + (r.startedAt ? " \u2014 running" : "");
-      timeLine.appendChild(timeNum);
-      box.appendChild(timeLine);
-      var startBtn = el("button", "sec", r.startedAt ? "Stop" : "Start the ten minutes");
-      startBtn.addEventListener("click", function () {
-        if (r.startedAt) {
-          r.minutes += Math.max(0, Math.round((Date.now() - r.startedAt) / 60000));
-          r.startedAt = null;
-        } else {
-          r.startedAt = Date.now();
-        }
-        save(); draw();
-      });
-      box.appendChild(startBtn);
-      FLOOR_PROMPTS.forEach(function (fp) {
-        box.appendChild(el("div", "sm dim", fp.t));
-        var ta = document.createElement("textarea");
-        ta.value = r[fp.k] || "";
-        ta.placeholder = fp.t + ", in your own words";
-        ta.addEventListener("input", function () { r[fp.k] = ta.value; save(); });
-        box.appendChild(ta);
-      });
-      wrap.appendChild(box);
-    }
-    return wrap;
-  }
 
   /* --------------------------------------------------------- export tracking */
 
@@ -9044,30 +8442,6 @@
     return p;
   }
 
-  function renderQuizHistory(s) {
-    var hist = state.quizHistory[s.id];
-    if (!hist || !hist.length) { return null; }
-    var box = el("div", "qhist");
-    var head = el("button", "sec", open[s.id + ":qh"] ? "Hide history" : "History (" + hist.length + ")");
-    head.addEventListener("click", function () { open[s.id + ":qh"] = !open[s.id + ":qh"]; draw(); });
-    box.appendChild(head);
-    if (open[s.id + ":qh"]) {
-      var ul = el("ul", "list");
-      hist.slice().reverse().forEach(function (r) {
-        var li = document.createElement("li");
-        li.appendChild(el("span", "wh", stampShort(r.at)));
-        var d = el("div");
-        d.appendChild(el("div", "", r.score + " of " + s.quiz.length + (r.passed ? ", passed" : ", not yet")));
-        if (r.missed && r.missed.length) {
-          d.appendChild(el("div", "sm dim", "Missed " + r.missed.map(function (qi) { return "Q" + (qi + 1); }).join(", ")));
-        }
-        li.appendChild(d);
-        ul.appendChild(li);
-      });
-      box.appendChild(ul);
-    }
-    return box;
-  }
 
   /* ------------------------------------------------------------- the map */
 
@@ -9455,15 +8829,6 @@
           if (!c.running) { return; }
           var elText = document.getElementById("clockElapsed_" + id);
           if (elText) { elText.textContent = fmtMinutes(c.minutes + clockLiveMinutes(id)) + " \u2014 running"; }
-        });
-        Object.keys(state.floor).forEach(function (key) {
-          var r = state.floor[key];
-          if (!r.startedAt) { return; }
-          var elText = document.getElementById("floorElapsed_" + key);
-          if (elText) {
-            var liveMin = Math.max(0, Math.round((Date.now() - r.startedAt) / 60000));
-            elText.textContent = fmtMinutes(r.minutes + liveMin) + " \u2014 running";
-          }
         });
       } catch (err) { console.error("Clock tick failed", err); }
     }, 30000);

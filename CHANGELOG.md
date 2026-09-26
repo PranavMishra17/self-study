@@ -261,3 +261,12 @@ Chosen by Pranav from proposals: three open questions a day on the home page (re
 the single spaced card), a figure to explain in a minute, the book (a compact page per
 closed week, printable, `#/book`), the sky (sessions as stars, `#/sky`), a livery for the
 craft per closed week, and a lift-off when a session closes. None adds planned work.
+
+**2026-09-26 — One type system for a step; Prep questions teach before they script; dead code out.**
+A step in the tracker now uses one face, three sizes and three greys: a quiet grid for
+where, done-when and skip; one list style for reading, guide links and Alaap links; one
+toggle for the answer. DDIA references follow the 2nd edition the plan uses (the research
+agents had cited 1st-edition chapter numbers). On the ZenML page every technical question
+opens to its point, its figure, what to read and the guide technique, with the spoken
+answer behind the same toggle. About 620 lines of unused tracker code went: the old quiz
+panel, closers, spaced card, answer boxes and their styles.
