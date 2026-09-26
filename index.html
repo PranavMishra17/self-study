@@ -7,6 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="brand/accelerate.svg">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="figures/figures.css">
+<link rel="stylesheet" href="figures/viewer.css">
 <link rel="alternate icon" type="image/png" href="brand/accelerate-32.png">
 <style>
   :root {
@@ -676,7 +677,10 @@
     </main>
   </div>
 </div>
+<script src="figures/icons.js"></script>
 <script src="figures/figures.js"></script>
+<script src="figures/notes.js"></script>
+<script src="figures/viewer.js"></script>
 <script src="data/reading.js"></script>
 <script>
 (function () {
@@ -5679,6 +5683,7 @@
     var d = DIA[key];
     if (!d) { return null; }
     var f = el("div", "plate");
+    f.setAttribute("data-fig", key);
     f.appendChild(el("div", "pn", "Figure " + n + ". " + d.title));
     f.appendChild(htm("div", "", d.svg()));
     f.appendChild(htm("div", "cap", d.cap));

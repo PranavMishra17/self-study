@@ -11,39 +11,82 @@ var FIGURES = (function () {
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
+  /* Every box is a node (data-n, from its id or its label) and every arrow an edge
+     (data-e, "from>to"), so figures/viewer.js can explain them. Arrows are drawn before
+     all their boxes exist, so each one is matched to the nearest boxes when the figure
+     is framed. */
+  var drawn = [];
+  function slug(t) { return String(t).toLowerCase().replace(/<[^>]+>/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40); }
+  function distTo(b, x, y) {
+    var dx = Math.max(b.x - x, 0, x - (b.x + b.w)), dy = Math.max(b.y - y, 0, y - (b.y + b.h));
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  function nearest(x, y) {
+    var best = null, bd = 28;
+    drawn.forEach(function (b) { var d = distTo(b, x, y); if (d < bd) { bd = d; best = b; } });
+    return best;
+  }
   S.frame = function (w, h, body) {
+    var seen = {};
+    body = body.replace(/data-e="@([\d.\-]+),([\d.\-]+),([\d.\-]+),([\d.\-]+)(?:\|([^"]*))?"/g, function (m, x1, y1, x2, y2, id) {
+      if (id) { return 'data-e="' + id + '"'; }
+      var a = nearest(+x1, +y1), c = nearest(+x2, +y2);
+      if (!a || !c || a === c) { return 'data-e-free=""'; }
+      var e = a.id + ">" + c.id;
+      seen[e] = (seen[e] || 0) + 1;
+      return 'data-e="' + e + (seen[e] > 1 ? "#" + seen[e] : "") + '"';
+    });
+    drawn = [];
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" role="img">' +
       '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">' +
       '<path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>' +
       '<g color="var(--faint)">' + body + '</g></svg>';
   };
+  /* a Lucide icon (figures/icons.js), size in px, coloured by tone */
+  S.icon = function (name, x, y, size, tone) {
+    var inner = (typeof ICONS !== "undefined" && ICONS[name]) || "";
+    if (!inner) { return ""; }
+    var k = (size || 18) / 24;
+    return '<g class="d-ic d-ic-' + (tone || "flat") + '" transform="translate(' + x + ' ' + y + ') scale(' + k + ')" fill="none" stroke="currentColor"' +
+      ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</g>';
+  };
+  /* wrap any markup as a node, for figures that are plots rather than boxes */
+  S.node = function (id, markup) { return '<g data-n="' + id + '">' + markup + '</g>'; };
   S.box = function (o) {
     var tone = o.tone || "flat";
     var r = o.r === undefined ? 0 : o.r;
+    var id = o.id || (o.label ? slug(o.label) : "");
+    if (id) { drawn.push({ id: id, x: o.x, y: o.y, w: o.w, h: o.h }); }
     var s = '<rect x="' + o.x + '" y="' + o.y + '" width="' + o.w + '" height="' + o.h + '" rx="' + r +
       '" class="d-fill-' + tone + ' d-str-' + tone + '" stroke-width="1.25"' +
       (o.dash ? ' stroke-dasharray="4 3"' : '') + '/>';
+    var tx = o.x + o.w / 2;
+    if (o.icon) {
+      var isz = Math.min(20, o.h - 14);
+      s += S.icon(o.icon, o.x + 10, o.y + (o.h - isz) / 2, isz, tone);
+      tx = o.x + 14 + isz + (o.w - 14 - isz) / 2;
+    }
     if (o.label) {
       var cy = o.y + o.h / 2 + (o.sub ? -3 : 4);
-      s += '<text x="' + (o.x + o.w / 2) + '" y="' + cy + '" text-anchor="middle" class="d-t-b">' + esc(o.label) + '</text>';
+      s += '<text x="' + tx + '" y="' + cy + '" text-anchor="middle" class="d-t-b">' + esc(o.label) + '</text>';
       if (o.sub) {
-        s += '<text x="' + (o.x + o.w / 2) + '" y="' + (cy + 15) + '" text-anchor="middle" class="d-t-s">' + esc(o.sub) + '</text>';
+        s += '<text x="' + tx + '" y="' + (cy + 15) + '" text-anchor="middle" class="d-t-s">' + esc(o.sub) + '</text>';
       }
     }
-    return s;
+    return id ? '<g data-n="' + id + '">' + s + '</g>' : s;
   };
   S.arrow = function (x1, y1, x2, y2, o) {
     o = o || {};
     var d = o.curve
       ? "M" + x1 + "," + y1 + " Q" + ((x1 + x2) / 2) + "," + (Math.min(y1, y2) - o.curve) + " " + x2 + "," + y2
       : "M" + x1 + "," + y1 + " L" + x2 + "," + y2;
-    var s = '<path d="' + d + '" class="d-line" stroke-width="1.25" marker-end="url(#ah)"' +
+    var s = '<path d="' + d + '" class="fv-hit"/><path d="' + d + '" class="d-line" stroke-width="1.25" marker-end="url(#ah)"' +
       (o.dash ? ' stroke-dasharray="4 3"' : '') + '/>';
     if (o.label) {
       var mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - (o.curve ? o.curve * 0.55 : 0) - 6;
       s += '<text x="' + mx + '" y="' + my + '" text-anchor="middle" class="d-t-s">' + esc(o.label) + '</text>';
     }
-    return s;
+    return '<g data-e="@' + x1 + ',' + y1 + ',' + x2 + ',' + y2 + (o.id ? "|" + o.id : "") + '">' + s + '</g>';
   };
   S.text = function (x, y, t, cls, anchor) {
     return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "start") + '" class="' +
@@ -909,5 +952,5 @@ var FIGURES = (function () {
     svg: function () { return "<svg viewBox=\"0 0 960 220\" role=\"img\" aria-label=\"Timeline: March 2026 ZenML launches Kitaru as a durable execution runtime; August 2026 Kitaru repositions to replay-based evals; September 2026 shipping continues with a coding-agent sandbox blog post.\">\n          <line x1=\"40\" y1=\"110\" x2=\"920\" y2=\"110\" stroke=\"currentColor\" stroke-opacity=\".3\" stroke-width=\"1.5\"/>\n\n          <circle cx=\"120\" cy=\"110\" r=\"6\" fill=\"#B8400A\"/>\n          <text x=\"120\" y=\"88\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"11\" font-weight=\"600\" fill=\"#B8400A\">Mar 2026</text>\n          <text x=\"120\" y=\"140\" text-anchor=\"middle\" font-family=\"IBM Plex Sans, sans-serif\" font-size=\"12\" fill=\"currentColor\">Pivot 1</text>\n          <text x=\"120\" y=\"158\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".68\">ZenML &#8594; Kitaru</text>\n          <text x=\"120\" y=\"173\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".68\">durable runtime</text>\n          <text x=\"120\" y=\"188\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".68\">@flow / @checkpoint</text>\n\n          <circle cx=\"400\" cy=\"110\" r=\"5\" fill=\"currentColor\" fill-opacity=\".5\"/>\n          <text x=\"400\" y=\"88\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"11\" fill=\"currentColor\" fill-opacity=\".62\">Apr&#8211;Jul</text>\n          <text x=\"400\" y=\"140\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".62\">competitor content vs</text>\n          <text x=\"400\" y=\"155\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".62\">Temporal, Inngest, Trigger.dev</text>\n\n          <circle cx=\"660\" cy=\"110\" r=\"8\" fill=\"#0B6B6B\"/>\n          <text x=\"660\" y=\"88\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"11\" font-weight=\"600\" fill=\"#0B6B6B\">Aug 18 2026</text>\n          <text x=\"660\" y=\"140\" text-anchor=\"middle\" font-family=\"IBM Plex Sans, sans-serif\" font-size=\"12\" font-weight=\"600\" fill=\"#0B6B6B\">Pivot 2</text>\n          <text x=\"660\" y=\"158\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".72\">replay-based evals</text>\n          <text x=\"660\" y=\"173\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".72\">Workers replace Stacks</text>\n          <text x=\"660\" y=\"188\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"#9E1739\">never posted to HN</text>\n\n          <circle cx=\"880\" cy=\"110\" r=\"6\" fill=\"#B8400A\"/>\n          <text x=\"880\" y=\"88\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"11\" font-weight=\"600\" fill=\"#B8400A\">Sep 2026</text>\n          <text x=\"880\" y=\"140\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".72\">coding-agent</text>\n          <text x=\"880\" y=\"155\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10\" fill=\"currentColor\" fill-opacity=\".72\">sandbox research</text>\n\n          <rect x=\"600\" y=\"28\" width=\"330\" height=\"26\" rx=\"4\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".3\"/>\n          <text x=\"614\" y=\"46\" font-family=\"IBM Plex Mono, monospace\" font-size=\"10.5\" fill=\"currentColor\" fill-opacity=\".7\">comparison content switches to Braintrust / Arize</text>\n        </svg>"; }
   };
 
-  return { S: S, DIA: DIA };
+  return { S: S, DIA: DIA, slug: slug };
 })();

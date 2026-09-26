@@ -144,6 +144,10 @@ def guide_pieces():
 
 # ------------------------------------------------------------------ architecture
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "figures"))
+from annotate import annotate  # noqa: E402
+
+
 def architecture():
     src = read("architecture.html")
     css = re.search(r"/\* --- svg primitives --- \*/(.*?)</style>", src, re.S).group(1)
@@ -152,6 +156,8 @@ def architecture():
     for m in re.finditer(r'<h2 id="(\w+)">(.*?)</h2>\s*(<p class="lede">.*?</p>)?\s*(<figure>.*?</figure>)', src, re.S):
         fid, title, lede, fig = m.group(1), m.group(2), m.group(3) or "", m.group(4)
         fig = re.sub(r'<a href="(https?://[^"]+)">', r'<a href="\1" target="_blank" rel="noopener">', fig)
+        # explorable in the figure viewer: nodes and edges named, the figure keyed
+        fig = annotate(fig).replace("<figure", '<figure data-fig="al:arch-%s"' % fid, 1)
         figs[fid] = {"title": title, "lede": lede, "fig": fig}
         order.append(fid)
     head = re.search(r"<h1>(.*?)</h1>", src).group(1)
@@ -216,19 +222,23 @@ def diagram(key):
         bc = (B[0] + B[2] / 2, B[1] + B[3] / 2)
         x1, y1 = edge_point(A, *bc)
         x2, y2 = edge_point(B, *ac)
-        out.append('<path class="%s" d="M%.0f %.0f L%.0f %.0f"/>' % (cls, x1, y1, x2, y2))
+        d = "M%.0f %.0f L%.0f %.0f" % (x1, y1, x2, y2)
+        out.append('<g data-e="%s>%s"><path class="fv-hit" d="%s"/><path class="%s" d="%s"/>' % (a, b, d, cls, d))
         if label:
             out.append('<text class="tm lbl" x="%.0f" y="%.0f">%s</text>' % ((x1 + x2) / 2, (y1 + y2) / 2 - 7, esc(label)))
+        out.append("</g>")
     for n in spec["nodes"]:
         x, y, w, h = box[n["id"]]
+        out.append('<g data-n="%s">' % n["id"])
         out.append('<rect class="%s" x="%d" y="%d" width="%d" height="%d" rx="9"/>' % (n["cls"], x, y, w, h))
         if n.get("sub"):
             out.append('<text class="t" x="%d" y="%d">%s</text>' % (x + w / 2, y + 20, esc(n["label"])))
             out.append('<text class="tm" x="%d" y="%d">%s</text>' % (x + w / 2, y + 38, esc(n["sub"])))
         else:
             out.append('<text class="t" x="%d" y="%d">%s</text>' % (x + w / 2, y + h / 2, esc(n["label"])))
+        out.append("</g>")
     out.append("</svg>")
-    return '<figure class="plan-fig">%s<figcaption>%s</figcaption></figure>' % ("\n".join(out), spec["caption"])
+    return '<figure class="plan-fig" data-fig="al:%s">%s<figcaption>%s</figcaption></figure>' % (key, "\n".join(out), spec["caption"])
 
 
 def overview():

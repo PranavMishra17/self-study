@@ -12,3 +12,7 @@
 .d-t-s { fill: var(--dim, #6b6a65); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 11px; }
 .d-t-b { fill: var(--ink, #1a1a19); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 12px; font-weight: 700; }
 .d-t-x { fill: var(--faint, #a2a09a); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 10.5px; }
+/* icons inside figures take their tone's stroke colour */
+.d-ic-sys { color: var(--sys, #3f6ea8); } .d-ic-math { color: var(--math, #3f7a55); } .d-ic-alaap { color: var(--alaap, #a85f3f); }
+.d-ic-req { color: var(--req, #8a6f2f); } .d-ic-iv { color: var(--iv, #7a3b5c); } .d-ic-now, .d-ic-flat { color: var(--ink, #1a1a19); }
+.fv-hit { stroke: transparent; stroke-width: 12; fill: none; }

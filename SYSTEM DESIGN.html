@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>System design delivery, worked end to end</title>
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="figures/viewer.css">
+<script src="figures/notes-sd.js" defer></script>
+<script src="figures/viewer.js" defer></script>
 <link rel="icon" type="image/svg+xml" href="brand/system-design.svg">
 <style>
 :root {
@@ -4254,7 +4257,10 @@ function renderDiagram(block, opts) {
         maxY = Math.max(maxY, peakY + 14);
       }
       if (edge.async) hasAsync = true;
-      edgeLayer.append(svgEl("path", { d, class: edge.async ? "dg-edge async" : "dg-edge", "marker-end": `url(#${uid}-arrow)` }));
+      const eid = `${edge.from}>${edge.to}` + (slot ? `#${slot + 1}` : "");
+      edgeLayer.append(svgEl("g", { "data-e": eid },
+        svgEl("path", { d, class: "fv-hit" }),
+        svgEl("path", { d, class: edge.async ? "dg-edge async" : "dg-edge", "marker-end": `url(#${uid}-arrow)` })));
       if (edge.label) {
         const lx = bend ? 0.25 * start.x + 0.5 * control.x + 0.25 * end.x : (start.x + end.x) / 2;
         /* A label on a level, straight edge sits just above the line rather than across it. */
@@ -4291,8 +4297,7 @@ function renderDiagram(block, opts) {
         texts.push(svgEl("text", { x: cx, y: (cursor + cfg.subLine * 0.76).toFixed(1), class: "dg-sub", "text-anchor": "middle" }, line));
         cursor += cfg.subLine;
       }
-      nodeLayer.append(svgEl("g", { class: `dg-node tone-${tone}` },
-        svgEl("title", null, node.sub ? `${node.label}: ${node.sub}` : node.label),
+      nodeLayer.append(svgEl("g", { class: `dg-node tone-${tone}`, "data-n": node.id },
         svgEl("rect", { x: o.x, y: o.y, width: cfg.boxW, height: cfg.boxH, rx: cfg.boxRadius, class: "dg-box", filter: `url(#${uid}-rough)` }),
         texts));
     });
@@ -4305,14 +4310,14 @@ function renderDiagram(block, opts) {
     "data-width": width,
     style: mode === "full" ? `min-width:${Math.round(width * cfg.minWidthRatio)}px` : mode === "mini" ? `max-width:${width}px` : null
   }, defs, edgeLayer, nodeLayer, labelLayer);
-  if (mode !== "full") return h("figure", { class: `diagram ${mode}` }, svg);
+  if (mode !== "full") return h("figure", { class: `diagram ${mode}`, "data-fig": block.figKey || null }, svg);
 
   const legendItems = [...usedTones].map((tone) => h("li", null, h("span", { class: `swatch tone-${tone}`, "aria-hidden": "true" }), tones[tone]));
   if (hasAsync) legendItems.push(h("li", null, h("span", { class: "swatch edge-async", "aria-hidden": "true" }), LABELS.asyncEdge));
 
   return h("div", { class: "blk blk-diagram" },
     blockTitle(block.title),
-    h("figure", { class: "diagram" }, svg),
+    h("figure", { class: "diagram", "data-fig": block.figKey || null }, svg),
     h("ul", { class: "legend", "aria-label": "Diagram legend" }, legendItems));
 }
 
@@ -5150,6 +5155,27 @@ function handleRoute() {
 /* Validation and boot                                                 */
 /* ------------------------------------------------------------------ */
 
+/* Every diagram gets a stable key for its notes (figures/notes-sd.js): "sd:" + the id of
+   the technique or design it belongs to, plus its title when it has one. */
+function assignFigKeys() {
+  const seen = new Map();
+  const slug = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  (function walk(o, owner) {
+    if (Array.isArray(o)) { o.forEach((x) => walk(x, owner)); return; }
+    if (!o || typeof o !== "object") return;
+    if (Array.isArray(o.nodes) && Array.isArray(o.edges)) {
+      let key = "sd:" + owner + (o.title ? ":" + slug(o.title) : "");
+      const n = (seen.get(key) || 0) + 1;
+      seen.set(key, n);
+      if (n > 1) key += "-" + n;
+      o.figKey = key;
+      return;
+    }
+    const next = typeof o.id === "string" ? o.id : owner;
+    for (const k of Object.keys(o)) walk(o[k], next);
+  })(GUIDE, "guide");
+}
+
 function validateGuide() {
   const seen = new Set();
   let issues = 0;
@@ -5204,6 +5230,7 @@ function boot() {
   safeRun("boot", () => {
     log.info("Starting guide", { examples: GUIDE.examples.length, steps: GUIDE.framework.length });
     validateGuide();
+    assignFigKeys();
     safeRun("render tabs", renderTabs);
     safeRun("render footer", renderFooter);
     window.addEventListener("hashchange", handleRoute);
