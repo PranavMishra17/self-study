@@ -243,3 +243,15 @@ as a popup, one open question at a time, five to eight per session. Arrows move
 between cards; Shift and an arrow moves between sessions. Progress keys are
 unchanged, so earlier ticks, answers and quiz results carry over. No change to the
 plan or to `CHARTER.md`.
+
+**2026-09-26 — Sessions as collapsible step lists, with reading and figures on every step.**
+The one-card-at-a-time layout from the day before is replaced by what worked on the ZenML
+page: every step collapses and opens to what it is, its figure, what to read with minutes,
+the system design technique it uses and why, and the answer behind a toggle. Reading for
+all 135 steps and study items in weeks 1 to 5 and the wildcard now lives in
+`data/reading.js`: 147 outside links, 58 AI Engineering from Scratch lessons, 82 system
+design techniques, every URL checked. Figures moved into `figures/figures.js`, one registry
+shared with the interview pages, with nine new ones for the ZenML sessions; 29 figure
+ideas are recorded for the figure pass. Reading time shows as optional on top of each
+session's planned hours, not inside them, so the plan's totals are unchanged. No change to
+`CHARTER.md`.

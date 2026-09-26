@@ -7153,7 +7153,7 @@
     kick.appendChild(sw);
     kick.appendChild(el("span", "", wild ? (s.forWhat || "Wildcard") : "Week " + (view.week + 1) + ", " + range(view.week)));
     var xm = extraMinutes(s);
-    kick.appendChild(el("span", "", s.len + " planned" + (xm ? ", and " + mins(xm) + " of added reading" : "")));
+    kick.appendChild(el("span", "", s.len + " planned" + (xm ? ", plus " + mins(xm) + " of optional reading" : "")));
     if (state.done[s.id]) { kick.appendChild(el("span", "posted", "Posted " + state.done[s.id])); }
     if (isFolded(s)) { kick.appendChild(el("span", "folded-note", "Folded into wildcard work on " + state.folded[s.id].at)); }
     head.appendChild(kick);

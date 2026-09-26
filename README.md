@@ -85,6 +85,13 @@ printing. It is what to read on the morning of an interview, with the laptop shu
 Both live at `#/drill/<scope>` and `#/sheet/<scope>`, where scope is a session id such as
 `wc13`, a week such as `week1`, or `wc` for the whole wildcard.
 
+**A session page.** Every step starts shut, so a session reads as its outline; Open all and
+Close all sit above the list. Open, a step gives what it is, the figure that draws it, what
+to read with minutes, where it sits in the system design guide, and the answer, behind its
+own toggle until you have tried, with a Had it / Partly / Missed it rating that feeds Drill.
+The tick box marks a step done without opening it. At the end: the quiz, one open
+question at a time in a pop-up, then kept links and the requeue.
+
 **Parked sessions.** When an interview has happened, its unfinished sessions are parked:
 still counted toward wildcard credit and hours, still openable from the wildcard page, no
 longer listed as work.
@@ -109,6 +116,11 @@ shortcut, `system-design.svg` (the same craft, colours inverted) for the guide, 
 `alaap.svg` (the craft in Alaap's palette) for the study plan. The fifteen directions the
 first was chosen from are in `brand/concepts/`.
 
+`data/reading.js` holds the reading added on top of each step, keyed like progress
+(`w2a:0`, `wc3:s2`): outside links with minutes, AI Engineering from Scratch lessons, system
+design techniques with a line on why, figure keys, and figure ideas for a later pass.
+Every URL in it was opened and checked. The tracker and the interview pages both read it.
+
 ## Working on this in Claude Code
 
 Read `CHARTER.md`, then `CHANGELOG.md`, then the newest file in `diagnostics/`, then
@@ -120,8 +132,10 @@ anything.
 1. **Config**: start date, storage key, tracks and their colours, short planner labels.
 2. **Resources**: `L` for the planned weeks and `R` for wildcard study lists. Add a link
    once and reference it by key.
-3. **Diagrams**: `S`, a handful of SVG primitives, and `DIA`, each figure with a title, a
-   caption and a builder. Sessions reference figures by key.
+3. **Diagrams**: not here. They live in `figures/figures.js` (`S`, the SVG primitives, and
+   `DIA`, each figure with a title, a caption and a builder) and `figures/figures.css`,
+   shared with the interview pages. A figure is drawn once and referenced by key
+   everywhere, so improving one improves it on every page.
 4. **Plan**: `PLAN`, five weeks of three sessions, plus any extra practice sessions. A
    week's colour is read from its first three.
 5. **Wildcard**: `WILDCARD.sessions`, the same shape plus `forWhat` and, once an
