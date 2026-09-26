@@ -1,0 +1,308 @@
+{
+ "session": {
+  "id": "w2a",
+  "track": "Systems",
+  "len": "2h 30m",
+  "est": 150,
+  "name": "How work splits",
+  "blurb": "Sharding, skew, and why fan-out turns a p99 into the typical case.",
+  "intro": "The honest answer to make it a hundred million usually begins with stop doing it on one machine. That part is obvious. What you split on, and what goes wrong when the split is uneven, is not.",
+  "diagrams": [
+   "skew",
+   "tail"
+  ],
+  "steps": [
+   {
+    "t": "Read DDIA chapter 6 in full",
+    "close": [
+     {
+      "k": "word",
+      "q": "What is the name for the partitioning scheme where a hash of the key picks the partition?",
+      "a": "Hash partitioning"
+     },
+     {
+      "k": "blank",
+      "q": "___ partitioning keeps a contiguous range of keys on one partition, which keeps range queries efficient but concentrates load if access is skewed.",
+      "a": "Key-range"
+     },
+     {
+      "k": "why",
+      "q": "Why must a rebalancing strategy avoid tying a key's partition to the total partition count?",
+      "a": "Tying assignment to the current count means changing that count forces almost every key to move, rather than a share proportional to the change."
+     },
+     {
+      "k": "pick",
+      "q": "You need frequent range scans over sorted keys and are choosing how to partition. Which do you pick?",
+      "o": [
+       "Hash partitioning, since it distributes load evenly",
+       "Key-range partitioning, since it keeps a scanned range together on one or few partitions",
+       "Round robin, since it is simplest to implement"
+      ],
+      "a": 1,
+      "why": "A hash scatters neighbouring keys across partitions, destroying the locality a range scan needs; key-range partitioning is exactly the scheme built to keep that locality."
+     },
+     {
+      "k": "short",
+      "q": "One sentence: what must a good rebalancing strategy avoid moving?",
+      "a": "Far more data than the change in partition count actually requires."
+     }
+    ],
+    "d": "Partitioning, partition keys, rebalancing and request routing. The chapter that pays for itself.",
+    "m": 45,
+    "where": "DDIA 2e chapter 7, 'Sharding' (confirmed) - index: sharding; partitioning; hot spots; skewed workload; rebalancing. Read the key-value sharding sections, then skewed workloads and relieving hot spots, then request routing. Secondary Indexes, Rebalancing Partitions, Request Routing",
+    "out": "key-range versus hash partitioning distinguished in your own words, plus what a rebalancing strategy must avoid",
+    "links": [
+     {
+      "book": "DDIA, 2e chapter 7, Sharding"
+     }
+    ],
+    "ans": [
+     "Key-range partitioning: each partition owns a contiguous range of keys, which keeps range queries efficient but concentrates load if access is skewed toward one range",
+     "Hash partitioning: a hash of the key picks the partition, which spreads load evenly but destroys the ability to do efficient range scans",
+     "A rebalancing strategy must avoid moving far more data than the change in partition count requires",
+     "It must also avoid tying a key's partition to the total partition count, since that forces almost everything to move whenever the count changes"
+    ]
+   },
+   {
+    "t": "Understand hot partitions as a key-choice problem",
+    "sd": [
+     {
+      "v": "overview",
+      "a": "pattern-scaling-writes",
+      "why": "Sharding, consistent hashing, and the hot partition as its own named technique."
+     }
+    ],
+    "close": [
+     {
+      "k": "figure",
+      "q": "In the skew figure, what does the one tall bar represent, and what happens to the other seven?",
+      "a": "It is the one user carrying four percent of all events; the other seven partitions stay well under the capacity line, idle."
+     },
+     {
+      "k": "blank",
+      "q": "Hashing spreads the space of possible ___ evenly across partitions; it does nothing about how much traffic each actual one carries.",
+      "a": "keys"
+     },
+     {
+      "k": "why",
+      "q": "Why does a key that looks uniform in the abstract turn out not to be uniform in production?",
+      "a": "Real usage follows a power law rather than a flat distribution, so one customer, time window or category dominates traffic even though the key space itself hashes evenly."
+     },
+     {
+      "k": "pick",
+      "q": "A good hash function is applied to a heavily skewed key. What happens to the dominant key's events?",
+      "o": [
+       "They spread evenly across partitions because the hash is good",
+       "They all land on the same partition regardless of how good the hash is",
+       "They are rejected as duplicate load"
+      ],
+      "a": 1,
+      "why": "A hash function distributes the key space, not the traffic each key carries; a good hash still sends every event for one dominant key to a single partition."
+     },
+     {
+      "k": "num",
+      "q": "How many partitions does the skew figure draw?",
+      "a": "Eight"
+     }
+    ],
+    "d": "A key that looks uniform in the abstract is rarely uniform in production, because real usage is power-law. See the diagram: hashing spreads keys, not traffic.",
+    "m": 15,
+    "where": "No separate resource - chapter 6's 'Skewed Workloads and Relieving Hot Spots' section and the skew diagram above",
+    "out": "one sentence on why hashing spreads keys but not necessarily traffic",
+    "ans": "A key that looks uniform in the abstract is rarely uniform in production, because real usage follows a power law rather than a flat distribution — one customer, one time window or one category dominates. Hashing spreads the space of possible keys evenly across partitions, but it does nothing about how much traffic each actual key carries, so a good hash function still lands every event for the one dominant key on a single partition, and that partition becomes the ceiling for the whole system."
+   },
+   {
+    "t": "Learn fan-out and tail-latency amplification",
+    "sd": [
+     {
+      "v": "overview",
+      "a": "pattern-scaling-reads",
+      "why": "Replicas, caches and hot keys: the read side of the same problem."
+     }
+    ],
+    "close": [
+     {
+      "k": "num",
+      "q": "0.99 to the power 100 comes out to roughly what percentage?",
+      "a": "About 37 percent"
+     },
+     {
+      "k": "figure",
+      "q": "In the tail figure, how many of the twelve drawn shards are shown slow?",
+      "a": "Two of the twelve, standing in for each real shard's one-in-a-hundred chance of being slow at any moment."
+     },
+     {
+      "k": "why",
+      "q": "Why does a component's one-percent-slow tail become the system's typical case once a request fans out to a hundred shards?",
+      "a": "The request is only fast if all hundred shards are independently fast, and multiplying a 99 percent chance by itself a hundred times drives that down to about 37 percent, so roughly 63 percent of requests hit at least one slow shard."
+     },
+     {
+      "k": "blank",
+      "q": "About ___ percent of requests are slow when fanning out to a hundred shards each independently slow one percent of the time.",
+      "a": "63"
+     },
+     {
+      "k": "pick",
+      "q": "You cut the fan-out from 100 shards to 20, with the same one-percent-slow rate per shard. What happens to the fraction of slow requests?",
+      "o": [
+       "It stays at about 63 percent, since the per-shard rate is unchanged",
+       "It drops sharply, to roughly 18 percent, since 0.99 to the power 20 is about 82 percent",
+       "It rises, since fewer shards means less redundancy"
+      ],
+      "a": 1,
+      "why": "Tail amplification scales with how many independent chances there are to hit the tail; at fan-out 20, 0.99 to the power 20 is about 0.82, so only about 18 percent of requests hit a slow shard."
+     }
+    ],
+    "d": "The second diagram is the whole argument. It is also one of the most useful things you can say out loud in a systems interview, because it shows you think about systems rather than components.",
+    "m": 20,
+    "where": "DDIA 2e - index: tail latency amplification; percentiles. The fan-out discussion inside the response-time sections, plus the tail diagram above",
+    "out": "the 63 percent number reproduced from 0.99 to the power 100, and one sentence on why a component's p99 becomes the system's typical case",
+    "links": [
+     {
+      "label": "Latency numbers",
+      "url": "https://colin-scott.github.io/personal_website/research/interactive_latency.html"
+     }
+    ],
+    "ans": "If a request fans out to 100 shards and waits for all of them, the request is fast only when every one of the 100 shards is fast. Each shard is slow one percent of the time, so each is fast with probability 0.99, and the chance all 100 are independently fast is 0.99 to the power 100. Using natural logs, the natural log of 0.99 is about minus 0.01, multiplied by 100 gives about minus 1.005, and e to the power minus 1.005 is about 0.366 — so there is roughly a 37 percent chance every shard is fast, and about 63 percent of requests hit at least one slow shard and are themselves slow. A component's one-percent-slow tail becomes the system's typical case, because fan-out multiplies the chance of hitting that tail by the number of things being fanned out to."
+   },
+   {
+    "t": "Design the sharding for your eval harness at a hundred million replays",
+    "sd": [
+     {
+      "v": "ticketmaster",
+      "a": "deepdives",
+      "why": "Surges for popular events: sharding and load under a spike, worked through."
+     }
+    ],
+    "close": [
+     {
+      "k": "word",
+      "q": "What key does the design choose to partition the eval harness by?",
+      "a": "Scenario id"
+     },
+     {
+      "k": "why",
+      "q": "Why partition by scenario id rather than by a hash of the whole request?",
+      "a": "The eval harness's natural unit of comparison is the scenario, so keeping all of one scenario's replays on the same shard keeps aggregation for it local instead of scattered across the cluster."
+     },
+     {
+      "k": "blank",
+      "q": "If one scenario family is a thousand times more common than the rest, its shard becomes the hot partition and the ___ for the whole run.",
+      "a": "ceiling"
+     },
+     {
+      "k": "pick",
+      "q": "The default happy-path scenario turns out a thousand times more common than any other. What does the design do about it?",
+      "o": [
+       "Move the whole harness to hash-of-user-id partitioning instead",
+       "Split that one oversized scenario family further, by hashing a secondary key such as replay id within it",
+       "Add more shards overall without changing the key"
+      ],
+      "a": 1,
+      "why": "Adding shards overall does not help, since the hot scenario's key still sends every one of its events to a single shard; the fix has to break up that one oversized key specifically."
+     },
+     {
+      "k": "short",
+      "q": "One sentence: what does splitting the oversized scenario family by a secondary key actually buy?",
+      "a": "It spreads that one family's load across several shards instead of one, while every smaller, non-skewed family stays on a single shard where its results are easy to aggregate."
+     }
+    ],
+    "d": "Decide the partition key and defend it: scenario, user, time bucket or hash. Then find the skew. What happens when one scenario family is a thousand times more common than the rest? Write it as a design.",
+    "m": 45,
+    "where": "No resource - your own design, on paper",
+    "out": "a written design: partition key chosen and defended, plus the failure mode when one scenario family is a thousand times more common",
+    "ans": "I would partition by scenario id rather than by user id or a hash of the whole request, because the eval harness's natural unit of comparison is the scenario, and grouping all replays of the same scenario onto the same shard keeps aggregation for that scenario local instead of scattered across the cluster. The failure mode is scenario skew: if one scenario family is a thousand times more common than the rest — say, the default happy-path conversation — its shard becomes the hot partition and the ceiling for the whole run, exactly like a hot user id would. To fix it I would split that one oversized scenario family further, by hashing a secondary key such as replay id within it, so its load spreads across several shards instead of one, while every other, smaller scenario family stays on a single shard where its results are easy to aggregate."
+   },
+   {
+    "t": "Answer the check: you partition by user id and one user is four percent of traffic",
+    "close": [
+     {
+      "k": "pick",
+      "q": "You shard by user id and one user is four percent of all traffic. What happens?",
+      "o": [
+       "Nothing; hashing distributes load evenly regardless of key skew",
+       "That user's shard becomes the bottleneck for the whole system, whatever the shard count",
+       "The system automatically rebalances that user's events across more shards"
+      ],
+      "a": 1,
+      "why": "Four percent of all traffic funnels into a single partition, and that partition's capacity becomes the ceiling for the entire system, the same picture as the skew figure."
+     },
+     {
+      "k": "short",
+      "q": "Name a secondary key you could hash alongside the heavy user's id to spread their traffic.",
+      "a": "Session id, or a time bucket, hashed together with the user id."
+     },
+     {
+      "k": "why",
+      "q": "Why does splitting the heavy user's traffic across several shards cost something, rather than being free?",
+      "a": "Operations that used to be a simple lookup by user id, such as reading all of one user's history in order, now have to fan out across the extra shards and be merged back together."
+     },
+     {
+      "k": "blank",
+      "q": "Splitting a hot user's traffic by a secondary key trades a simple lookup for the same ___ tradeoff as the fan-out diagram.",
+      "a": "tail-latency-amplification"
+     },
+     {
+      "k": "figure",
+      "q": "This four-percent user is drawn directly in the skew figure. What does the figure say happens to every partition that is not that user's?",
+      "a": "They stay idle - the figure notes the system's throughput becomes one partition's throughput while every other partition sits idle."
+     }
+    ],
+    "d": "What breaks, and what do you change? More than one answer is reasonable. Pick one and say what it costs.",
+    "m": 25,
+    "where": "No resource - your own answer, on paper",
+    "out": "one written fix for the four-percent user, with its cost stated",
+    "ans": "Sharding by user id means that one user carrying four percent of all traffic sends four percent of the entire system's load to a single shard, which becomes the bottleneck regardless of how many shards exist. What I would change is to split that one user's traffic further — for example by hashing user id together with a secondary key such as session id or a time bucket, so their events spread across several shards instead of landing on one. The cost is that operations which used to be a simple lookup by user id, such as reading all of one user's history in order, now have to fan out across those extra shards and be merged, which is the same tail-latency-amplification tradeoff as the fan-out diagram."
+   }
+  ],
+  "quiz": [
+   {
+    "q": "You shard by hash of user id. One user generates four percent of all events. What happens?",
+    "o": [
+     "Nothing, hashing distributes load evenly",
+     "That user's shard becomes the bottleneck for the system",
+     "Hash collisions increase",
+     "Rebalancing fixes it automatically"
+    ],
+    "a": 1,
+    "why": "Hashing spreads keys evenly, not traffic. All of one user's events land on one partition however good the hash."
+   },
+   {
+    "q": "A request fans out to 100 shards and waits for all. Each is slow one percent of the time. How often is the request slow?",
+    "o": [
+     "About one percent",
+     "About ten percent",
+     "About sixty-three percent",
+     "It depends on the network"
+    ],
+    "a": 2,
+    "why": "One minus 0.99 to the hundredth, about 63 percent. The p99 of a component becomes the typical case for the system."
+   },
+   {
+    "q": "Why avoid a partition key with low cardinality?",
+    "o": [
+     "It uses more storage",
+     "It caps how many partitions you can have and guarantees skew",
+     "Hashing is slower",
+     "It breaks replication"
+    ],
+    "a": 1,
+    "why": "Twelve possible values means at most twelve partitions, and any imbalance among them is permanent."
+   }
+  ]
+ },
+ "figures": [
+  {
+   "key": "skew",
+   "title": "Hashing spreads keys evenly. It does not spread traffic evenly.",
+   "cap": "<b>Skew is a key-choice problem, not bad luck.</b> Real usage is power-law: one customer, one scenario family, one hour of the day carries a disproportionate share. All of that key's events hash to one partition however good the hash is, and that partition becomes the ceiling for the whole system.",
+   "svg": "<svg viewBox=\"0 0 600 182\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\"><defs><marker id=\"ah\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"currentColor\"/></marker></defs><g color=\"var(--faint)\"><text x=\"0\" y=\"14\" text-anchor=\"start\" class=\"d-t-x\">PARTITION BY HASH OF USER ID</text><rect x=\"0\" y=\"104\" width=\"44\" height=\"26\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"22\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p0</text><rect x=\"60\" y=\"108\" width=\"44\" height=\"22\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"82\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p1</text><rect x=\"120\" y=\"100\" width=\"44\" height=\"30\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"142\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p2</text><rect x=\"180\" y=\"106\" width=\"44\" height=\"24\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"202\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p3</text><rect x=\"240\" y=\"34\" width=\"44\" height=\"96\" rx=\"3\" class=\"d-fill-alaap d-str-alaap\" stroke-width=\"1\"/><text x=\"262\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p4</text><rect x=\"300\" y=\"110\" width=\"44\" height=\"20\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"322\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p5</text><rect x=\"360\" y=\"102\" width=\"44\" height=\"28\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"382\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p6</text><rect x=\"420\" y=\"105\" width=\"44\" height=\"25\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"442\" y=\"146\" text-anchor=\"middle\" class=\"d-t-s\">p7</text><path d=\"M0,34 L480,34\" fill=\"none\" class=\"d-str-flat\" stroke-width=\"1.75\" stroke-dasharray=\"4 3\"/><text x=\"486\" y=\"38\" text-anchor=\"start\" class=\"d-t-x\">capacity</text><text x=\"240\" y=\"24\" text-anchor=\"middle\" class=\"d-t-b\">one user, 4% of all events</text><path d=\"M258,30 L262,60\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><text x=\"0\" y=\"172\" text-anchor=\"start\" class=\"d-t-s\">Every other partition is idle. The system's throughput is now one partition's throughput.</text></g></svg>"
+  },
+  {
+   "key": "tail",
+   "title": "One slow shard in a hundred makes almost every request slow",
+   "cap": "<b>Fan-out amplifies tails.</b> If a request waits on 100 shards and each is slow 1% of the time, the chance that none is slow is 0.99 to the power 100 — about 37%. So roughly 63% of requests are slow. The p99 of a component becomes the typical case for the system, which is why tail latency is a system property rather than a component detail.",
+   "svg": "<svg viewBox=\"0 0 600 180\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\"><defs><marker id=\"ah\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto\"><path d=\"M0,0 L10,5 L0,10 z\" fill=\"currentColor\"/></marker></defs><g color=\"var(--faint)\"><rect x=\"0\" y=\"58\" width=\"84\" height=\"38\" rx=\"0\" class=\"d-fill-now d-str-now\" stroke-width=\"1.25\"/><text x=\"42\" y=\"81\" text-anchor=\"middle\" class=\"d-t-b\">Request</text><path d=\"M86,77 L162,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"150\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L198,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"186\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L234,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"222\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L270,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"258\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L306,30\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"294\" y=\"30\" width=\"24\" height=\"74\" rx=\"3\" class=\"d-fill-alaap d-str-alaap\" stroke-width=\"1\"/><path d=\"M86,77 L342,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"330\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L378,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"366\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L414,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"402\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L450,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"438\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L486,30\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"474\" y=\"30\" width=\"24\" height=\"74\" rx=\"3\" class=\"d-fill-alaap d-str-alaap\" stroke-width=\"1\"/><path d=\"M86,77 L522,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"510\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><path d=\"M86,77 L558,48\" class=\"d-line\" stroke-width=\"1.25\" marker-end=\"url(#ah)\"/><rect x=\"546\" y=\"48\" width=\"24\" height=\"38\" rx=\"3\" class=\"d-fill-sys d-str-sys\" stroke-width=\"1\"/><text x=\"150\" y=\"126\" text-anchor=\"start\" class=\"d-t-s\">100 shards, each slow 1% of the time</text><text x=\"150\" y=\"148\" text-anchor=\"start\" class=\"d-t\">P(no shard is slow) = 0.99</text><text x=\"288\" y=\"143\" text-anchor=\"start\" class=\"d-t-s\">100</text><text x=\"312\" y=\"148\" text-anchor=\"start\" class=\"d-t\">≈ 37%</text><text x=\"150\" y=\"168\" text-anchor=\"start\" class=\"d-t-b\">So ~63% of requests wait on a slow shard.</text></g></svg>"
+  }
+ ]
+}
