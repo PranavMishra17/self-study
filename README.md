@@ -92,6 +92,19 @@ own toggle until you have tried, with a Had it / Partly / Missed it rating that 
 The tick box marks a step done without opening it. At the end: the quiz, one open
 question at a time in a pop-up, then kept links and the requeue.
 
+**Every morning.** Home opens with three open questions from sessions you have started,
+weighted towards what you rated Missed or Partly, the same three all day. Under them, one
+figure to explain out loud against a minute, then its caption to check.
+
+**The book and the sky.** When every session of a week closes, the week binds into the
+book (`#/book`): one compact page per week, the idea of every step in a line, Missed items
+marked, one week per printed sheet. The sky (`#/sky`) draws every session as a star, lit
+when it closes, with each week as a constellation and dashed lines between related ideas.
+
+**The craft.** Closing a week unlocks a livery for the craft icon, used for the header and
+the browser tab; pick one on the home page. Closing a session launches the craft across
+the page once (not with reduced motion).
+
 **Parked sessions.** When an interview has happened, its unfinished sessions are parked:
 still counted toward wildcard credit and hours, still openable from the wildcard page, no
 longer listed as work.

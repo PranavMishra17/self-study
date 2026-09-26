@@ -255,3 +255,9 @@ shared with the interview pages, with nine new ones for the ZenML sessions; 29 f
 ideas are recorded for the figure pass. Reading time shows as optional on top of each
 session's planned hours, not inside them, so the plan's totals are unchanged. No change to
 `CHARTER.md`.
+
+**2026-09-26 — Small pleasures, picked from a list.**
+Chosen by Pranav from proposals: three open questions a day on the home page (replacing
+the single spaced card), a figure to explain in a minute, the book (a compact page per
+closed week, printable, `#/book`), the sky (sessions as stars, `#/sky`), a livery for the
+craft per closed week, and a lift-off when a session closes. None adds planned work.

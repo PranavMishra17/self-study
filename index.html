@@ -278,6 +278,52 @@
   .wbq-in textarea { width: 100%; min-height: 110px; margin-top: 12px; font: inherit; padding: 10px 12px; border: 1px solid var(--line); background: var(--live); color: var(--ink); }
   .wbq-in .wb-model { margin-top: 12px; }
   .wbq-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  /* three for today, explain the figure */
+  .cold { display: grid; gap: 10px; margin: 8px 0 22px; }
+  .coldq, .xfig { background: var(--sheet); border: 1px solid var(--hair); padding: 16px 20px; font-family: "Atkinson Hyperlegible", var(--sans); }
+  .coldsrc { font-size: 13px; color: var(--dim); margin-bottom: 4px; }
+  .coldt { font-size: 17px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+  .coldq .wb-model { font-size: 15.5px; margin: 8px 0 0; }
+  .xfig { margin: 8px 0 22px; }
+  .xsvg svg { width: 100%; height: auto; display: block; max-height: 300px; }
+  .xclock { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--mid); }
+  .xcap { margin-top: 12px; font-size: 15px; line-height: 1.6; border-left: 3px solid var(--math); padding-left: 12px; }
+  /* the shelf: the book and the sky */
+  .shelf { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 22px; }
+  .shelfc { text-align: left; background: var(--live); border: 1px solid var(--hair); padding: 16px 18px; cursor: pointer; font: inherit; color: var(--ink); }
+  .shelfc:hover { border-color: var(--ink); }
+  .shelfc.dark { background: radial-gradient(circle at 70% 20%, #1A2450, #090B16 65%); color: #E6ECFF; border-color: #1A2450; }
+  .shn { font-size: 20px; font-weight: 700; }
+  .shk { font-size: 14px; opacity: .8; margin-top: 4px; }
+  /* the craft's liveries */
+  .livery { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 22px; }
+  .liv { display: grid; justify-items: center; gap: 6px; background: none; border: 1px solid transparent; padding: 8px; cursor: pointer; font: inherit; color: var(--ink); }
+  .liv.on { border-color: var(--ink); }
+  .liv.locked { opacity: .35; cursor: default; filter: grayscale(1); }
+  .livi svg { width: 48px; height: 48px; display: block; }
+  .livn { font-size: 12.5px; }
+  /* the book */
+  .bookwk { background: var(--live); border: 1px solid var(--hair); padding: 26px 30px; margin: 16px 0; max-width: 860px; font-family: "Atkinson Hyperlegible", var(--sans); }
+  .bookk { font-size: 13px; color: var(--dim); }
+  .bookwk h2 { font-size: 24px; margin: 4px 0 12px; }
+  .books h3 { font-size: 16px; margin: 14px 0 4px; display: flex; align-items: center; gap: 8px; }
+  .bookl { margin: 0; padding-left: 18px; columns: 2; column-gap: 28px; font-size: 13.5px; line-height: 1.5; }
+  .bookl li { break-inside: avoid; margin: 0 0 5px; }
+  .bookl li.miss b::after { content: " (missed)"; color: var(--mark); font-weight: 400; }
+  .bookf { font-size: 12.5px; color: var(--dim); margin-top: 4px; }
+  @media print { .bookwk { border: 0; padding: 0; margin: 0; page-break-after: always; } .bookl { font-size: 10px; } }
+  @media (max-width: 700px) { .bookl { columns: 1; } .shelf { grid-template-columns: 1fr; } }
+  /* the sky */
+  .sky svg { width: 100%; height: auto; display: block; margin-top: 14px; }
+  .sky a:hover circle { stroke-width: 2.4; }
+  /* lift-off: once, when a session closes */
+  #liftoff { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+  #liftoff .lo { position: absolute; left: -90px; bottom: -90px; width: 72px; height: 72px; animation: lift 1.6s cubic-bezier(.35, 0, .2, 1) forwards; }
+  #liftoff .lo svg { width: 100%; height: 100%; border-radius: 16px; }
+  #liftoff .g1 { opacity: .5; animation-delay: .07s; }
+  #liftoff .g2 { opacity: .25; animation-delay: .14s; }
+  @keyframes lift { to { transform: translate(calc(100vw + 180px), calc(-100vh - 180px)) rotate(0deg); } }
+  @media (prefers-reduced-motion: reduce) { #liftoff { display: none; } }
   .linkform { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   input[type=text] { flex: 1 1 200px; border: 1px solid var(--line); background: var(--sheet);
     padding: 8px 11px; font: inherit; font-size: 13.5px; color: inherit; }
@@ -395,7 +441,7 @@
 
   @media print {
     body { background: #fff; color: #000; font-size: 10px; }
-    .side, .stepper, .railtoggle, .row-act, .noprint, .res, .rbar .go { display: none !important; }
+    .side, .stepper, .railtoggle, .row-act, .noprint, .res, .rbar .go, .bar, .crumb { display: none !important; }
     .layout { display: block; }
     .wrap { max-width: none; padding: 0; }
     .sheetblk { page-break-inside: auto; }
@@ -5091,7 +5137,7 @@
       steps: {}, done: {}, quiz: {}, quizHistory: {}, life: {}, notes: {},
       visits: {}, answers: {}, folded: {}, recall: {}, declared: {},
       clock: {}, floor: {}, exports: {}, closer: {}, origin: null,
-      requeue: { read: null, answered: {}, added: [] }
+      requeue: { read: null, answered: {}, added: [] }, livery: "base"
     };
   }
   var state = freshState();
@@ -5126,6 +5172,7 @@
           state.closer = p.closer || {};
           state.origin = p.origin || null;
           state.quizHistory = p.quizHistory || {};
+          state.livery = p.livery || "base";
           Object.keys(state.quiz).forEach(function (qid) {
             if (!state.quizHistory[qid] && state.quiz[qid]) { state.quizHistory[qid] = [state.quiz[qid]]; }
           });
@@ -5209,7 +5256,7 @@
   }
   function markSession(s) {
     if (sessionDone(s)) {
-      if (!state.done[s.id]) { state.done[s.id] = stampNow(); }
+      if (!state.done[s.id]) { state.done[s.id] = stampNow(); if (booted) { setTimeout(liftOff, 60); } }
     } else if (state.done[s.id]) {
       delete state.done[s.id];
     }
@@ -6046,7 +6093,7 @@
         return { page: "dia", week: view.week, session: n(p[2]), scope: p[1] };
       }
       if (p[0] === "w" && WILDCARD.sessions[n(p[1])]) { return { page: "session", week: "wc", session: n(p[1]) }; }
-      if (["requeue", "protocol", "charter", "written", "ahead", "data", "resources", "search", "map"].indexOf(p[0]) >= 0) {
+      if (["requeue", "protocol", "charter", "written", "ahead", "data", "resources", "search", "map", "book", "sky"].indexOf(p[0]) >= 0) {
         return { page: p[0], week: view.week, session: 0 };
       }
     } catch (err) { console.error("Could not read the address", err); }
@@ -6164,7 +6211,7 @@
 
     /* everything that is not a session, grouped by what it is for */
     [["Practise", [["requeue", "Requeue"], ["written", "Written work"], ["search", "Search"]]],
-     ["Look ahead", [["map", "The work ahead"], ["ahead", "What comes after"]]],
+     ["Look ahead", [["book", "The book"], ["sky", "The sky"], ["map", "The work ahead"], ["ahead", "What comes after"]]],
      ["Reference", [["resources", "Resources"], ["sd", "System design guide"], ["al", "Alaap and TrenTorch plan"]]],
      ["Rules and data", [["charter", "Charter"], ["protocol", "Protocol"], ["data", "Data and export"]]]
     ].forEach(function (grp) {
@@ -6476,6 +6523,325 @@
     v.appendChild(hero);
   }
 
+  /* ------------------------------------------------------ small pleasures
+
+     Three open questions a day, a figure to explain against a minute, the book each closed
+     week binds into, the sky of sessions, a lift-off when a session closes, and a livery
+     for the craft for every week closed. All read the same state; none adds work. */
+
+  function seeded(str) {
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return function () { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; };
+  }
+  function todayKey() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+  function allSessions() {
+    var out = [];
+    PLAN.forEach(function (w, wi) { w.sessions.forEach(function (s, i) { out.push({ s: s, w: wi, i: i }); }); });
+    WILDCARD.sessions.forEach(function (s, i) { if (!s.parked) { out.push({ s: s, w: "wc", i: i }); } });
+    return out;
+  }
+  function started(s) { return sessionClosed(s) || stepsDone(s) + studyDone(s) > 0; }
+
+  /* Three for today: open questions from sessions you have started, weighted towards what
+     you rated Missed or Partly, the same three all day. */
+  function coldThree() {
+    var pool = [];
+    allSessions().forEach(function (x) {
+      if (!started(x.s)) { return; }
+      endQuestions(x.s).forEach(function (q, i) {
+        var k = x.s.id + ":eq" + i, r = state.recall[k];
+        var w = !r ? 2 : r.r === "no" ? 4 : r.r === "shaky" ? 3 : 1;
+        pool.push({ k: k, q: q.q, a: q.a, s: x.s, w: w });
+      });
+    });
+    var rnd = seeded(todayKey());
+    pool.forEach(function (p) { p.score = p.w * (0.35 + rnd()); });
+    pool.sort(function (a, b) { return b.score - a.score; });
+    var seen = {}, pick = [];
+    pool.forEach(function (p) { if (pick.length < 3 && !seen[p.s.id]) { seen[p.s.id] = true; pick.push(p); } });
+    pool.forEach(function (p) { if (pick.length < 3 && pick.indexOf(p) < 0) { pick.push(p); } });
+    return pick;
+  }
+  function coldBlock() {
+    var box = el("div", "cold");
+    var qs = coldThree();
+    if (!qs.length) {
+      box.appendChild(el("p", "sm dim", "Questions come from sessions you have started. Tick a step in any session and three appear here each day."));
+      return box;
+    }
+    qs.forEach(function (q, n) {
+      var c = el("div", "coldq");
+      c.appendChild(el("div", "coldsrc", (n + 1) + ". From " + (SHORT[q.s.id] || q.s.name)));
+      c.appendChild(el("div", "coldt", q.q));
+      if (!open["cold:" + q.k]) {
+        var b = el("button", "wb-link", "Said it. Show the answer");
+        b.addEventListener("click", function () { open["cold:" + q.k] = true; draw(); });
+        c.appendChild(b);
+      } else {
+        c.appendChild(el("div", "wb-model", q.a));
+        var rate = el("div", "wb-rate"), was = state.recall[q.k];
+        [["got", "Had it"], ["shaky", "Partly"], ["no", "Missed it"]].forEach(function (r) {
+          var rb = el("button", "wb-btn" + (was && was.r === r[0] && was.at && was.at.indexOf(stampNow().slice(0, 6)) === 0 ? " on" : ""), r[1]);
+          rb.addEventListener("click", function () { rateCard(q.k, r[0]); draw(); });
+          rate.appendChild(rb);
+        });
+        c.appendChild(rate);
+      }
+      box.appendChild(c);
+    });
+    return box;
+  }
+
+  /* Explain the figure: one figure from sessions you have started (or this week's), a minute
+     to say what it shows and why, then the caption to check against. */
+  var xfigShift = 0, xfigTimer = null;
+  function figurePool() {
+    var keys = [], add = function (k) { if (DIA[k] && keys.indexOf(k) < 0) { keys.push(k); } };
+    function take(s) {
+      (s.diagrams || []).forEach(add);
+      s.steps.forEach(function (st, i) { (extraOf(sKey(s.id, i)).figs || []).forEach(add); });
+    }
+    allSessions().forEach(function (x) { if (started(x.s)) { take(x.s); } });
+    if (!keys.length && PLAN[currentWeek()]) { PLAN[currentWeek()].sessions.forEach(take); }
+    return keys;
+  }
+  function figureBlock() {
+    var keys = figurePool();
+    if (!keys.length) { return null; }
+    var k = keys[(Math.floor(seeded(todayKey())() * keys.length) + xfigShift) % keys.length];
+    var d = DIA[k];
+    var box = el("div", "xfig");
+    box.appendChild(el("div", "coldt", d.title));
+    box.appendChild(htm("div", "xsvg", d.svg()));
+    var row = el("div", "wb-rate");
+    var clock = el("span", "xclock", "1:00");
+    var go1 = el("button", "wb-btn primary", "Start the minute");
+    var cap = htm("div", "xcap", d.cap);
+    cap.hidden = true;
+    var show = el("button", "wb-link", "Show the caption");
+    show.addEventListener("click", function () { cap.hidden = false; show.remove(); });
+    go1.addEventListener("click", function () {
+      if (xfigTimer) { clearInterval(xfigTimer); }
+      var left = 60;
+      go1.disabled = true;
+      xfigTimer = setInterval(function () {
+        left -= 1;
+        clock.textContent = "0:" + (left < 10 ? "0" : "") + left;
+        if (left <= 0) {
+          clearInterval(xfigTimer); xfigTimer = null;
+          clock.textContent = "Time. Check it against the caption.";
+          go1.disabled = false; go1.textContent = "Again";
+        }
+      }, 1000);
+    });
+    var other = el("button", "wb-link", "Another figure");
+    other.addEventListener("click", function () { xfigShift += 1; if (xfigTimer) { clearInterval(xfigTimer); xfigTimer = null; } draw(); });
+    row.appendChild(go1); row.appendChild(clock); row.appendChild(show); row.appendChild(other);
+    box.appendChild(row);
+    box.appendChild(cap);
+    return box;
+  }
+
+  /* The book: a week binds when all its sessions are closed, as one compact page. Each week
+     closed adds a page; print it and the pages come out one per sheet. */
+  function weekBound(wi) { return PLAN[wi].sessions.every(sessionClosed); }
+  function boundAt(wi) {
+    var last = "";
+    PLAN[wi].sessions.forEach(function (s) { var d = state.done[s.id] || (state.folded[s.id] && state.folded[s.id].at) || ""; if (d > last) { last = d; } });
+    return last;
+  }
+  function firstSentence(t) {
+    if (Array.isArray(t)) { t = t[0]; }
+    t = String(t || "");
+    var m = t.match(/^.*?[.?!](\s|$)/);
+    return (m ? m[0] : t).trim();
+  }
+  function bookWeek(wi) {
+    var w = PLAN[wi];
+    var pg = el("section", "bookwk");
+    pg.appendChild(el("div", "bookk", "Week " + (wi + 1) + ", " + range(wi) + (boundAt(wi) ? ". Bound " + boundAt(wi) : "")));
+    pg.appendChild(el("h2", "", w.title));
+    w.sessions.forEach(function (s) {
+      var sec = el("div", "books");
+      var h = el("h3", "");
+      var sw = el("span", "swatch"); sw.style.background = "var(--" + tone(s.track) + ")";
+      h.appendChild(sw); h.appendChild(document.createTextNode(s.name));
+      sec.appendChild(h);
+      var ul = el("ul", "bookl");
+      (s.study || []).forEach(function (it, i) {
+        var r = state.recall[s.id + ":s" + i];
+        ul.appendChild(htm("li", r && r.r === "no" ? "miss" : "", "<b>" + esc(it.t) + ".</b> " + esc(firstSentence(it.say))));
+      });
+      s.steps.forEach(function (st, i) {
+        var idea = firstSentence(st.ans || st.d);
+        var r = state.recall[sKey(s.id, i)];
+        ul.appendChild(htm("li", r && r.r === "no" ? "miss" : "", "<b>" + esc(st.t.replace(/\.$/, "")) + ".</b> " + esc(idea)));
+      });
+      sec.appendChild(ul);
+      var figs = (s.diagrams || []).filter(function (k) { return DIA[k]; }).map(function (k) { return DIA[k].title; });
+      if (figs.length) { sec.appendChild(el("div", "bookf", "Figures: " + figs.join("; ") + ".")); }
+      pg.appendChild(sec);
+    });
+    return pg;
+  }
+  var bookShow = null;
+  function viewBook() {
+    var v = document.getElementById("view");
+    var bound = PLAN.map(function (w, wi) { return wi; }).filter(weekBound);
+    var head = el("div", "shead");
+    head.appendChild(el("h1", "", "The book"));
+    head.appendChild(el("p", "lede", "Each week binds here once all its sessions are closed: one compact page per week, the idea of every step in a line, anything you rated Missed marked. Print it and each week lands on its own sheet."));
+    v.appendChild(head);
+    if (!bound.length) {
+      var wi = currentWeek(), left = PLAN[wi].sessions.filter(function (s) { return !sessionClosed(s); }).length;
+      v.appendChild(el("p", "", "Nothing bound yet. Week " + (wi + 1) + " binds when its last " + (left === 1 ? "session closes" : left + " sessions close") + "."));
+      return;
+    }
+    var tabs = el("div", "row-act noprint");
+    var all = el("button", "sec" + (bookShow === null ? " on" : ""), "All weeks");
+    all.addEventListener("click", function () { bookShow = null; draw(); });
+    tabs.appendChild(all);
+    bound.forEach(function (wi) {
+      var b = el("button", "sec" + (bookShow === wi ? " on" : ""), "Week " + (wi + 1));
+      b.addEventListener("click", function () { bookShow = wi; draw(); });
+      tabs.appendChild(b);
+    });
+    var pr = el("button", "sec", "Print");
+    pr.addEventListener("click", function () { window.print(); });
+    tabs.appendChild(pr);
+    v.appendChild(tabs);
+    bound.filter(function (wi) { return bookShow === null || bookShow === wi; }).forEach(function (wi) { v.appendChild(bookWeek(wi)); });
+  }
+
+  /* The sky: every session a star, lit when it closes, joined to its week and to the
+     sessions it relates to. */
+  function viewSky() {
+    var v = document.getElementById("view");
+    var head = el("div", "shead");
+    head.appendChild(el("h1", "", "The sky"));
+    var xs = allSessions(), lit = xs.filter(function (x) { return sessionClosed(x.s); }).length;
+    head.appendChild(el("p", "lede", lit + " of " + xs.length + " stars lit. Each week is a constellation; dashed lines join sessions that share an idea. Select a star to open its session."));
+    v.appendChild(head);
+    var W = 980, H = 500, pos = {};
+    var wl = WILDCARD.sessions.filter(function (s) { return !s.parked; });
+    var cols = PLAN.length + 1;
+    xs.forEach(function (x) {
+      var r = seeded(x.s.id), cx, cy;
+      if (x.w === "wc") {
+        /* the wildcard is a denser cluster: two columns, left of the edge */
+        var k = wl.indexOf(x.s), rows = Math.ceil(wl.length / 2);
+        cx = W - 125 + (k % 2 ? 46 : -46) + (r() - 0.5) * 16;
+        cy = 70 + (Math.floor(k / 2) + 0.5) * ((H - 140) / rows) + (k % 2 ? 14 : 0);
+      } else {
+        cx = 70 + x.w * ((W - 330) / (PLAN.length - 1)) + (r() - 0.5) * 70;
+        cy = 80 + (x.i + 0.5) * ((H - 150) / PLAN[x.w].sessions.length) + (r() - 0.5) * 26;
+      }
+      pos[x.s.id] = { x: cx, y: cy, x0: x };
+    });
+    var b = '<defs><radialGradient id="skyg" cx="0.6" cy="0.3" r="0.9"><stop offset="0" stop-color="#1A2450"/><stop offset="0.6" stop-color="#090B16"/><stop offset="1" stop-color="#040509"/></radialGradient>' +
+      '<filter id="glow" x="-2" y="-2" width="5" height="5"><feGaussianBlur stdDeviation="4"/></filter></defs>' +
+      '<rect width="' + W + '" height="' + H + '" rx="10" fill="url(#skyg)"/>';
+    var dust = seeded("dust");
+    for (var i = 0; i < 90; i++) { b += '<circle cx="' + (dust() * W).toFixed(1) + '" cy="' + (dust() * H).toFixed(1) + '" r="' + (dust() * 0.9 + 0.3).toFixed(2) + '" fill="#fff" opacity="' + (dust() * 0.4 + 0.1).toFixed(2) + '"/>'; }
+    function line(a, c, dash, op) { b += '<line x1="' + a.x.toFixed(1) + '" y1="' + a.y.toFixed(1) + '" x2="' + c.x.toFixed(1) + '" y2="' + c.y.toFixed(1) + '" stroke="#9DB8FF" stroke-width="1" opacity="' + op + '"' + (dash ? ' stroke-dasharray="3 5"' : "") + "/>"; }
+    PLAN.forEach(function (w) { for (var k = 1; k < w.sessions.length; k++) { line(pos[w.sessions[k - 1].id], pos[w.sessions[k].id], false, 0.35); } });
+    for (var j = 1; j < wl.length; j++) { line(pos[wl[j - 1].id], pos[wl[j].id], false, 0.25); }
+    Object.keys(RELATED).forEach(function (id) { (RELATED[id] || []).forEach(function (r) { if (pos[id] && pos[r.id] && id < r.id) { line(pos[id], pos[r.id], true, 0.3); } }); });
+    var colours = { sys: "#7FA8E0", math: "#7FCB9A", alaap: "#E5A07E", req: "#D9BC72", iv: "#D48BB0", flat: "#C9C9D6" };
+    xs.forEach(function (x) {
+      var p = pos[x.s.id], on = sessionClosed(x.s), c = colours[tone(x.s.track)] || "#fff";
+      b += '<a href="' + hashFor("session", x.w, x.i) + '"><title>' + esc(x.s.name) + (on ? ", closed" : "") + "</title>";
+      if (on) {
+        b += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="9" fill="' + c + '" opacity="0.7" filter="url(#glow)"/>';
+        b += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4.5" fill="#fff"/>';
+      } else {
+        b += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4.5" fill="#090B16" stroke="' + c + '" stroke-width="1.4" opacity="0.8"/>';
+      }
+      b += '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + 20).toFixed(1) + '" text-anchor="middle" font-size="11" fill="' + (on ? "#fff" : "#8C93B0") + '" font-family="Helvetica Neue, Arial, sans-serif">' + esc((SHORT[x.s.id] || x.s.name).replace(/^(ZenML|Oxus): /, "")) + "</text></a>";
+    });
+    PLAN.forEach(function (w, wi) {
+      b += '<text x="' + (70 + wi * ((W - 330) / (PLAN.length - 1))).toFixed(1) + '" y="' + (H - 22) + '" text-anchor="middle" font-size="11.5" fill="#C9D3F5" font-family="Helvetica Neue, Arial, sans-serif">Week ' + (wi + 1) + (weekBound(wi) ? ", closed" : "") + "</text>";
+    });
+    b += '<text x="' + (W - 125) + '" y="' + (H - 22) + '" text-anchor="middle" font-size="11.5" fill="#C9D3F5" font-family="Helvetica Neue, Arial, sans-serif">Wildcard</text>';
+    v.appendChild(htm("div", "sky", '<svg viewBox="0 0 ' + W + " " + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sessions as stars">' + b + "</svg>"));
+  }
+
+  /* The craft, in a livery. Closing a week unlocks the next colouring; the one you pick
+     becomes the header icon and the tab icon. */
+  var LIVERIES = [
+    { id: "base", name: "Deep space", week: -1, sky: ["#1A2450", "#090B16", "#040509"], lead: "#9DB8FF", after: ["#2F5BFF", "#3D72FF"], spine: "#7F9BFF", canopy: "#16204A" },
+    { id: "w1", name: "Throughput", week: 0, sky: ["#0F4A45", "#06201E", "#020A09"], lead: "#BFF5E4", after: ["#1FAE85", "#3FD4A8"], spine: "#7FE6C6", canopy: "#0B3A33" },
+    { id: "w2", name: "Partition", week: 1, sky: ["#34195E", "#140A26", "#07040D"], lead: "#DCCBFF", after: ["#6E3BFF", "#9B6BFF"], spine: "#B89BFF", canopy: "#24124A" },
+    { id: "w3", name: "Storage", week: 2, sky: ["#4A2C10", "#1E1206", "#0A0602"], lead: "#FFE3B8", after: ["#E07A12", "#FF9F3D"], spine: "#FFC27F", canopy: "#3A2208" },
+    { id: "w4", name: "Failure", week: 3, sky: ["#4A1020", "#1E060D", "#0A0204"], lead: "#FFC7D0", after: ["#E0284A", "#FF4D6A"], spine: "#FF8FA2", canopy: "#3A0A16" },
+    { id: "w5", name: "Cache", week: 4, sky: ["#12402A", "#071A11", "#020805"], lead: "#D6FFD9", after: ["#2BB04A", "#4CD964"], spine: "#8FEAA0", canopy: "#0C3320" }
+  ];
+  function liveryUnlocked(l) { return l.week < 0 || weekBound(l.week); }
+  function craftSvg(l) {
+    var body = "M 0 -66 L 11 -24 L 46 42 L 0 30 L -46 42 L -11 -24 Z";
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs>' +
+      '<radialGradient id="v" cx="0.62" cy="0.36" r="0.8"><stop offset="0" stop-color="' + l.sky[0] + '"/><stop offset="0.6" stop-color="' + l.sky[1] + '"/><stop offset="1" stop-color="' + l.sky[2] + '"/></radialGradient>' +
+      '<linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="' + l.lead + '"/></linearGradient>' +
+      '<radialGradient id="s" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.35" stop-color="#FFC04D"/><stop offset="1" stop-color="#FF5A1F" stop-opacity="0"/></radialGradient>' +
+      '<clipPath id="t"><rect width="256" height="256" rx="56"/></clipPath></defs><g clip-path="url(#t)"><rect width="256" height="256" fill="url(#v)"/>' +
+      '<g fill="#FFFFFF" opacity="0.55"><circle cx="46" cy="52" r="1.3"/><circle cx="196" cy="206" r="1.1"/><circle cx="220" cy="120" r="1"/><circle cx="120" cy="30" r="0.9"/><circle cx="30" cy="150" r="0.9"/></g>' +
+      '<g transform="translate(156 98) rotate(45)">' +
+      '<path d="' + body + '" transform="translate(0 112) scale(0.8)" fill="' + l.after[0] + '" opacity="0.26"/>' +
+      '<path d="' + body + '" transform="translate(0 58) scale(0.9)" fill="' + l.after[1] + '" opacity="0.52"/>' +
+      '<circle cx="-11" cy="40" r="14" fill="url(#s)"/><circle cx="11" cy="40" r="14" fill="url(#s)"/>' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 L -11 36 L -30 50 L -46 42 L -11 -24 Z" fill="url(#l)"/>' +
+      '<path d="M 0 -66 L 11 -24 L 46 42 L 30 50 L 11 36 L 0 42 Z" fill="#1B2B66" opacity="0.2"/>' +
+      '<rect x="-1" y="-44" width="2" height="80" fill="' + l.spine + '" opacity="0.55"/>' +
+      '<ellipse cx="0" cy="-24" rx="5.6" ry="11.5" fill="' + l.canopy + '"/><ellipse cx="-1.6" cy="-28" rx="1.8" ry="4.2" fill="#FFFFFF" opacity="0.75"/></g></g></svg>';
+  }
+  function currentLivery() {
+    var l = LIVERIES.filter(function (x) { return x.id === state.livery; })[0];
+    return l && liveryUnlocked(l) ? l : LIVERIES[0];
+  }
+  function applyLivery() {
+    var l = currentLivery();
+    if (l.id === "base") { return; }
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(craftSvg(l));
+    var img = document.querySelector(".brand img");
+    if (img) { img.src = url; }
+    var fav = document.querySelector('link[rel="icon"]');
+    if (fav) { fav.href = url; }
+  }
+  function liveryBlock() {
+    var box = el("div", "livery");
+    LIVERIES.forEach(function (l) {
+      var open1 = liveryUnlocked(l);
+      var b = el("button", "liv" + (currentLivery().id === l.id ? " on" : "") + (open1 ? "" : " locked"));
+      b.appendChild(htm("span", "livi", craftSvg(l)));
+      b.appendChild(el("span", "livn", open1 ? l.name : "Close week " + (l.week + 1)));
+      b.disabled = !open1;
+      b.title = open1 ? "Fly the " + l.name + " livery" : "Unlocks when week " + (l.week + 1) + " closes";
+      b.addEventListener("click", function () {
+        state.livery = l.id; save();
+        if (l.id === "base") { window.location.reload(); return; }
+        applyLivery(); draw();
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /* Lift-off: the craft crosses the page once when a session closes. */
+  var booted = false;
+  function liftOff() {
+    if (!booted || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) { return; }
+    var old = document.getElementById("liftoff");
+    if (old) { old.remove(); }
+    var f = el("div", "");
+    f.id = "liftoff";
+    f.setAttribute("aria-hidden", "true");
+    var svg = craftSvg(currentLivery());
+    f.innerHTML = '<span class="lo g2">' + svg + '</span><span class="lo g1">' + svg + '</span><span class="lo">' + svg + "</span>";
+    document.body.appendChild(f);
+    setTimeout(function () { if (f.parentNode) { f.remove(); } }, 2200);
+  }
+
   function viewHome() {
     var v = document.getElementById("view");
     var nx = nextSession();
@@ -6538,34 +6904,28 @@
     });
     v.appendChild(lg);
 
-    var spacedCard = pickSpaced();
-    if (spacedCard) {
-      v.appendChild(rubric("From a while back", "rated clean, not seen in a while"));
-      var sc = el("div", "card");
-      var scr = state.recall[spacedCard.k];
-      sc.appendChild(el("div", "src", spacedCard.kind + "  \u00b7  " + spacedCard.name + "  \u00b7  last rated " + scr.at));
-      sc.appendChild(el("div", "front", spacedCard.front));
-      if (!spacedFlip) {
-        sc.appendChild(el("div", "grow", ""));
-        var turnSc = el("button", "turn", "Said it. Turn the card.");
-        turnSc.addEventListener("click", function () { spacedFlip = true; draw(); });
-        sc.appendChild(turnSc);
-      } else {
-        sc.appendChild(el("div", "back", spacedCard.back));
-        sc.appendChild(el("div", "grow", ""));
-        var rateSc = el("div", "rate");
-        [["got", "g", "Said it clean"], ["shaky", "s", "Roughly, with gaps"], ["no", "n", "Could not say it"]]
-          .forEach(function (rr) {
-            var b = el("button", rr[1], rr[2]);
-            b.addEventListener("click", function () {
-              rateCard(spacedCard.k, rr[0]); spacedFlip = false; draw();
-            });
-            rateSc.appendChild(b);
-          });
-        sc.appendChild(rateSc);
-      }
-      v.appendChild(sc);
+    v.appendChild(rubric("Three for today", "open questions from what you have started"));
+    v.appendChild(coldBlock());
+    var xf = figureBlock();
+    if (xf) {
+      v.appendChild(rubric("Explain the figure", "a minute, out loud, then the caption"));
+      v.appendChild(xf);
     }
+    var nb = PLAN.filter(function (w, wi) { return weekBound(wi); }).length;
+    var shelf = el("div", "shelf");
+    var bk = el("button", "shelfc");
+    bk.appendChild(el("div", "shn", nb + (nb === 1 ? " week" : " weeks") + " bound"));
+    bk.appendChild(el("div", "shk", nb ? "Open the book: a page per closed week, ready to print." : "The book: week " + (currentWeek() + 1) + " binds when its sessions close."));
+    bk.addEventListener("click", function () { go("book"); });
+    var skyb = el("button", "shelfc dark");
+    var litn = allSessions().filter(function (x) { return sessionClosed(x.s); }).length;
+    skyb.appendChild(el("div", "shn", litn + " of " + allSessions().length + " stars lit"));
+    skyb.appendChild(el("div", "shk", "See the sky: every session as a star."));
+    skyb.addEventListener("click", function () { go("sky"); });
+    shelf.appendChild(bk); shelf.appendChild(skyb);
+    v.appendChild(shelf);
+    v.appendChild(rubric("The craft", "a livery for every week closed"));
+    v.appendChild(liveryBlock());
 
     /* figures */
     var closed = 0, estTotal = 0, estDone = 0, quizzes = [], i;
@@ -9067,6 +9427,8 @@
       else if (view.page === "resources") { viewResources(); }
       else if (view.page === "search") { viewSearch(); }
       else if (view.page === "map") { viewMap(); }
+      else if (view.page === "book") { viewBook(); }
+      else if (view.page === "sky") { viewSky(); }
       else { viewData(); }
       var ob = originBanner();
       if (ob) { v.insertBefore(ob, v.firstChild); }
@@ -9081,7 +9443,9 @@
   eachWild(function (s) { markSession(s); });
   view.week = currentWeek();
   view = parseHash();
+  applyLivery();
   draw();
+  booted = true;
 
   try {
     setInterval(function () {
