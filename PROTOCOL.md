@@ -43,15 +43,10 @@ get dropped, so this one does not create any.
 
 ---
 
-## Three working rules
+## Two working rules
 
-Not character corrections. Just mechanics that make hard material easier to stay
-with, and that stop anything difficult from quietly disappearing.
-
-**The ten-minute floor.** Before marking something unknown or moving past it, give
-it ten minutes of written attempt — what you know, where it stops, what exactly is
-missing. Most things resolve inside that window. The ones that do not are now
-precisely described, which is far more useful later than a blank.
+Not character corrections. Just mechanics that stop anything difficult from quietly
+disappearing.
 
 **The requeue.** Anything you set aside goes into `REQUEUE.md` and comes back
 later. Stopping defers; it does not delete. This is what makes stopping fine — you
@@ -66,7 +61,9 @@ just to keep it in view.
 
 A sixth slot sits on the planner, normally empty. When an interview loop is
 scheduled, sessions for it are written into that slot rather than into the weeks,
-with the same structure as anything else: steps, pointers, a closing quiz.
+with the same structure as anything else: steps, reading, figures, a closing quiz.
+The loop also gets its own page in `interviews/`, and full mocks run in the Claude
+Code chat.
 
 Closing a wildcard session earns one credit, and a credit folds one planned session
 in — counted as covered without being done separately, because interview prep
@@ -108,3 +105,53 @@ Sessions B and C are more forgiving. Split them, move them, do B in two sittings
 Mornings at 07:00, before the first meeting, is the stated intention. It is a good
 one — the two hours before anything starts are the only reliably uncontested hours
 in the day.
+
+---
+
+## How you study best
+
+Learned between 22 and 26 September from what got used and what got thrown out. This
+is the shape any new material takes, in the tracker, on a loop page, or anywhere else.
+When a new idea contradicts it, the idea is tried and this section is corrected, not
+ignored.
+
+**Understand first, then say it.** A step opens to what the thing is, the figure that
+draws it, what to read and for how long, and where it sits in the system design guide.
+The words to say come last, shut until you have tried. Sessions that were blocks of
+text to memorise, with about twenty-five recall questions each, were tried on 25
+September and thrown out the same day.
+
+**Diagrams you can take apart.** Each part of a figure explains itself on hover, in the
+context of that figure, with a link to where it is taught. A walk-through goes through
+the flow one part at a time. A figure is drawn once and reused everywhere it applies.
+
+**Reading with a stopping point.** Every link says how many minutes the part that matters
+takes, and what to skip. Reading is optional on top of a session's planned time, never
+inside it. DDIA is a reference hung off topics (2nd edition, cited by topic), not a
+reading schedule. AI Engineering from Scratch is the hands-on counterpart to a concept.
+A link that was not opened and checked is not added.
+
+**Shut by default.** Steps start closed, so a session reads as its outline and nothing
+needs scrolling past. One card at a time was tried too, and lost to this.
+
+**One look.** One typeface, a few sizes, a few greys. A section with several fonts and
+box styles reads worse, not richer.
+
+**Open questions, one at a time.** A quiz is five to eight open questions in a pop-up,
+answered aloud or dictated, compared with a model answer and self-rated. No blanks, no
+multiple choice, no one-word answers: those test recognition, and the room tests recall.
+
+**Rate honestly, come back to what was missed.** Had it, Partly or Missed it feeds the
+drill deck and the three open questions on the home page each morning.
+
+**An interview gets its own page and a real mock.** The loop's page holds what to know
+and how to say it. The mock is a person with opinions who follows the thread and never
+recaps you back to yourself; the critique comes after, with the best version of the
+weakest answer.
+
+**Small rewards, never debt.** Closing a session launches the craft; closing a week binds
+it into the book, lights its constellation and unlocks a livery. None of it adds work.
+
+**Choose, do not specify.** Big changes start as a short list of options with a
+recommended one, answered in a line (`1b 2a`). Surprises are offered as a menu and only
+the picked ones get built.

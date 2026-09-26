@@ -1,8 +1,7 @@
 # Study list: ZenML round 3
 
-Generated from the tracker on 25 Sep 2026 by the sheet view's copy-as-markdown control.
-Tick an item only when you can say it out loud without notes. The indented actions
-under an item are what to actually do, with honest minutes and where to stop.
+Generated from the tracker on 26 Sep 10:09. Tick an item only when you can say it out loud without notes. Under each item: what to do,
+then what to read (with minutes) and where it sits in the system design guide.
 
 ZenML round 3: Mon 28 Sep, 9 AM Eastern, ninety minutes of in-depth technical questions with Hamza and Alex. Oxus happened on 23 Sep; its design sessions moved into weeks 2 to 4 and the rest are parked.
 
@@ -10,7 +9,7 @@ ZenML round 3: Mon 28 Sep, 9 AM Eastern, ninety minutes of in-depth technical qu
 
 ## ZenML round 3
 
-### Round three is a different room  (1h, 31m of actions)
+### Round three is a different room  (1h)
 
 - [ ] **Kitaru's core objects**  (7m)
   Sessions, recorded by an adapter or imported from Langfuse, LangSmith, Braintrust, Logfire or Arize Phoenix. Replays. Cohorts, which are immutable versions of a chosen set of sessions. Evaluators, deterministic and LLM-based.
@@ -53,14 +52,111 @@ ZenML round 3: Mon 28 Sep, 9 AM Eastern, ninety minutes of in-depth technical qu
     [kitaru-skills README, the kitaru-guided-tour entry](https://github.com/zenml-io/kitaru-skills)
   - [ ] Say out loud what the tour is supposed to produce before you run it  _(2m)_
     Done when: one accepted finding turned into a deterministic evaluator, and one approved bounded replay
-
 Practice:
 - [ ] Re-drill the two-minute bench story until the headline comes first every time
 - [ ] Fix the two weakest items from the mock: the critique and your questions
 - [ ] Install Kitaru and run the guided tour on the example agent
 - [ ] Read the launch post and the deterministic evaluators page
+  - Read: [Kitaru docs: what a replay is](https://docs.zenml.io/kitaru/core-concepts/replay)  (6m)
+- [ ] What is the headline of your bench story?
+- [ ] What is your strongest single critique of Kitaru?
+- [ ] How should questions to the interviewers be asked?
+- [ ] State the two-minute bench story headline first, then explain why leading with mechanism rather than the numbers matters in this room.
 
-### Side effects inside replay, in depth  (2h, 59m of actions)
+### Your story: the alfred_ eval bench  (1h 30m)
+
+Practice:
+- [ ] Say the headline in one breath  _(10m)_
+  - Read: [Hamel Husain: your AI product needs evals](https://hamel.dev/blog/posts/evals/index.html)  (22m)
+  - Read: [AI Engineering from Scratch, phase 14, lesson 30: eval-driven agent development](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/14-agent-engineering/30-eval-driven-agent-development)  (5m)
+  - Guide: [Technique: Environment snapshots](SYSTEM%20DESIGN.html#/patterns/agent-durability/env-snapshots). The bench's frozen world is this technique: the agent runs against a copy, never the real inbox.
+  - Guide: [Technique: Eval suites as release gates](SYSTEM%20DESIGN.html#/patterns/grounding/eval-gate). What the bench became: the thing that signed off the orchestration rewrite.
+- [ ] Learn the fact sheet cold  _(20m)_
+  - Read: [Anthropic: demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)  (40m)
+  - Guide: [alfred_, deep dives](SYSTEM%20DESIGN.html#/designs/alfred/deepdives). The system the bench tests, drawn from your own code.
+- [ ] Deliver the two-minute version, three times, out loud  _(20m)_
+- [ ] Walk the five-minute version in nine beats  _(20m)_
+- [ ] Answer the follow-ups, number first  _(20m)_
+  - Read: [Eugene Yan: evaluating LLM evaluators, agreement with human labels](https://eugeneyan.com/writing/llm-evaluators/)  (38m)
+  - Read: [AI Engineering from Scratch, phase 14, lesson 52: designing success metrics](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/14-agent-engineering/52-design-success-metrics)  (3m)
+  - Guide: [Technique: Shadow mode and online signals](SYSTEM%20DESIGN.html#/patterns/grounding/shadow-online). Where the scanner's production signals come from, and why they over-fire.
+- [ ] Draw the bench as a system, on paper  _(10m)_
+  - Read: [AI Engineering from Scratch, phase 14, lesson 31: the agent workbench, why models fail](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/14-agent-engineering/31-agent-workbench-why-models-fail)  (15m)
+  - Read: [AI Engineering from Scratch, phase 11, lesson 10: evaluating LLM applications](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/11-llm-engineering/10-evaluation)  (20m)
+  - Guide: [alfred_, high-level design](SYSTEM%20DESIGN.html#/designs/alfred/hld). Draw the bench as a box beside this: scanner, judge, reconciler, snapshot, replay.
+- [ ] What is the one-sentence headline of the bench?
+- [ ] How is authoring cost best stated?
+- [ ] What does a snapshot built from about twenty-five real instances buy you?
+
+### The round-two critique, fixed  (1h)
+
+Practice:
+- [ ] Name three things in Kitaru that are wrong or oversold, without a compliment  _(15m)_
+  - Read: [Replay baselines that silently drift when a tool's identity changes](https://dev.to/gabrielanhaia/stop-keying-agent-replay-on-tool-names-use-fingerprints-1m63)  (10m)
+  - Guide: [Technique: Enforced citations and verification](SYSTEM%20DESIGN.html#/patterns/grounding/citations). Provenance is the same idea: every result says where it came from.
+- [ ] Make the cache miss productive  _(12m)_
+  - Read: [VCR.py: record modes, what happens on a miss](https://vcrpy.readthedocs.io/en/latest/usage.html)  (1m)
+  - Read: [VCR.py: how a request is matched to a recording](https://vcrpy.readthedocs.io/en/latest/configuration.html)  (1m)
+  - Guide: [Technique: Cache-aside (Redis)](SYSTEM%20DESIGN.html#/patterns/scaling-reads/cache-aside). What a miss means in an ordinary cache, and why a replay miss is different: it is information.
+- [ ] Tell the false-signal story: two missing refunds  _(12m)_
+  - Read: [Snapshot tests against behaviour-checking tests, the trade-offs](https://www.sitepen.com/blog/snapshot-testing-benefits-and-drawbacks)  (9m)
+  - Guide: [Technique: Monitoring and completeness checks](SYSTEM%20DESIGN.html#/patterns/reliability/monitoring). Asserting every refund appears is a completeness check against ground truth you hold.
+- [ ] Re-say the intro and the ownership probe  _(10m)_
+- [ ] Prepare your questions, one at a time  _(11m)_
+- [ ] Asked what is wrong with Kitaru, what is the worst possible answer?
+- [ ] What was round two's biggest intro miss?
+- [ ] How should questions to the interviewer be asked?
+
+### Kitaru at mechanism depth  (2h)
+
+Practice:
+- [ ] Control plane and data plane  _(15m)_
+  - Read: [Control plane and data plane, explained](https://konghq.com/blog/learning-center/control-plane-vs-data-plane)  (9m)
+- [ ] The execution model: there is no sandbox  _(15m)_
+  - Read: [What running a subprocess without a sandbox gives away](https://www.pandastack.ai/blog/how-to-sandbox-untrusted-code/)  (19m)
+  - Guide: [Technique: Least privilege and sandboxing](SYSTEM%20DESIGN.html#/patterns/agent-safety/least-privilege). What Kitaru deliberately does not do: your agent runs with your process's rights.
+- [ ] One recursive table, and the objects around it  _(15m)_
+  - Read: [Postgres docs: WITH RECURSIVE, for a tree in one table](https://www.postgresql.org/docs/current/queries-with.html)  (15m)
+  - Read: DDIA, 2e: Data models and query languages, the part on trees and graphs  (12m)
+- [ ] Tool policy and on_miss, exactly  _(15m)_
+  - Read: [Kitaru docs: replay and overrides, the tool policies](https://docs.zenml.io/kitaru/guides/replay-and-overrides)  (4m)
+  - Guide: [Technique: Tool effect classes](SYSTEM%20DESIGN.html#/patterns/agent-safety/effect-classes). Tool policies are a replay-time version of sorting tools by what they do to the world.
+- [ ] The cache key, and what matches  _(15m)_
+  - Read: [Kitaru docs: replay and overrides, the cache key and on_miss](https://docs.zenml.io/kitaru/guides/replay-and-overrides)  (4m)
+- [ ] Occurrence flips with scope  _(15m)_
+- [ ] Multi-turn, and what always runs live  _(20m)_
+  - Read: [Regression-testing multi-turn conversations as whole trajectories](https://dev.to/jackm-singularity/conversation-regression-testing-for-ai-agents-catch-multi-turn-failures-before-production-emg)  (10m)
+  - Guide: [Technique: Transcript checkpoint every turn](SYSTEM%20DESIGN.html#/patterns/agent-durability/transcript-checkpoint). Why last-turn replay is possible at all: every turn is recorded as it happens.
+- [ ] Where does Kitaru intercept a tool call?
+- [ ] What does on_miss passthrough leave on the node?
+- [ ] What does baseline scope do with repeated identical calls?
+
+### Design: replay-based evals, from scratch, timed  (1h 30m)
+
+Practice:
+- [ ] Requirements in five minutes  _(10m)_
+  - Read: [Temporal: what durable execution is](https://docs.temporal.io/evaluate/understanding-temporal)  (9m)
+  - Read: [AI Engineering from Scratch, phase 15, lesson 12: durable execution](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/15-autonomous-systems/12-durable-execution)  (6m)
+- [ ] Entities, API and the high-level design  _(15m)_
+  - Read: [Temporal: workflow execution, event history and replay](https://docs.temporal.io/workflow-execution)  (3m)
+  - Read: [AI Engineering from Scratch, phase 15, lesson 16: checkpoints and rollback](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/15-autonomous-systems/16-checkpoints-rollback)  (6m)
+- [ ] Deep dive: divergence, the better the change the worse the replay  _(15m)_
+  - Read: [TigerBeetle: deterministic simulation testing, and why determinism is the whole game](https://tigerbeetle.com/blog/2026-08-20-protocol-aware-dst/)  (11m)
+- [ ] Deep dive: trust and provenance  _(10m)_
+  - Read: [AI Engineering from Scratch, phase 14, lesson 24: agent observability platforms](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/14-agent-engineering/24-agent-observability-platforms)  (4m)
+  - Guide: [Technique: Enforced citations and verification](SYSTEM%20DESIGN.html#/patterns/grounding/citations). Trust in a replay is provenance on every node, the same move as citing every claim.
+- [ ] Deep dive: the worker queue and concurrency  _(10m)_
+  - Read: [Temporal: worker slots and concurrency on a task queue](https://docs.temporal.io/develop/worker-performance)  (2m)
+  - Read: [Crunchy Data: a queue in plain Postgres with SKIP LOCKED](https://www.crunchydata.com/blog/message-queuing-using-native-postgresql)  (10m)
+  - Guide: [Technique: Queue claiming with SKIP LOCKED](SYSTEM%20DESIGN.html#/patterns/contention/claim-skip-locked). Two workers, one table, no double claims.
+  - Guide: [Technique: Leases, heartbeats, visibility timeouts](SYSTEM%20DESIGN.html#/patterns/long-running/leases). What happens when a worker dies holding a replay.
+  - Guide: [Technique: Queue plus worker pool](SYSTEM%20DESIGN.html#/patterns/long-running/worker-pool). The shape of the replay runner.
+- [ ] Say it in thirty-five minutes, then write its three weakest points  _(30m)_
+- [ ] What is the hard part of replay, in one phrase?
+- [ ] What should ship first?
+- [ ] How do workers claim tasks without serialising the table?
+
+### Side effects inside replay, in depth  (2h)
 
 - [ ] **Idempotency keys**  (10m)
   A client-supplied key per logical operation, stored with its result, so a retry returns the stored result instead of acting twice. Walk through Stripe's version.
@@ -121,7 +217,6 @@ Practice:
     Skip: 'Classical and Mockist Testing' and 'Choosing Between the Differences' — the testing-philosophy debate, not the definitions.
   - [ ] Say where your bench and Kitaru sit, out loud, in Fowler's terms  _(3m)_
     Done when: your SQLite snapshot named as a fake, Kitaru's recorded results named as stubs
-
 Practice:
 - [ ] Classify tool calls by what they do to the world
 - [ ] State Kitaru's current answer precisely
@@ -129,9 +224,15 @@ Practice:
 - [ ] Design an effect ledger
 - [ ] Work the send-succeeded-but-response-timed-out case
 - [ ] Connect it to durable execution
+  - Read: [Temporal docs: activities, where side effects live](https://docs.temporal.io/activities)  (3m)
+  - Read: [AI Engineering from Scratch, phase 15, lesson 12: durable execution](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/15-autonomous-systems/12-durable-execution)  (6m)
 - [ ] Say the whole design out loud, then write what it does not solve
+- [ ] A forked replay issues a refund the recording never saw. What should happen by default?
+- [ ] What is an idempotency key for a side-effecting tool call typically built from?
+- [ ] Why does deterministic replay of a workflow require recording effects?
+- [ ] Explain why a forked replay that issues a refund the recording never saw should not simply pass through to the live payment provider by default.
 
-### Design: multi-turn replay when the conversation changes  (2h, 1h 6m of actions)
+### Design: multi-turn replay when the conversation changes  (2h)
 
 - [ ] **tau-bench's design**  (13m)
   An agent converses with an LLM-simulated user who has a goal and reveals information gradually, while the agent calls tools that write to a shared database. Success is judged by comparing the final database state with an annotated goal state.
@@ -183,16 +284,58 @@ Practice:
     Skip: the airline and retail environment files in the same directory — different concern
   - [ ] Say the two failure modes that matter most for a support agent, and which strategy each argues for guarding against  _(5m)_
     Done when: two sentences spoken: react and verify exist because a plain llm-strategy user can be too compliant or over-reveal the goal early
-
 Practice:
 - [ ] State the problem in one sentence
 - [ ] Lay out the three options and the trade in each
+  - Read: [tau-bench paper: tool, agent and a simulated user, and pass^k](https://arxiv.org/abs/2406.12045)  (10m)
 - [ ] Design the simulated user properly
 - [ ] Name the risks and the calibration that answers them
+  - Read: [AI Engineering from Scratch, phase 14, lesson 19: agent benchmarks](https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/14-agent-engineering/19-benchmarks-swebench-gaia)  (5m)
 - [ ] Connect it to promoting a session into a world
 - [ ] Say it out loud in six minutes, then write the open questions
+- [ ] Why hold the simulated user fixed across baseline and fork?
+- [ ] How do you calibrate a simulated user?
+- [ ] What is the main failure mode of simulated users?
+- [ ] Explain why the simulated user must be calibrated against the unchanged baseline before it is trusted on a changed agent.
 
-### DevEx: explaining Kitaru to a developer  (1h 15m, 46m of actions)
+### Backend depth: where a technical round goes down  (1h 30m)
+
+Practice:
+- [ ] Why SQLite when production is Postgres  _(12m)_
+  - Read: [Postgres docs: template databases](https://www.postgresql.org/docs/current/manage-ag-templatedbs.html)  (4m)
+  - Read: [SQLite docs: datatypes and type affinity](https://www.sqlite.org/datatype3.html)  (18m)
+  - Guide: [Technique: Environment snapshots](SYSTEM%20DESIGN.html#/patterns/agent-durability/env-snapshots). SQLite file or Postgres template: two ways to build the same snapshot.
+- [ ] A side-effecting call fails halfway  _(15m)_
+  - Read: [Stripe: designing APIs with idempotency](https://stripe.com/blog/idempotency)  (6m)
+  - Read: [Brandur Leach: Stripe-like idempotency keys in Postgres](https://brandur.org/idempotency-keys)  (22m)
+  - Read: DDIA, 2e: The trouble with distributed systems, timeouts and unknown outcomes  (18m)
+  - Read: DDIA, 2e: Stream processing, exactly-once and idempotence  (15m)
+  - Guide: [Technique: Idempotency keys](SYSTEM%20DESIGN.html#/patterns/multi-step/idempotency). Where the key lives decides whether a retry is safe.
+  - Guide: [Technique: Transactional outbox](SYSTEM%20DESIGN.html#/patterns/multi-step/outbox). Write the intent before the call, the ledger's shape.
+  - Guide: [Technique: Idempotent tools and unknown results](SYSTEM%20DESIGN.html#/patterns/agent-durability/unknown-results). The send succeeded but the response timed out.
+- [ ] The queue, and polling to events  _(12m)_
+  - Read: [Postgres docs: the locking clause, FOR UPDATE SKIP LOCKED](https://www.postgresql.org/docs/current/sql-select.html)  (9m)
+  - Read: [Crunchy Data: a queue in plain Postgres with SKIP LOCKED](https://www.crunchydata.com/blog/message-queuing-using-native-postgresql)  (10m)
+  - Read: [Postgres docs: LISTEN, triggering on the event](https://www.postgresql.org/docs/current/sql-listen.html)  (2m)
+  - Read: DDIA, 2e: Transactions, locks and isolation  (25m)
+  - Guide: [Technique: Queue claiming with SKIP LOCKED](SYSTEM%20DESIGN.html#/patterns/contention/claim-skip-locked). The idiom to name when they ask how the queue is claimed.
+  - Guide: [Technique: Polling and long polling](SYSTEM%20DESIGN.html#/patterns/real-time/polling). Why a cron drain's worst case is its interval, and what triggering on the event buys.
+  - Guide: [Technique: Retries with backoff and a dead-letter queue](SYSTEM%20DESIGN.html#/patterns/long-running/retries-dlq). The backstop you keep after moving to events.
+- [ ] The SECURITY DEFINER story  _(12m)_
+  - Read: [Postgres docs: CREATE FUNCTION, writing SECURITY DEFINER functions safely](https://www.postgresql.org/docs/current/sql-createfunction.html)  (3m)
+  - Read: [Postgres docs: ALTER DEFAULT PRIVILEGES, and EXECUTE granted to PUBLIC](https://www.postgresql.org/docs/current/sql-alterdefaultprivileges.html)  (6m)
+  - Read: [Supabase docs: row-level security and security definer functions](https://supabase.com/docs/guides/database/postgres/row-level-security)  (24m)
+  - Guide: [Technique: Least privilege and sandboxing](SYSTEM%20DESIGN.html#/patterns/agent-safety/least-privilege). SECURITY DEFINER plus a PUBLIC grant is least privilege failing by default.
+- [ ] Schema drift and provider normalisation  _(12m)_
+  - Read: [Gmail API: synchronising a client with history.list](https://developers.google.com/workspace/gmail/api/guides/sync)  (3m)
+  - Read: [Microsoft Graph: delta query for messages](https://learn.microsoft.com/en-us/graph/delta-query-messages)  (8m)
+  - Guide: [Email and calendar agent, high-level design](SYSTEM%20DESIGN.html#/designs/email-agent/hld). An agent over Gmail and a calendar, with the providers behind one model.
+- [ ] Say 'I don't know' well, then run one cold question  _(27m)_
+- [ ] What is the honest answer on exactly-once side effects?
+- [ ] Why did the SECURITY DEFINER functions leak across users?
+- [ ] When pushed on a claim, which way do you go?
+
+### DevEx: explaining Kitaru to a developer  (1h 15m)
 
 - [ ] **How Alex writes and what he writes about**  (23m)
   Read two or three of his recent posts, including the analysis of production LLM deployments and the one on rebuilding the site with Claude Code. Notice how he explains things; that is the bar he will hold you to.
@@ -221,14 +364,21 @@ Practice:
     Skip: letting the tour touch anything paid or live — it should ask first, and the answer is no
   - [ ] Say the four stages in order, out loud, and name the point where the tour paused to ask before continuing  _(5m)_
     Done when: four stages spoken in order, and the pause point named
-
 Practice:
 - [ ] Describe the first ten minutes as you actually experienced them
+  - Read: [Alex Strick van Linschoten's blog](https://alexstrick.com/)  (2m)
 - [ ] Write a hundred-and-fifty-word explanation of replay-based evals for a developer who already uses Langfuse
+  - Read: [Alex Strick: how to think about evals for LLM applications](https://alexstrick.com/posts/2025-05-20-how-to-think-about-evals.html)  (11m)
 - [ ] Prepare your view on agent-driven onboarding
+  - Read: [Kitaru docs: setup, the MCP server and agent skills](https://docs.zenml.io/kitaru/getting-started/setup)  (10m)
 - [ ] Rehearse your first-post pitch
+  - Read: [Kitaru docs: welcome](https://docs.zenml.io/kitaru)  (6m)
+- [ ] What is the best evidence of DevEx judgement you can bring?
+- [ ] What distinguishes a well-designed onboarding skill?
+- [ ] The key idea to get across to a Langfuse user is:
+- [ ] Explain, in one sentence, the difference between Kitaru and reading traces in Langfuse, for a developer who already trusts their trace store.
 
-### ZenML context for the CTO  (45m, 27m of actions)
+### ZenML context for the CTO  (45m)
 
 - [ ] **ZenML's core abstractions**  (10m)
   Pipelines and steps, stacks that bind them to infrastructure, orchestrators, artifact stores and lineage. Enough to hold a conversation, not to pass an exam.
@@ -251,8 +401,22 @@ Practice:
     Done when: one sentence: Kitaru treats Langfuse and Braintrust as import sources, not replacements, and tests a candidate change against the same recorded tool history
   - [ ] Form your own one-line answer to whether replay is the wedge or the whole product, and say it out loud  _(7m)_
     Done when: one spoken sentence that takes a position, not a summary of the docs
-
 Practice:
 - [ ] Know ZenML's core vocabulary at a working level
+  - Read: [ZenML docs: core concepts](https://docs.zenml.io/getting-started/core-concepts)  (10m)
+  - Read: [ZenML docs: steps and pipelines](https://docs.zenml.io/concepts/steps_and_pipelines)  (10m)
+  - Read: [ZenML docs: artifacts and lineage](https://docs.zenml.io/concepts/artifacts)  (15m)
 - [ ] Form your own view of the strategic bet
+  - Read: [ZenML blog: the Kitaru launch](https://www.zenml.io/blog/kitaru-launch)  (10m)
+  - Read: [ZenML docs: stacks and stack components](https://docs.zenml.io/concepts/stack_components)  (5m)
 - [ ] Answer: if you ran Kitaru for a quarter, what would you ship first
+- [ ] What connects ZenML's pipeline heritage to Kitaru?
+- [ ] Why ship provenance first?
+- [ ] What is the bet behind replay-based evals?
+- [ ] Explain the throughline from ZenML's pipeline heritage to Kitaru's replay-based evals, the way its co-founder would recognise as his own thesis.
+
+### The full ninety-minute mock  (1h 30m)
+
+Practice:
+- [ ] Run the live mock in chat: say run the ZenML round-three mock
+- [ ] Monday morning: re-read the bench headline and your three questions, nothing else

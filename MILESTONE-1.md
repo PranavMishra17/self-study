@@ -37,6 +37,17 @@ Three sessions. Protect the first two; the third is the one that gives way.
 Session A is the one with no multitasking. Nothing else open. Not Claude Code,
 not applications, not the phone. If that rule breaks, the session did not happen.
 
+**Extra practice, added 25 September.** Three system design sessions written for the
+Oxus loop now sit after session C as optional practice, one a week: week 2, evidence
+ingestion from messy documents (1h 30m); week 3, walkthrough to flowchart and the
+year-over-year base (1h); week 4, an agent that tests a SOX control (2h). They do not
+count toward a week's state and do not move the gate.
+
+**How each session is worked.** In the tracker, every step starts shut and opens to
+what it is, its figure, what to read with minutes, and where it sits in the system
+design guide, with the answer behind a toggle until tried. The closing quiz is five to
+eight open questions. The long form below is the plan; the tracker is where it is done.
+
 ---
 
 # Week 1 · 21–27 September · The words you were missing
@@ -301,9 +312,10 @@ crisis. The dates are soft; the capabilities are not.
 
 ## The wildcard slot
 
-A sixth column on the planner, empty until an interview lands. Sessions for a
-scheduled loop are written there instead of being crammed into the weeks, and
-closing them earns credit toward folding up to four planned sessions in as covered.
+A sixth slot on the planner, empty until an interview lands. Sessions for a
+scheduled loop are written there instead of being crammed into the weeks, the loop
+gets its own page in `interviews/`, and closing its sessions earns credit toward
+folding up to four planned sessions in as covered.
 See `WILDCARD.md` for the mechanics. The relevant line for this milestone: a loop
 arriving in October does not push the gate, and does not mean the five weeks
 stopped existing.

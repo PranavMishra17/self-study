@@ -12,32 +12,45 @@ that work to go, so it is *inside* the plan rather than a reason to abandon it.
 
 ## How sessions get added
 
-When a loop is scheduled, say what it is and what they interview on. Sessions are
-then written into `index.html`'s `WILDCARD.sessions` array — same shape as any
-planned session, with steps, expandable detail, resource links, answer fields and a
-closing quiz. Three sessions or eight, depending on what the interview actually
-demands.
+When a loop is scheduled, say what it is and what they interview on. It then gets two
+things:
 
-They **append**. Existing wildcard sessions are not cleared when new ones arrive
-unless the old loop is over and the entries are stale.
+1. **Sessions** in `index.html`'s `WILDCARD.sessions` array, the same shape as any
+   planned session. Three sessions or eleven, depending on what the interview actually
+   demands.
+2. **Its own page**, `interviews/<loop>.html`, built by `python interviews/build.py
+   <module>` from a content module (`interviews/<module>.py`): the brief, what to say
+   in the words to say it, timed spoken drills, a technical question bank, figures,
+   questions to ask, traps, and every session readable in place. Add a `LOOPS` entry in
+   `index.html` so the wildcard page shows it as a card. Full mocks run in the Claude
+   Code chat, by `interviews/MOCKS.md`.
+
+Sessions **append**. Existing wildcard sessions are not cleared when new ones arrive.
+When a loop is over, its unfinished sessions are marked `parked: true`: still counted,
+still openable, no longer listed as work.
 
 Session shape, for whoever is adding them:
 
     {
-      id: "wc1",                       // unique, wc-prefixed
-      track: "Systems",                // Systems | Mathematics | Alaap | Requeue
-      forWhat: "Sarvam screen, 24 Sep", // which loop this is for
-      len: "2h", est: 120,
+      id: "wc18",                        // unique, wc-prefixed
+      track: "Systems",                  // Systems | Mathematics | Alaap | Interview | Requeue
+      forWhat: "ZenML round 3, 28 Sep",  // which loop; LOOPS matches on its prefix
+      len: "1h 30m", est: 90,
       name: "...",
-      blurb: "one line, shown in the table",
+      blurb: "one line, shown in lists",
       intro: "why this session exists",
-      diagrams: ["skew"],              // optional, keys from DIA
-      steps: [{ t: "...", d: "...", links: [...] }],
-      quiz: [{ q: "...", o: [...], a: 1, why: "..." }]
+      study: [{ t: "term", say: "said-out-loud definition", res: [...],
+                do: [{ a: "action", m: 5, where: "...", url: "...", out: "done when", skip: "..." }] }],
+      steps: [{ t: "...", d: "what it is", m: 10, ans: ["the words to say", "..."],
+                sd: [{ p: "pattern", t: "technique", why: "..." }], links: [...],
+                close: [{ k: "short", q: "open question", a: "model answer" }] }]
     }
 
-Also add a `SHORT` entry so the planner column has a legible marker, and set
-`WILDCARD.note` to name the current loop.
+Reading, figures and guide links per step can also live in `data/reading.js`, keyed
+`<session id>:<step>` (`wc18:0`) or `:s<n>` for a study item; the tracker and the loop
+page both read it. The end quiz is drawn from the steps' `close` questions, five to
+eight, open questions only. Also add a `SHORT` label and set `WILDCARD.note` to name the
+current loop.
 
 ## The fold rule
 
@@ -60,14 +73,15 @@ done properly later if the interview prep turned out to be shallower than it fel
 
 Opened 22 September 2026 for two loops.
 
-- **Oxus, technical, 23 September.** Six sessions, about seven and a half hours:
-  the design frame, testing a SOX control end to end, evidence ingestion from messy
-  documents, walkthrough-to-flowchart and the year-over-year base, past work at
-  grilling depth, and a final hour of mock, fixes and sleep.
-- **ZenML round 3, Monday 28 September, 9 AM Eastern.** Six sessions, about eight
-  and a half hours: the shift from round 2's room to this one, side effects inside
-  replay, multi-turn replay with a simulated user, DevEx and onboarding, ZenML
-  context for the CTO, and a full ninety-minute mock.
+- **Oxus, technical, 23 September.** Happened. Its three design sessions (evidence
+  ingestion, walkthrough-to-flowchart and the year-over-year base, a control-testing
+  agent) moved into weeks 2, 3 and 4 as extra systems practice. The other three are
+  parked. Its page, `interviews/oxus.html`, is a minimal archive.
+- **ZenML round 3, Monday 28 September, 9 AM Eastern.** Eleven sessions: the shift from
+  round 2, the eval bench story and the critique fixed, side effects inside replay,
+  multi-turn replay, Kitaru internals, designing replay evals, backend depth, DevEx,
+  ZenML context for the CTO, and a full mock. Its page is `interviews/zenml-round3.html`;
+  the flat checklist is `STUDY-LIST.md`.
 
 Fold candidate once the ZenML side-effects session closes: week 4's systems session
 on failure, retries and idempotency, which it covers in more depth.

@@ -282,3 +282,18 @@ matrix in attention, an invisible validation curve, colliding ids), the five Kit
 figures were redrawn so they can be explored, and ten new figures were drawn from the ideas
 recorded in the reading pass. Two errors in other pages were fixed (the Alaap autograd
 formulas, an async flag in the guide); 113 smaller review points are in `figures/REVIEW.md`.
+
+**2026-09-26 — What was learned about studying, written down; the ten-minute floor dropped.**
+`PROTOCOL.md` gains **How you study best**: understand first and say it last, diagrams you
+can take apart, reading with a stopping point, steps shut by default, one look, open
+questions one at a time, honest ratings that bring misses back, a page and a real mock per
+interview, small rewards without debt, and big changes chosen from options. Each is there
+because something else was tried first and dropped. The ten-minute floor is removed from
+the protocol and the tracker's protocol page: its timer went with the old session layout,
+and a step's answer staying shut until you have tried now does the same job. Not in
+`CHARTER.md`, so not a deviation. The README is rewritten for anyone who lands on the
+repo: what it is, the method, and how to make it your own. `WILDCARD.md` describes loop
+pages and the current session shape, `MILESTONE-1.md` records the three Oxus design
+sessions now in weeks 2 to 4, `STUDY-LIST.md` is regenerated with each step's reading and
+guide links, and five 1st-edition DDIA chapter references in the reading became 2nd-edition
+topics.

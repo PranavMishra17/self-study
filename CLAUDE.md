@@ -19,6 +19,8 @@ python interviews/build.py zenml_round3       # interviews/zenml-round3.html fro
 python alaap/build.py                         # ALAAP.html + the AL:BEGIN..AL:END block in index.html
 ```
 
+`STUDY-LIST.md` is regenerated from the tracker: `#/sheet/wc`, Copy as markdown.
+
 Check a page's script still parses: extract the inline `<script>` and `node --check` it.
 Check behaviour in the built-in browser pane at `localhost:8000`, asserting on state with
 `javascript_tool` or `get_page_text` (screenshots often paint blank after a scroll; a
@@ -56,6 +58,9 @@ Check behaviour in the built-in browser pane at `localhost:8000`, asserting on s
 
 ## How Pranav wants the work done
 
+The long form, for the material itself, is `PROTOCOL.md`, section **How you study best**
+(read it before designing any new page, session or figure). The working rules:
+
 - **Ask first on anything sizeable.** Use `ask-questions-if-underspecified`: numbered
   questions, lettered options, a recommended default; he answers like `1b 2a 3a`. For
   "surprise me" asks, offer a list of options and build only the ones he picks.
@@ -74,6 +79,8 @@ Check behaviour in the built-in browser pane at `localhost:8000`, asserting on s
   one-word answers.
 - **Words**: plain sentence case, short sentences, no emojis, no marketing words, no
   "simply" or "just".
+- **Docs stay current**: when a page or process changes, update README, the doc that
+  describes it (`WILDCARD.md`, `PROTOCOL.md`, `MILESTONE-1.md`), and `CLAUDE.md` itself.
 - **Each pass ends with**: a `CHANGELOG.md` entry (date, what, why, charter deviation or not),
   README updated if a page changed, commit to `main` and push (that publishes).
 

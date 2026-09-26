@@ -467,8 +467,8 @@
   @media (max-width: 860px) {
     .compare { grid-template-columns: 1fr; padding-left: 2px; gap: 16px; }
   }
-  /* w3-floor-time: session clock and ten-minute floor */
-  .clockbox, .floorbox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  /* session clock */
+  .clockbox { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
   .clockcorr { width: 68px; border: 1px solid var(--line); background: var(--sheet);
     padding: 8px 9px; font: inherit; font-size: 13.5px; color: inherit; }
   .fig-wild { border-left: 2px solid var(--iv); }
@@ -7352,10 +7352,9 @@
     v.appendChild(rubric("No back-filling"));
     v.appendChild(el("p", "", "Missed hours are never owed. No catching up, no double sessions, no debt. A missed week is simply gone. Accumulated debt is the most common reason long plans get dropped, so this one does not create any."));
 
-    v.appendChild(rubric("Three working rules"));
+    v.appendChild(rubric("Two working rules"));
     var ol = el("ol", "rules");
-    [["The ten-minute floor. ", "Before marking something unknown or moving past it, give it ten minutes of written attempt: what you know, where it stops, what exactly is missing. Most things resolve inside that window."],
-     ["The requeue. ", "Anything set aside goes onto the list and comes back later."],
+    [["The requeue. ", "Anything set aside goes onto the list and comes back later."],
      ["The weekly look. ", "Once a week, read the requeue. Not to clear it, just to keep it in view."]].forEach(function (r) {
       var li = document.createElement("li");
       var b = document.createElement("b");
@@ -8288,9 +8287,6 @@
     return box;
   }
 
-  /* ------------------------------------------- w3-floor-time: ten-minute floor */
-
-
   /* --------------------------------------------------------- export tracking */
 
   function stateSnapshot() {
@@ -8364,6 +8360,7 @@
           (c.res || []).forEach(function (r) {
             lines.push(r.book ? "  - " + r.book : "  - [" + r.label + "](" + r.url + ")");
           });
+          extraMarkdown(c.k, "  ").forEach(function (l) { lines.push(l); });
           if (c.src && c.src.do && c.src.do.length) {
             c.src.do.forEach(function (d) {
               lines.push("  - [ ] " + d.a + (d.m ? "  _(" + mins(d.m) + ")_" : ""));
@@ -8388,12 +8385,25 @@
             if (st.out) { lines.push("  Done when: " + st.out); }
             if (st.skip) { lines.push("  Skip: " + st.skip); }
             if (st.nlm) { lines.push("  Ask NotebookLM: " + st.nlm); }
+            extraMarkdown(c.k, "  ").forEach(function (l) { lines.push(l); });
           });
         }
         lines.push("");
       });
     });
     return lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "") + "\n";
+  }
+  /* the reading from data/reading.js under a card: outside reading, lessons, guide techniques */
+  function extraMarkdown(key, pad) {
+    var x = extraOf(key), out = [];
+    (x.read || []).concat(x.aieng || []).forEach(function (r) {
+      var m = r.m ? "  (" + mins(r.m) + ")" : "";
+      out.push(pad + "- Read: " + (r.url ? "[" + r.label + "](" + r.url + ")" : r.book) + m);
+    });
+    (x.sd || []).forEach(function (p) {
+      out.push(pad + "- Guide: [" + sdLabel(p) + "](" + sdHref(p) + ")" + (p.why ? ". " + p.why : ""));
+    });
+    return out;
   }
 
   /* --------------------------------------------------- declared week state */
