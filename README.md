@@ -129,6 +129,15 @@ shortcut, `system-design.svg` (the same craft, colours inverted) for the guide, 
 `alaap.svg` (the craft in Alaap's palette) for the study plan. The fifteen directions the
 first was chosen from are in `brand/concepts/`.
 
+**Figures you can explore.** Every diagram on every page (tracker, interview pages, system
+design guide, Alaap) opens full screen on a click: hover a box or an arrow for a note, select
+it for the full explanation and its links, zoom and pan, or Walk through the flow a step at a
+time (arrow keys move, Escape closes). The pieces: `figures/viewer.js` and `viewer.css` (the
+viewer), `figures/notes.js`, `notes-sd.js`, `notes-alaap.js` (what each node and edge means,
+keyed by figure), `figures/icons.js` (Lucide icons, ISC, bundled), `figures/annotate.py`
+(names the parts of hand-drawn svgs, used by the Alaap build), and `figures/REVIEW.md` (what
+the reviewers flagged for the next figure pass).
+
 `data/reading.js` holds the reading added on top of each step, keyed like progress
 (`w2a:0`, `wc3:s2`): outside links with minutes, AI Engineering from Scratch lessons, system
 design techniques with a line on why, figure keys, and figure ideas for a later pass.

@@ -270,3 +270,15 @@ agents had cited 1st-edition chapter numbers). On the ZenML page every technical
 opens to its point, its figure, what to read and the guide technique, with the spoken
 answer behind the same toggle. About 620 lines of unused tracker code went: the old quiz
 panel, closers, spaced card, answer boxes and their styles.
+
+**2026-09-26 — Every diagram explorable.**
+Asked for by Pranav: diagrams that open full screen, explain each part on hover and click,
+and walk through the flow. One viewer (`figures/viewer.js`) now serves the tracker, the
+interview pages, the system design guide and the Alaap page. Every node and edge of 205
+diagrams has a note written for its context, with links to guide techniques, tracker
+sessions, Alaap stages, TrenTorch source and AI Engineering from Scratch lessons. The 39
+shared figures were redrawn with named parts and Lucide icons (fixing an unwired value
+matrix in attention, an invisible validation curve, colliding ids), the five Kitaru teardown
+figures were redrawn so they can be explored, and ten new figures were drawn from the ideas
+recorded in the reading pass. Two errors in other pages were fixed (the Alaap autograd
+formulas, an async flag in the guide); 113 smaller review points are in `figures/REVIEW.md`.
