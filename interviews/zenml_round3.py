@@ -304,3 +304,127 @@ EMPHASIS = [
     "our own tables in Supabase Postgres", "divergence", "I never instrumented it", "estimate", "5,000-plus",
     "WheelPrice", "INFORMS Analytics+", "MockFlow-AI", "MetaRAG", "not looking to urgently leave",
 ]
+
+# Per step on the Sessions tab: extra links into the system design guide, down to the one
+# technique that step is about, and which of the teardown figures belongs with it.
+_SD = "../SYSTEM%20DESIGN.html#/"
+
+
+def _t(pattern, technique, label, why):
+    return {"href": _SD + "patterns/" + pattern + "/" + technique, "label": label, "why": why}
+
+
+def _d(design, anchor, label, why):
+    return {"href": _SD + "designs/" + design + "/" + anchor, "label": label, "why": why}
+
+
+STEP_EXTRA = {
+    "wc13:0": {"figs": [3], "sd": [
+        _t("agent-durability", "env-snapshots", "Technique: environment snapshots", "The bench's frozen world is this technique: the agent runs against a copy, never the real inbox."),
+        _t("grounding", "eval-gate", "Technique: eval suites as release gates", "What the bench became: the thing that signed off the orchestration rewrite.")]},
+    "wc13:1": {"sd": [_d("alfred", "deepdives", "alfred_, deep dives", "The system the bench tests, drawn from your own code.")]},
+    "wc13:4": {"sd": [_t("grounding", "shadow-online", "Technique: shadow mode and online signals", "Where the scanner's production signals come from, and why they over-fire.")]},
+    "wc13:5": {"sd": [_d("alfred", "hld", "alfred_, high-level design", "Draw the bench as a box beside this: scanner, judge, reconciler, snapshot, replay.")]},
+    "wc14:0": {"sd": [_t("grounding", "citations", "Technique: enforced citations and verification", "Provenance is the same idea: every result says where it came from.")]},
+    "wc14:1": {"sd": [_t("scaling-reads", "cache-aside", "Technique: cache-aside", "What a miss means in an ordinary cache, and why a replay miss is different: it is information.")]},
+    "wc14:2": {"sd": [_t("reliability", "monitoring", "Technique: monitoring and completeness checks", "Asserting every refund appears is a completeness check against ground truth you hold.")]},
+    "wc15:0": {"figs": [0]},
+    "wc15:1": {"figs": [1], "sd": [_t("agent-safety", "least-privilege", "Technique: least privilege and sandboxing", "What Kitaru deliberately does not do: your agent runs with your process's rights.")]},
+    "wc15:3": {"sd": [_t("agent-safety", "effect-classes", "Technique: tool effect classes", "Tool policies are a replay-time version of sorting tools by what they do to the world.")]},
+    "wc15:5": {"figs": [2]},
+    "wc15:6": {"sd": [_t("agent-durability", "transcript-checkpoint", "Technique: transcript checkpoint every turn", "Why last-turn replay is possible at all: every turn is recorded as it happens.")]},
+    "wc16:1": {"figs": [0]},
+    "wc16:2": {"figs": [3]},
+    "wc16:3": {"sd": [_t("grounding", "citations", "Technique: enforced citations and verification", "Trust in a replay is provenance on every node, the same move as citing every claim.")]},
+    "wc16:4": {"sd": [
+        _t("contention", "claim-skip-locked", "Technique: queue claiming with SKIP LOCKED", "Two workers, one table, no double claims."),
+        _t("long-running", "leases", "Technique: leases, heartbeats, visibility timeouts", "What happens when a worker dies holding a replay."),
+        _t("long-running", "worker-pool", "Technique: queue plus worker pool", "The shape of the replay runner.")]},
+    "wc17:0": {"sd": [_t("agent-durability", "env-snapshots", "Technique: environment snapshots", "SQLite file or Postgres template: two ways to build the same snapshot.")]},
+    "wc17:1": {"sd": [
+        _t("multi-step", "idempotency", "Technique: idempotency keys", "Where the key lives decides whether a retry is safe."),
+        _t("multi-step", "outbox", "Technique: transactional outbox", "Write the intent before the call, the ledger's shape."),
+        _t("agent-durability", "unknown-results", "Technique: idempotent tools and unknown results", "The send succeeded but the response timed out.")]},
+    "wc17:2": {"sd": [
+        _t("contention", "claim-skip-locked", "Technique: queue claiming with SKIP LOCKED", "The idiom to name when they ask how the queue is claimed."),
+        _t("real-time", "polling", "Technique: polling and long polling", "Why a cron drain's worst case is its interval, and what triggering on the event buys."),
+        _t("long-running", "retries-dlq", "Technique: retries with backoff and a dead-letter queue", "The backstop you keep after moving to events.")]},
+    "wc17:3": {"sd": [_t("agent-safety", "least-privilege", "Technique: least privilege and sandboxing", "SECURITY DEFINER plus a PUBLIC grant is least privilege failing by default.")]},
+    "wc17:4": {"sd": [_d("email-agent", "hld", "Email and calendar agent, high-level design", "An agent over Gmail and a calendar, with the providers behind one model.")]},
+    "wc11:1": {"figs": [4]},
+}
+
+# Outside reading per step on the Sessions tab. Every URL here was opened and checked on
+# 25 Sep 2026; the lesson folders in AI Engineering from Scratch were checked against the repo.
+_AE = "https://github.com/rohitg00/ai-engineering-from-scratch/tree/main/phases/"
+
+
+def _r(label, url):
+    return {"label": label, "url": url}
+
+
+def _ae(path, label):
+    return {"label": "AI Engineering from Scratch, " + label, "url": _AE + path}
+
+
+def _b(t):
+    return {"book": t}
+
+
+STEP_READING = {
+    "wc7:3": [_r("Kitaru docs: what a replay is", "https://docs.zenml.io/kitaru/core-concepts/replay")],
+    "wc13:0": [_r("Hamel Husain: your AI product needs evals", "https://hamel.dev/blog/posts/evals/index.html"),
+               _ae("14-agent-engineering/30-eval-driven-agent-development", "phase 14, lesson 30: eval-driven agent development")],
+    "wc13:1": [_r("Anthropic: demystifying evals for AI agents", "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents")],
+    "wc13:4": [_r("Eugene Yan: evaluating LLM evaluators, agreement with human labels", "https://eugeneyan.com/writing/llm-evaluators/"),
+               _ae("14-agent-engineering/52-design-success-metrics", "phase 14, lesson 52: designing success metrics")],
+    "wc13:5": [_ae("14-agent-engineering/31-agent-workbench-why-models-fail", "phase 14, lesson 31: the agent workbench, why models fail"),
+               _ae("11-llm-engineering/10-evaluation", "phase 11, lesson 10: evaluating LLM applications")],
+    "wc14:0": [_r("Replay baselines that silently drift when a tool's identity changes", "https://dev.to/gabrielanhaia/stop-keying-agent-replay-on-tool-names-use-fingerprints-1m63")],
+    "wc14:1": [_r("VCR.py: record modes, what happens on a miss", "https://vcrpy.readthedocs.io/en/latest/usage.html"),
+               _r("VCR.py: how a request is matched to a recording", "https://vcrpy.readthedocs.io/en/latest/configuration.html")],
+    "wc14:2": [_r("Snapshot tests against behaviour-checking tests, the trade-offs", "https://www.sitepen.com/blog/snapshot-testing-benefits-and-drawbacks")],
+    "wc15:0": [_r("Control plane and data plane, explained", "https://konghq.com/blog/learning-center/control-plane-vs-data-plane")],
+    "wc15:1": [_r("What running a subprocess without a sandbox gives away", "https://www.pandastack.ai/blog/how-to-sandbox-untrusted-code/")],
+    "wc15:2": [_r("Postgres docs: WITH RECURSIVE, for a tree in one table", "https://www.postgresql.org/docs/current/queries-with.html"),
+               _b("DDIA, ch. 2, Data models and query languages: the part on trees and graphs")],
+    "wc15:3": [_r("Kitaru docs: replay and overrides, the tool policies", "https://docs.zenml.io/kitaru/guides/replay-and-overrides")],
+    "wc15:4": [_r("Kitaru docs: replay and overrides, the cache key and on_miss", "https://docs.zenml.io/kitaru/guides/replay-and-overrides")],
+    "wc15:6": [_r("Regression-testing multi-turn conversations as whole trajectories", "https://dev.to/jackm-singularity/conversation-regression-testing-for-ai-agents-catch-multi-turn-failures-before-production-emg")],
+    "wc16:0": [_r("Temporal: what durable execution is", "https://docs.temporal.io/evaluate/understanding-temporal"),
+               _ae("15-autonomous-systems/12-durable-execution", "phase 15, lesson 12: durable execution")],
+    "wc16:1": [_r("Temporal: workflow execution, event history and replay", "https://docs.temporal.io/workflow-execution"),
+               _ae("15-autonomous-systems/16-checkpoints-rollback", "phase 15, lesson 16: checkpoints and rollback")],
+    "wc16:2": [_r("TigerBeetle: deterministic simulation testing, and why determinism is the whole game", "https://tigerbeetle.com/blog/2026-08-20-protocol-aware-dst/")],
+    "wc16:3": [_ae("14-agent-engineering/24-agent-observability-platforms", "phase 14, lesson 24: agent observability platforms")],
+    "wc16:4": [_r("Temporal: worker slots and concurrency on a task queue", "https://docs.temporal.io/develop/worker-performance"),
+               _r("Crunchy Data: a queue in plain Postgres with SKIP LOCKED", "https://www.crunchydata.com/blog/message-queuing-using-native-postgresql")],
+    "wc17:0": [_r("Postgres docs: template databases", "https://www.postgresql.org/docs/current/manage-ag-templatedbs.html"),
+               _r("SQLite docs: datatypes and type affinity", "https://www.sqlite.org/datatype3.html")],
+    "wc17:1": [_r("Stripe: designing APIs with idempotency", "https://stripe.com/blog/idempotency"),
+               _r("Brandur Leach: Stripe-like idempotency keys in Postgres", "https://brandur.org/idempotency-keys"),
+               _b("DDIA, ch. 8, The trouble with distributed systems: timeouts and unknown outcomes"),
+               _b("DDIA, ch. 11, Stream processing: exactly-once and idempotence")],
+    "wc17:2": [_r("Postgres docs: the locking clause, FOR UPDATE SKIP LOCKED", "https://www.postgresql.org/docs/current/sql-select.html"),
+               _r("Crunchy Data: a queue in plain Postgres with SKIP LOCKED", "https://www.crunchydata.com/blog/message-queuing-using-native-postgresql"),
+               _r("Postgres docs: LISTEN, triggering on the event", "https://www.postgresql.org/docs/current/sql-listen.html"),
+               _b("DDIA, ch. 7, Transactions: locks and isolation")],
+    "wc17:3": [_r("Postgres docs: CREATE FUNCTION, writing SECURITY DEFINER functions safely", "https://www.postgresql.org/docs/current/sql-createfunction.html"),
+               _r("Postgres docs: ALTER DEFAULT PRIVILEGES, and EXECUTE granted to PUBLIC", "https://www.postgresql.org/docs/current/sql-alterdefaultprivileges.html"),
+               _r("Supabase docs: row-level security and security definer functions", "https://supabase.com/docs/guides/database/postgres/row-level-security")],
+    "wc17:4": [_r("Gmail API: synchronising a client with history.list", "https://developers.google.com/workspace/gmail/api/guides/sync"),
+               _r("Microsoft Graph: delta query for messages", "https://learn.microsoft.com/en-us/graph/delta-query-messages")],
+    "wc8:5": [_r("Temporal docs: activities, where side effects live", "https://docs.temporal.io/activities"),
+              _ae("15-autonomous-systems/12-durable-execution", "phase 15, lesson 12: durable execution")],
+    "wc9:1": [_r("tau-bench paper: tool, agent and a simulated user, and pass^k", "https://arxiv.org/abs/2406.12045")],
+    "wc9:3": [_ae("14-agent-engineering/19-benchmarks-swebench-gaia", "phase 14, lesson 19: agent benchmarks")],
+    "wc10:0": [_r("Alex Strick van Linschoten's blog", "https://alexstrick.com/")],
+    "wc10:1": [_r("Alex Strick: how to think about evals for LLM applications", "https://alexstrick.com/posts/2025-05-20-how-to-think-about-evals.html")],
+    "wc10:2": [_r("Kitaru docs: setup, the MCP server and agent skills", "https://docs.zenml.io/kitaru/getting-started/setup")],
+    "wc10:3": [_r("Kitaru docs: welcome", "https://docs.zenml.io/kitaru")],
+    "wc11:0": [_r("ZenML docs: core concepts", "https://docs.zenml.io/getting-started/core-concepts"),
+               _r("ZenML docs: steps and pipelines", "https://docs.zenml.io/concepts/steps_and_pipelines"),
+               _r("ZenML docs: artifacts and lineage", "https://docs.zenml.io/concepts/artifacts")],
+    "wc11:1": [_r("ZenML blog: the Kitaru launch", "https://www.zenml.io/blog/kitaru-launch"),
+               _r("ZenML docs: stacks and stack components", "https://docs.zenml.io/concepts/stack_components")],
+}

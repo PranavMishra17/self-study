@@ -96,12 +96,22 @@ def build(module_name):
         s["quiz_src"] = s.get("quiz")
         s["hasTrackerQuiz"] = bool(s.get("quiz"))
         s["quiz"] = quiz_for(s)
+    # Per step: extra guide links, teardown figures and outside reading from the content module.
+    extra, reading = getattr(m, "STEP_EXTRA", {}), getattr(m, "STEP_READING", {})
+    for s in sessions:
+        for kind, items in (("", s["steps"]), ("s", s.get("study") or [])):
+            for i, it in enumerate(items):
+                key = "%s:%s%d" % (s["id"], kind, i)
+                x = extra.get(key, {})
+                it["sdLinks"] = (it.get("sdLinks") or []) + x.get("sd", [])
+                it["figs"] = x.get("figs", [])
+                it["read"] = reading.get(key, [])
     mocks_path = os.path.join(HERE, module_name + ".mocks.json")
     mocks = json.load(io.open(mocks_path, encoding="utf-8")) if os.path.exists(mocks_path) else []
     data = {
         "id": L["id"], "title": L["title"], "subtitle": L["subtitle"], "when": L["when"], "when_iso": L["when_iso"],
         "who": L["who"], "format": L["format"], "bar": L["bar"],
-        "sessions": [{k: s.get(k) for k in ("id", "name", "blurb", "intro", "len", "day", "steps", "study", "quiz", "hasTrackerQuiz")}
+        "sessions": [{k: s.get(k) for k in ("id", "name", "blurb", "intro", "len", "day", "steps", "study", "quiz", "hasTrackerQuiz", "figs")}
                      for s in sessions],
         "scripts": getattr(m, "SCRIPTS", []), "drills": getattr(m, "DRILLS", []), "qa": getattr(m, "QA", []), "ask": getattr(m, "ASK", []), "traps": getattr(m, "TRAPS", []),
         "tables": getattr(m, "KITARU_TABLES", []), "admire": getattr(m, "ADMIRE", ""), "kitaruLead": getattr(m, "KITARU_LEAD", ""),
