@@ -23,30 +23,33 @@ const R = eval("(" + grab("var R = {") + ")");
 const L = {};
 const WILDCARD = eval("(" + grab("var WILDCARD = {") + ")");
 const STUDY = eval("(" + grab("var STUDY = {") + ")");
-/* The tracker's figures (DIA, drawn with its S helpers) and its system design map (SD),
-   so the loop page can show the same figures and the same guide links. */
-const dStart = src.indexOf("  var S = {};");
-const dLast = src.indexOf("  DIA.multiturn = {");
-const dEnd = src.indexOf("{", dLast) + grab("  DIA.multiturn = {").length;
-const DIA = new Function(src.slice(dStart, dEnd) + ";\nreturn DIA;")();
+/* The tracker's system design map (SD), and the reading added on top of each step
+   (data/reading.js), so the loop page shows the same guide links and reading. */
+const RD = new Function(fs.readFileSync(path.join(__dirname, "..", "data", "reading.js"), "utf8") + ";return { READING: READING, SD_TECH: SD_TECH };")();
 const SD = eval("(" + grab("var SD = {") + ")");
 function sdHref(p) {
-  const parts = p.v === "overview"
+  const parts = p.p ? ["patterns", p.p].concat(p.t ? [p.t] : []) : p.v === "overview"
     ? (!p.a ? ["framework"] : p.a.indexOf("pattern-") === 0 ? ["patterns", p.a.slice(8)] : ["framework", p.a])
     : (p.a ? ["designs", p.v, p.a] : ["designs", p.v]);
   return "../" + SD.file + "#/" + parts.map(encodeURIComponent).join("/");
 }
 function sdLabel(p) {
+  if (p.p) { return p.t ? "Technique: " + (RD.SD_TECH[p.t] || p.t) : "Pattern: " + (SD.patterns[p.p] || p.p); }
   if (p.a && p.a.indexOf("pattern-") === 0) { return "Pattern: " + (SD.patterns[p.a.slice(8)] || p.a.slice(8)); }
   if (p.v === "overview") { return p.a ? "The framework, " + (SD.anchors[p.a] || p.a) : "The six-step framework"; }
   return (SD.views[p.v] || p.v) + (p.a ? ", " + (SD.anchors[p.a] || p.a) : "");
 }
-function withSd(x) { if (x.sd) { x.sdLinks = x.sd.map(p => ({ href: sdHref(p), label: sdLabel(p), why: p.why || "" })); } return x; }
+function withSd(key, x) {
+  const r = RD.READING[key] || {};
+  x.sdLinks = [].concat(x.sd || [], r.sd || []).map(p => ({ href: sdHref(p), label: sdLabel(p), why: p.why || "" }));
+  x.read = [].concat(r.read || [], r.aieng || []);
+  x.figs = r.figs || [];
+  return x;
+}
 const want = (process.argv[2] || "").split(",").filter(Boolean);
 const out = want.map(id => {
   const s = WILDCARD.sessions.find(x => x.id === id);
   if (!s) throw new Error("No wildcard session " + id);
-  const figs = (s.diagrams || []).map(k => DIA[k] && { title: DIA[k].title, cap: DIA[k].cap, svg: DIA[k].svg() }).filter(Boolean);
-  return Object.assign({}, s, { steps: s.steps.map(withSd), study: (STUDY[id] || []).map(withSd), figs: figs });
+  return Object.assign({}, s, { steps: s.steps.map((x, i) => withSd(id + ":" + i, x)), study: (STUDY[id] || []).map((x, i) => withSd(id + ":s" + i, x)), figs: s.diagrams || [] });
 });
 process.stdout.write(JSON.stringify(out));

@@ -71,23 +71,6 @@ def quiz_for(s, cap=8):
     return uniq[:cap]
 
 
-def teardown_figures(path):
-    if not path or not os.path.exists(path):
-        return []
-    src = io.open(path, encoding="utf-8").read()
-    figs = []
-    for n, m in enumerate(re.finditer(r"(<svg viewBox.*?</svg>)(.*?)(?=<svg viewBox|$)", src, re.S)):
-        svg = m.group(1)
-        ids = set(re.findall(r'id="([^"]+)"', svg))
-        for i in ids:
-            svg = svg.replace('id="%s"' % i, 'id="f%d-%s"' % (n, i)).replace("url(#%s)" % i, "url(#f%d-%s)" % (n, i))
-        svg = re.sub(r'\sstyle="min-width:\d+px"', "", svg, count=1)
-        cap = re.search(r"<figcaption[^>]*>(.*?)</figcaption>", m.group(2), re.S)
-        caption = html.unescape(re.sub(r"<[^>]+>", "", cap.group(1)).strip()) if cap else ""
-        figs.append({"svg": svg, "caption": re.sub(r"\s+", " ", caption)})
-    return figs
-
-
 def build(module_name):
     m = importlib.import_module(module_name)
     L = m.LOOP
@@ -96,16 +79,6 @@ def build(module_name):
         s["quiz_src"] = s.get("quiz")
         s["hasTrackerQuiz"] = bool(s.get("quiz"))
         s["quiz"] = quiz_for(s)
-    # Per step: extra guide links, teardown figures and outside reading from the content module.
-    extra, reading = getattr(m, "STEP_EXTRA", {}), getattr(m, "STEP_READING", {})
-    for s in sessions:
-        for kind, items in (("", s["steps"]), ("s", s.get("study") or [])):
-            for i, it in enumerate(items):
-                key = "%s:%s%d" % (s["id"], kind, i)
-                x = extra.get(key, {})
-                it["sdLinks"] = (it.get("sdLinks") or []) + x.get("sd", [])
-                it["figs"] = x.get("figs", [])
-                it["read"] = reading.get(key, [])
     mocks_path = os.path.join(HERE, module_name + ".mocks.json")
     mocks = json.load(io.open(mocks_path, encoding="utf-8")) if os.path.exists(mocks_path) else []
     data = {
@@ -115,7 +88,7 @@ def build(module_name):
                      for s in sessions],
         "scripts": getattr(m, "SCRIPTS", []), "drills": getattr(m, "DRILLS", []), "qa": getattr(m, "QA", []), "ask": getattr(m, "ASK", []), "traps": getattr(m, "TRAPS", []),
         "tables": getattr(m, "KITARU_TABLES", []), "admire": getattr(m, "ADMIRE", ""), "kitaruLead": getattr(m, "KITARU_LEAD", ""),
-        "figures": teardown_figures(L.get("teardown")), "mockHow": getattr(m, "MOCK_HOW", ""), "mocks": mocks[-2:],
+        "figures": L.get("figures", []), "mockHow": getattr(m, "MOCK_HOW", ""), "mocks": mocks[-2:],
         "planKicker": L.get("plan_kicker", ""), "mechTitle": L.get("mech_title", ""),
         "designLink": L.get("design_link"), "extra": L.get("extra", ""),
         "emphasis": getattr(m, "EMPHASIS", []),

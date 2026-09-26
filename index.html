@@ -6,6 +6,7 @@
 <title>Accelerate</title>
 <link rel="icon" type="image/svg+xml" href="brand/accelerate.svg">
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="figures/figures.css">
 <link rel="alternate icon" type="image/png" href="brand/accelerate-32.png">
 <style>
   :root {
@@ -226,37 +227,47 @@
   .res span.bk { color: var(--dim); }
   .res a:hover { border-color: var(--sys); }
 
-  /* the workbench: one card at a time, read, write, check */
-  .wb { max-width: 780px; font-family: "Atkinson Hyperlegible", var(--sans); }
-  .wb-strip { display: flex; gap: 6px; flex-wrap: wrap; margin: 22px 0 16px; }
-  .wb-dot { width: 30px; height: 8px; border: 0; padding: 0; background: var(--line); cursor: pointer; }
-  .wb-dot.edge { width: 14px; }
-  .wb-dot.done { background: var(--math); }
-  .wb-dot.on { background: var(--ink); }
-  .wb-card { background: var(--sheet); border: 1px solid var(--line); padding: 28px 34px 26px; }
-  .wb-count { font-size: 14px; color: var(--dim); }
-  .wb-card h2 { font-size: 25px; line-height: 1.28; margin: 6px 0 16px; font-weight: 700; }
-  .wb-phase { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 4px 18px; padding: 16px 0; border-top: 1px solid var(--line); font-size: 17px; line-height: 1.7; }
-  .wb-phase > * { grid-column: 2; }
-  .wb-phase > .wb-pl { grid-column: 1; grid-row: 1 / span 20; font-size: 14px; font-weight: 700; color: var(--dim); padding-top: 3px; }
-  .wb-phase.check > .wb-pl { color: var(--math); }
-  .wb-phase p { margin: 0 0 10px; }
-  .wb-phase textarea { width: 100%; min-height: 120px; font: inherit; font-size: 17px; line-height: 1.6; padding: 12px 14px; border: 1px solid var(--line); background: var(--live); color: var(--ink); resize: vertical; }
-  .wb-model { background: var(--live); border-left: 3px solid var(--math); padding: 12px 16px; font-size: 17px; }
-  .wb-model ul { margin: 0; padding-left: 20px; } .wb-model li { margin: 4px 0; } .wb-model p { margin: 0; }
-  .wb-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--dim); margin-top: 6px; }
-  .wb-rate { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
-  .wb-res a, .wb-res span { margin-right: 16px; font-size: 16px; }
-  .wb-btn { border: 1px solid var(--line); background: var(--live); color: var(--ink); padding: 7px 14px; font: inherit; font-size: 15px; cursor: pointer; }
+  /* a session as a list: every step collapses */
+  .sxlist { max-width: 820px; margin-top: 18px; font-family: "Atkinson Hyperlegible", var(--sans); }
+  .sxbulk { display: flex; gap: 16px; margin: 10px 0 6px; }
+  .sxg { font-size: 19px; margin: 26px 0 4px; }
+  .sx { border-top: 1px solid var(--line); }
+  .sx:last-of-type { border-bottom: 1px solid var(--line); }
+  .sx > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 14px; gap: 12px; align-items: start; padding: 14px 0; }
+  .sx > summary::-webkit-details-marker { display: none; }
+  .sx > summary::after { content: ""; width: 8px; height: 8px; margin-top: 6px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); }
+  .sx[open] > summary::after { transform: rotate(-135deg); margin-top: 10px; }
+  .sx > summary:hover .sxh { text-decoration: underline; text-underline-offset: 3px; }
+  .sxh { font-weight: 700; font-size: 17px; line-height: 1.4; }
+  .sx.done .sxh { color: var(--dim); }
+  .sxm { color: var(--dim); font-size: 14px; padding-top: 2px; white-space: nowrap; }
+  .sxt { width: 20px; height: 20px; border: 1.5px solid var(--dim); background: var(--live); padding: 0; margin-top: 2px; cursor: pointer; display: grid; place-items: center; font-size: 12px; color: var(--live); }
+  .sxt.on { background: var(--math); border-color: var(--math); }
+  .sxb { padding: 0 26px 20px 40px; font-size: 16px; line-height: 1.65; }
+  .sxd { margin: 0 0 12px; }
+  .sxl { font-size: 13.5px; color: var(--dim); margin: 16px 0 4px; }
+  .rlist { margin: 0; padding-left: 18px; }
+  .rlist li { margin: 5px 0; }
+  .rlist .rm { color: var(--dim); font-size: 13.5px; margin-left: 8px; }
+  .sxb .plate { margin: 10px 0 14px; }
+  .sxb .sdrow { margin-top: 14px; }
+  .sxs { margin-top: 16px; }
+  .sxs > summary { cursor: pointer; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+  .sxs .wb-model { margin-top: 10px; }
+  .sxfin { margin-top: 30px; padding-top: 4px; }
+  .sxfin .wb-phase { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 4px 18px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 16px; line-height: 1.6; }
+  .sxfin .wb-phase > * { grid-column: 2; }
+  .sxfin .wb-phase > .wb-pl { grid-column: 1; grid-row: 1 / span 20; font-size: 13.5px; font-weight: 700; color: var(--dim); }
+  .wb-quiet { color: var(--dim); font-size: 14.5px; }
+  .wb-rate { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .wb-btn { border: 1px solid var(--line); background: var(--live); color: var(--ink); padding: 6px 13px; font: inherit; font-size: 14.5px; cursor: pointer; }
   .wb-btn:hover { border-color: var(--ink); }
   .wb-btn.primary { background: var(--ink); color: var(--live); border-color: var(--ink); }
   .wb-btn.on { border-color: var(--ink); font-weight: 700; }
-  .wb-btn:disabled { opacity: .4; cursor: default; }
   .wb-link { background: none; border: 0; padding: 0; font: inherit; font-size: 14.5px; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
-  .wb-quiet { color: var(--dim); font-size: 14.5px; }
-  .wb-foot { margin-top: 18px; }
-  .wb-nav { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 16px; }
-  .wb .stepdo, .wb .sdrow { font-size: 15.5px; }
+  @media (max-width: 700px) { .sxb { padding: 0 0 18px; } .sxfin .wb-phase { grid-template-columns: minmax(0, 1fr); } .sxfin .wb-phase > .wb-pl { grid-row: auto; } }
+  .wb-model { background: var(--live); border-left: 3px solid var(--math); padding: 12px 16px; font-size: 17px; }
+  .wb-model ul { margin: 0; padding-left: 20px; } .wb-model li { margin: 4px 0; } .wb-model p { margin: 0; }
   dialog.wbq { width: min(640px, 94vw); border: 1px solid var(--line); padding: 0; background: var(--sheet); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.3); font-family: "Atkinson Hyperlegible", var(--sans); }
   dialog.wbq::backdrop { background: rgba(20, 18, 14, .5); }
   .wbq-in { padding: 26px 30px 22px; font-size: 17px; line-height: 1.65; }
@@ -267,7 +278,6 @@
   .wbq-in textarea { width: 100%; min-height: 110px; margin-top: 12px; font: inherit; padding: 10px 12px; border: 1px solid var(--line); background: var(--live); color: var(--ink); }
   .wbq-in .wb-model { margin-top: 12px; }
   .wbq-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
-  @media (max-width: 700px) { .wb-phase { grid-template-columns: minmax(0, 1fr); } .wb-phase > .wb-pl { grid-row: auto; } .wb-card { padding: 22px 18px; } .wb-nav .wb-quiet { display: none; } }
   .linkform { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   input[type=text] { flex: 1 1 200px; border: 1px solid var(--line); background: var(--sheet);
     padding: 8px 11px; font: inherit; font-size: 13.5px; color: inherit; }
@@ -318,18 +328,6 @@
   .hide { display: none; }
 
   /* svg tokens */
-  .d-fill-sys { fill: var(--sys-p); } .d-str-sys { stroke: var(--sys); }
-  .d-fill-math { fill: var(--math-p); } .d-str-math { stroke: var(--math); }
-  .d-fill-alaap { fill: var(--alaap-p); } .d-str-alaap { stroke: var(--alaap); }
-  .d-fill-req { fill: var(--req-p); } .d-str-req { stroke: var(--req); }
-  .d-fill-iv { fill: var(--iv-p); } .d-str-iv { stroke: var(--iv); }
-  .d-fill-now { fill: var(--live); } .d-str-now { stroke: var(--ink); }
-  .d-fill-flat { fill: none; } .d-str-flat { stroke: var(--line); }
-  .d-line { stroke: var(--dim); fill: none; }
-  .d-t { fill: var(--ink); font-family: var(--sans); font-size: 12px; }
-  .d-t-s { fill: var(--dim); font-family: var(--sans); font-size: 11px; }
-  .d-t-b { fill: var(--ink); font-family: var(--sans); font-size: 12px; font-weight: 700; }
-  .d-t-x { fill: var(--faint); font-family: var(--sans); font-size: 10.5px; }
 
   @media (max-width: 980px) {
     .layout { grid-template-columns: 1fr; gap: 0; }
@@ -682,6 +680,8 @@
     </main>
   </div>
 </div>
+<script src="figures/figures.js"></script>
+<script src="data/reading.js"></script>
 <script>
 (function () {
   "use strict";
@@ -718,698 +718,11 @@
   };
   function ddia(ch) { return { book: "DDIA — " + ch }; }
 
-  /* ------------------------------------------------------------ svg toolkit */
-
-  var S = {};
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
-  S.frame = function (w, h, body) {
-    return '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" role="img">' +
-      '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">' +
-      '<path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>' +
-      '<g color="var(--faint)">' + body + '</g></svg>';
-  };
-  S.box = function (o) {
-    var tone = o.tone || "flat";
-    var r = o.r === undefined ? 0 : o.r;
-    var s = '<rect x="' + o.x + '" y="' + o.y + '" width="' + o.w + '" height="' + o.h + '" rx="' + r +
-      '" class="d-fill-' + tone + ' d-str-' + tone + '" stroke-width="1.25"' +
-      (o.dash ? ' stroke-dasharray="4 3"' : '') + '/>';
-    if (o.label) {
-      var cy = o.y + o.h / 2 + (o.sub ? -3 : 4);
-      s += '<text x="' + (o.x + o.w / 2) + '" y="' + cy + '" text-anchor="middle" class="d-t-b">' + esc(o.label) + '</text>';
-      if (o.sub) {
-        s += '<text x="' + (o.x + o.w / 2) + '" y="' + (cy + 15) + '" text-anchor="middle" class="d-t-s">' + esc(o.sub) + '</text>';
-      }
-    }
-    return s;
-  };
-  S.arrow = function (x1, y1, x2, y2, o) {
-    o = o || {};
-    var d = o.curve
-      ? "M" + x1 + "," + y1 + " Q" + ((x1 + x2) / 2) + "," + (Math.min(y1, y2) - o.curve) + " " + x2 + "," + y2
-      : "M" + x1 + "," + y1 + " L" + x2 + "," + y2;
-    var s = '<path d="' + d + '" class="d-line" stroke-width="1.25" marker-end="url(#ah)"' +
-      (o.dash ? ' stroke-dasharray="4 3"' : '') + '/>';
-    if (o.label) {
-      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - (o.curve ? o.curve * 0.55 : 0) - 6;
-      s += '<text x="' + mx + '" y="' + my + '" text-anchor="middle" class="d-t-s">' + esc(o.label) + '</text>';
-    }
-    return s;
-  };
-  S.text = function (x, y, t, cls, anchor) {
-    return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "start") + '" class="' +
-      (cls || "d-t") + '">' + esc(t) + '</text>';
-  };
-  S.tag = function (x, y, t) {
-    return S.text(x, y, String(t).toUpperCase(), "d-t-x");
-  };
-  S.bar = function (o) {
-    var tone = o.tone || "flat";
-    return '<rect x="' + o.x + '" y="' + o.y + '" width="' + o.w + '" height="' + o.h +
-      '" rx="3" class="d-fill-' + tone + ' d-str-' + tone + '" stroke-width="1"/>';
-  };
-  S.dots = function (x, y, n, gap, tone) {
-    var s = "", i;
-    for (i = 0; i < n; i++) {
-      s += '<circle cx="' + (x + i * gap) + '" cy="' + y + '" r="3.5" class="d-fill-' + tone +
-        ' d-str-' + tone + '" stroke-width="1"/>';
-    }
-    return s;
-  };
-  S.path = function (d, tone, dash) {
-    return '<path d="' + d + '" fill="none" class="d-str-' + (tone || "flat") + '" stroke-width="1.75"' +
-      (dash ? ' stroke-dasharray="4 3"' : '') + '/>';
-  };
-  S.axes = function (x, y, w, h, xl, yl) {
-    return '<path d="M' + x + ',' + y + ' L' + x + ',' + (y + h) + ' L' + (x + w) + ',' + (y + h) +
-      '" class="d-line" stroke-width="1"/>' +
-      S.text(x + w, y + h + 15, xl, "d-t-x", "end") +
-      S.text(x - 4, y - 5, yl, "d-t-x", "start");
-  };
-
-  /* -------------------------------------------------------------- diagrams */
-
-  var DIA = {};
-
-  DIA.queue = {
-    title: "A queue with no backpressure does not slow down. It dies.",
-    cap: "<b>Above:</b> the unbounded queue absorbs the overload silently. Throughput on your dashboard looks unchanged, latency climbs without bound, memory climbs with it, and the process dies all at once. <b>Below:</b> a bounded queue fills, refuses work, and pushes that refusal back to the producer. Rejecting work is information. A silent five-minute queue is not.",
-    svg: function () {
-      var b = "";
-      b += S.tag(0, 14, "No backpressure");
-      b += S.box({ x: 0, y: 24, w: 86, h: 40, label: "Producer", tone: "flat" });
-      b += S.arrow(90, 44, 128, 44, { label: "fast" });
-      b += S.box({ x: 132, y: 24, w: 196, h: 40, tone: "alaap", dash: true });
-      b += S.dots(148, 44, 11, 17, "alaap");
-      b += S.text(230, 80, "unbounded, growing", "d-t-s", "middle");
-      b += S.arrow(332, 44, 370, 44, { label: "slow" });
-      b += S.box({ x: 374, y: 24, w: 86, h: 40, label: "Worker", tone: "flat" });
-      b += S.text(480, 36, "Latency climbs,", "d-t-s");
-      b += S.text(480, 52, "memory climbs,", "d-t-s");
-      b += S.text(480, 68, "then it is gone.", "d-t-b");
-
-      b += S.tag(0, 128, "With backpressure");
-      b += S.box({ x: 0, y: 138, w: 86, h: 40, label: "Producer", tone: "flat" });
-      b += S.arrow(90, 158, 128, 158, {});
-      b += S.box({ x: 132, y: 138, w: 196, h: 40, tone: "sys" });
-      b += S.dots(148, 158, 6, 17, "sys");
-      b += S.text(230, 194, "bounded, capped", "d-t-s", "middle");
-      b += S.arrow(332, 158, 370, 158, {});
-      b += S.box({ x: 374, y: 138, w: 86, h: 40, label: "Worker", tone: "flat" });
-      b += S.arrow(230, 134, 60, 134, { curve: 34, label: "full — stop sending", dash: true });
-      b += S.text(480, 150, "Producer slows.", "d-t-s");
-      b += S.text(480, 166, "The system stays up.", "d-t-b");
-      return S.frame(600, 210, b);
-    }
-  };
-
-  DIA.tail = {
-    title: "One slow shard in a hundred makes almost every request slow",
-    cap: "<b>Fan-out amplifies tails.</b> If a request waits on 100 shards and each is slow 1% of the time, the chance that none is slow is 0.99 to the power 100 — about 37%. So roughly 63% of requests are slow. The p99 of a component becomes the typical case for the system, which is why tail latency is a system property rather than a component detail.",
-    svg: function () {
-      var b = "", i, x;
-      b += S.box({ x: 0, y: 58, w: 84, h: 38, label: "Request", tone: "now" });
-      for (i = 0; i < 12; i++) {
-        x = 150 + i * 36;
-        var slow = (i === 4 || i === 9);
-        b += S.arrow(86, 77, x + 12, slow ? 30 : 48, { curve: 0 });
-        b += S.bar({ x: x, y: slow ? 30 : 48, w: 24, h: slow ? 74 : 38, tone: slow ? "alaap" : "sys" });
-      }
-      b += S.text(150, 126, "100 shards, each slow 1% of the time", "d-t-s");
-      b += S.text(150, 148, "P(no shard is slow) = 0.99", "d-t");
-      b += S.text(288, 143, "100", "d-t-s");
-      b += S.text(312, 148, "\u2248 37%", "d-t");
-      b += S.text(150, 168, "So ~63% of requests wait on a slow shard.", "d-t-b");
-      return S.frame(600, 180, b);
-    }
-  };
-
-  DIA.skew = {
-    title: "Hashing spreads keys evenly. It does not spread traffic evenly.",
-    cap: "<b>Skew is a key-choice problem, not bad luck.</b> Real usage is power-law: one customer, one scenario family, one hour of the day carries a disproportionate share. All of that key's events hash to one partition however good the hash is, and that partition becomes the ceiling for the whole system.",
-    svg: function () {
-      var b = "", i;
-      var heights = [26, 22, 30, 24, 96, 20, 28, 25];
-      b += S.tag(0, 14, "Partition by hash of user id");
-      for (i = 0; i < 8; i++) {
-        var h = heights[i];
-        var hot = h > 60;
-        b += S.bar({ x: i * 60, y: 130 - h, w: 44, h: h, tone: hot ? "alaap" : "sys" });
-        b += S.text(i * 60 + 22, 146, "p" + i, "d-t-s", "middle");
-      }
-      b += S.path("M0,34 L480,34", "flat", true);
-      b += S.text(486, 38, "capacity", "d-t-x");
-      b += S.text(240, 24, "one user, 4% of all events", "d-t-b", "middle");
-      b += S.arrow(258, 30, 262, 60, {});
-      b += S.text(0, 172, "Every other partition is idle. The system's throughput is now one partition's throughput.", "d-t-s");
-      return S.frame(600, 182, b);
-    }
-  };
-
-  DIA.storage = {
-    title: "Two ways to write, and what each one costs you",
-    cap: "<b>An LSM-tree appends.</b> Writes go to memory, then flush as sorted files, and merging is deferred to background compaction — so writes are cheap and a read may have to check several layers. <b>A B-tree updates in place.</b> Reads go straight to the right page; writes pay for random IO. Eval traces are written once, never updated, read in bulk — which is why they belong in object storage rather than in either.",
-    svg: function () {
-      var b = "", i;
-      b += S.tag(0, 14, "LSM-tree — append");
-      b += S.box({ x: 0, y: 24, w: 74, h: 34, label: "write", tone: "now" });
-      b += S.arrow(78, 41, 108, 41, {});
-      b += S.box({ x: 112, y: 24, w: 84, h: 34, label: "memtable", tone: "sys" });
-      b += S.arrow(200, 41, 230, 41, { label: "flush" });
-      for (i = 0; i < 3; i++) {
-        b += S.bar({ x: 234 + i * 58, y: 24 + i * 5, w: 50, h: 34 - i * 4, tone: "sys" });
-      }
-      b += S.text(234, 76, "sorted files, merged later", "d-t-s");
-      b += S.text(430, 34, "cheap writes", "d-t-b");
-      b += S.text(430, 50, "reads check layers", "d-t-s");
-
-      b += S.tag(0, 116, "B-tree — update in place");
-      b += S.box({ x: 112, y: 126, w: 84, h: 30, label: "root", tone: "math" });
-      b += S.arrow(140, 158, 118, 178, {});
-      b += S.arrow(168, 158, 190, 178, {});
-      b += S.box({ x: 76, y: 180, w: 76, h: 30, label: "page", tone: "math" });
-      b += S.box({ x: 162, y: 180, w: 76, h: 30, label: "page", tone: "math" });
-      b += S.text(430, 152, "direct reads", "d-t-b");
-      b += S.text(430, 168, "random-IO writes", "d-t-s");
-      return S.frame(600, 222, b);
-    }
-  };
-
-  DIA.retry = {
-    title: "Retries arrive exactly when there is least capacity to serve them",
-    cap: "<b>The retry storm.</b> A service slows, clients time out and retry, and the retries land on the thing that was already failing — so it never gets a recovery window. Backoff reduces the pressure; <b>jitter</b> is what stops every client returning in the same synchronised wave and recreating the spike.",
-    svg: function () {
-      var b = "", i;
-      b += S.tag(0, 14, "Naive retry");
-      b += S.box({ x: 250, y: 30, w: 96, h: 44, label: "Service", sub: "at capacity", tone: "alaap" });
-      for (i = 0; i < 5; i++) {
-        b += S.arrow(60, 24 + i * 12, 246, 46, {});
-      }
-      b += S.text(0, 90, "load", "d-t-x");
-      b += S.text(360, 46, "load rises as it degrades", "d-t-s");
-      b += S.text(360, 64, "no recovery window", "d-t-b");
-
-      b += S.tag(0, 132, "Backoff with jitter");
-      b += S.box({ x: 250, y: 148, w: 96, h: 44, label: "Service", sub: "recovering", tone: "math" });
-      var offs = [0, 26, 9, 41, 17];
-      for (i = 0; i < 5; i++) {
-        b += S.arrow(60 + offs[i], 142 + i * 12, 246, 164, { dash: true });
-      }
-      b += S.text(360, 164, "returns are spread out", "d-t-s");
-      b += S.text(360, 182, "the spike never re-forms", "d-t-b");
-      return S.frame(600, 206, b);
-    }
-  };
-
-  DIA.cache = {
-    title: "Population happens in one place. Invalidation has to happen everywhere.",
-    cap: "<b>The write path is the hard part.</b> A cached vector search is fine until the user adds a memory — at which point that user's cached results are wrong, and the product's one promise quietly breaks. Every write path in the system has to know what it invalidates, including code written later by someone who does not know the cache exists.",
-    svg: function () {
-      var b = "";
-      b += S.box({ x: 0, y: 30, w: 92, h: 40, label: "user turn", tone: "now" });
-      b += S.arrow(96, 50, 132, 50, {});
-      b += S.box({ x: 136, y: 30, w: 104, h: 40, label: "cache", sub: "key: user + query", tone: "sys" });
-      b += S.arrow(244, 50, 286, 50, { label: "miss" });
-      b += S.box({ x: 290, y: 30, w: 116, h: 40, label: "vector search", tone: "flat" });
-      b += S.arrow(348, 74, 190, 74, { curve: -26, label: "fill", dash: true });
-
-      b += S.box({ x: 0, y: 136, w: 92, h: 40, label: "new memory", tone: "req" });
-      b += S.arrow(96, 156, 132, 156, { label: "write" });
-      b += S.box({ x: 136, y: 136, w: 104, h: 40, label: "store", tone: "flat" });
-      b += S.arrow(188, 132, 188, 76, { label: "must invalidate" });
-      b += S.text(430, 142, "Miss this edge and the", "d-t-s");
-      b += S.text(430, 158, "assistant keeps answering", "d-t-s");
-      b += S.text(430, 174, "from a world without it.", "d-t-b");
-      return S.frame(600, 190, b);
-    }
-  };
-
-  DIA.logs = {
-    title: "The log turns multiplication into addition",
-    cap: "<b>This is why likelihoods get logged.</b> Multiplying thousands of small probabilities underflows to zero in floating point; the same quantities summed do not. It is also why an exponential plotted on a log axis becomes a straight line — the log undoes the exponential, so constant multiplicative growth reads as constant slope.",
-    svg: function () {
-      var b = "";
-      b += S.box({ x: 0, y: 26, w: 230, h: 42, label: "p\u2081 \u00d7 p\u2082 \u00d7 \u2026 \u00d7 p\u2099", sub: "underflows toward zero", tone: "alaap" });
-      b += S.arrow(236, 47, 288, 47, { label: "log" });
-      b += S.box({ x: 294, y: 26, w: 246, h: 42, label: "log p\u2081 + log p\u2082 + \u2026", sub: "stable, and easy to differentiate", tone: "math" });
-
-      b += S.axes(20, 108, 200, 76, "time", "linear");
-      b += S.path("M20,184 C90,182 140,168 180,120 L200,108", "sys");
-      b += S.axes(300, 108, 200, 76, "time", "log scale");
-      b += S.path("M300,184 L500,112", "math");
-      b += S.text(300, 202, "the same data, straightened", "d-t-s");
-      return S.frame(600, 212, b);
-    }
-  };
-
-  DIA.chain = {
-    title: "A network is a composition. The chain rule is how you differentiate one.",
-    cap: "<b>Forward, then backward.</b> Each layer is a function; the network is their composition. Going forward you record what each layer saw — that recording is the tape. Going backward you multiply the local derivatives along the chain. Autograd is not magic added to PyTorch; it is this bookkeeping, done automatically.",
-    svg: function () {
-      var b = "", i;
-      var names = ["x", "f\u2081", "f\u2082", "f\u2083", "loss"];
-      for (i = 0; i < 5; i++) {
-        b += S.box({ x: i * 116, y: 30, w: 88, h: 40, label: names[i], tone: i === 4 ? "now" : "math" });
-        if (i < 4) { b += S.arrow(i * 116 + 92, 50, i * 116 + 112, 50, {}); }
-      }
-      b += S.text(0, 94, "forward — and each box remembers what it saw", "d-t-s");
-      for (i = 4; i > 0; i--) {
-        b += S.arrow(i * 116, 128, (i - 1) * 116 + 92, 128, { dash: true });
-      }
-      b += S.text(0, 152, "backward — multiply the local derivatives along the chain", "d-t-s");
-      b += S.text(0, 180, "\u2202loss/\u2202x = \u2202loss/\u2202f\u2083 \u00b7 \u2202f\u2083/\u2202f\u2082 \u00b7 \u2202f\u2082/\u2202f\u2081 \u00b7 \u2202f\u2081/\u2202x", "d-t-b");
-      return S.frame(600, 192, b);
-    }
-  };
-
-  DIA.descent = {
-    title: "The learning rate is a step size on the direction the gradient gives you",
-    cap: "<b>\u03b8 \u2190 \u03b8 \u2212 \u03b7 \u2207L(\u03b8).</b> The gradient points uphill, so descent subtracts it. The learning rate multiplies the gradient and nothing else. Too small and you crawl; too large and you step past the minimum and oscillate — which is the whole intuition behind every scheduler you will ever read about.",
-    svg: function () {
-      var b = "", i;
-      b += S.path("M20,150 C90,150 120,40 200,40 C280,40 300,150 380,150", "flat");
-      b += S.path("M20,150 C90,150 120,40 200,40 C280,40 300,150 380,150", "flat");
-      var pts = [[60, 132], [104, 92], [150, 58], [200, 42]];
-      for (i = 0; i < pts.length; i++) {
-        b += '<circle cx="' + pts[i][0] + '" cy="' + pts[i][1] + '" r="5" class="d-fill-now d-str-now" stroke-width="1.25"/>';
-        if (i < pts.length - 1) { b += S.arrow(pts[i][0] + 6, pts[i][1] - 2, pts[i + 1][0] - 6, pts[i + 1][1] + 2, {}); }
-      }
-      b += S.text(200, 30, "minimum", "d-t-s", "middle");
-      b += S.text(410, 60, "small \u03b7 \u2014 many small steps", "d-t-s");
-      b += S.text(410, 82, "large \u03b7 \u2014 steps past it, oscillates", "d-t-s");
-      b += S.text(410, 112, "\u03b8 \u2190 \u03b8 \u2212 \u03b7 \u00b7 \u2207L", "d-t-b");
-      b += S.text(410, 132, "\u03b7 multiplies the gradient,", "d-t-s");
-      b += S.text(410, 148, "never the loss or the parameters.", "d-t-s");
-      return S.frame(600, 176, b);
-    }
-  };
-
-  DIA.vectors = {
-    title: "Cosine similarity is the dot product with the lengths divided out",
-    cap: "<b>Direction carries the meaning; length often carries frequency.</b> The dot product is |a||b|cos\u03b8. Normalise both and what is left is the cosine alone. That is why two embeddings can point the same way with very different magnitudes and still mean the same thing — and why you use this measure every day in the memory system.",
-    svg: function () {
-      var b = "";
-      b += S.axes(30, 24, 200, 140, "", "");
-      b += S.path("M30,164 L190,54", "sys");
-      b += S.path("M30,164 L140,44", "math");
-      b += S.text(196, 50, "a", "d-t-b");
-      b += S.text(146, 40, "b", "d-t-b");
-      b += S.path("M66,150 A38,38 0 0,1 82,138", "flat");
-      b += S.text(78, 156, "\u03b8", "d-t");
-      b += S.text(280, 54, "a \u00b7 b = |a| |b| cos\u03b8", "d-t-b");
-      b += S.text(280, 82, "divide the magnitudes out", "d-t-s");
-      b += S.text(280, 106, "cos\u03b8 = (a \u00b7 b) / (|a| |b|)", "d-t-b");
-      b += S.text(280, 134, "Length dropped. Direction kept.", "d-t-s");
-      b += S.text(280, 152, "For meaning, direction is the signal.", "d-t-s");
-      return S.frame(600, 180, b);
-    }
-  };
-
-  DIA.bayes = {
-    title: "A very accurate test for a very rare thing is mostly wrong",
-    cap: "<b>Base rates decide this, not sensitivity.</b> Out of 100,000 people: 100 are ill and about 99 test positive; 99,900 are healthy and about 4,995 also test positive. A positive result is therefore roughly 99 out of 5,094 — about 2%. The false positives come from a pool five hundred times larger, so they swamp the true ones.",
-    svg: function () {
-      var b = "";
-      b += S.box({ x: 0, y: 26, w: 150, h: 46, label: "100,000 people", tone: "flat" });
-      b += S.arrow(154, 40, 190, 34, {});
-      b += S.arrow(154, 58, 190, 72, {});
-      b += S.box({ x: 194, y: 16, w: 118, h: 38, label: "100 ill", tone: "req" });
-      b += S.box({ x: 194, y: 60, w: 118, h: 38, label: "99,900 healthy", tone: "flat" });
-      b += S.arrow(316, 35, 352, 35, { label: "99%" });
-      b += S.arrow(316, 79, 352, 79, { label: "5%" });
-      b += S.bar({ x: 356, y: 22, w: 14, h: 26, tone: "req" });
-      b += S.text(376, 40, "99 true positives", "d-t");
-      b += S.bar({ x: 356, y: 62, w: 176, h: 26, tone: "alaap" });
-      b += S.text(356, 108, "4,995 false positives", "d-t");
-      b += S.text(0, 142, "A positive result means roughly 99 in 5,094. About two percent.", "d-t-b");
-      return S.frame(600, 152, b);
-    }
-  };
-
-  DIA.attention = {
-    title: "Why the scores are divided by the square root of d\u2096",
-    cap: "<b>A variance argument.</b> A dot product sums over d\u2096 dimensions, so its variance grows with d\u2096. Large raw scores push softmax into saturation, where one weight is almost 1 and the rest almost 0 — and the gradient there is almost nothing. Dividing by \u221ad\u2096 holds the variance roughly constant, which keeps softmax in the range where it still learns.",
-    svg: function () {
-      var b = "", i;
-      b += S.box({ x: 0, y: 26, w: 76, h: 36, label: "Q", sub: "what I want", tone: "math" });
-      b += S.box({ x: 0, y: 74, w: 76, h: 36, label: "K", sub: "what I offer", tone: "math" });
-      b += S.box({ x: 0, y: 122, w: 76, h: 36, label: "V", sub: "what is carried", tone: "math" });
-      b += S.arrow(80, 44, 118, 60, {});
-      b += S.arrow(80, 92, 118, 76, {});
-      b += S.box({ x: 122, y: 50, w: 84, h: 36, label: "Q \u00b7 K", tone: "flat" });
-      b += S.arrow(210, 68, 248, 68, { label: "\u00f7 \u221ad\u2096" });
-      b += S.box({ x: 252, y: 50, w: 84, h: 36, label: "softmax", tone: "now" });
-
-      b += S.tag(360, 26, "Without scaling");
-      for (i = 0; i < 6; i++) {
-        b += S.bar({ x: 360 + i * 22, y: 76 - (i === 2 ? 40 : 4), w: 15, h: (i === 2 ? 40 : 4), tone: "alaap" });
-      }
-      b += S.text(360, 94, "saturated, gradient \u2248 0", "d-t-s");
-      b += S.tag(360, 122, "With scaling");
-      var hs = [10, 18, 26, 20, 13, 9];
-      for (i = 0; i < 6; i++) {
-        b += S.bar({ x: 360 + i * 22, y: 168 - hs[i], w: 15, h: hs[i], tone: "sys" });
-      }
-      b += S.text(360, 186, "spread, still learning", "d-t-s");
-      return S.frame(600, 196, b);
-    }
-  };
-
-  DIA.embed = {
-    title: "Nobody puts the meaning in. It falls out of the objective.",
-    cap: "<b>Where the numbers come from.</b> An embedding table starts as random numbers, one row per token, and those rows are parameters like any other. Gradient descent on the task drags rows that behave alike in the task toward each other. Structure appears because the objective rewards it, not because anyone encoded it.",
-    svg: function () {
-      var b = "", i;
-      b += S.tag(0, 14, "At initialisation");
-      b += S.box({ x: 0, y: 24, w: 210, h: 130, tone: "flat" });
-      var r1 = [[40, 60], [150, 48], [90, 120], [170, 110], [60, 96], [120, 74]];
-      for (i = 0; i < r1.length; i++) {
-        b += '<circle cx="' + r1[i][0] + '" cy="' + r1[i][1] + '" r="5" class="d-fill-req d-str-req" stroke-width="1"/>';
-      }
-      b += S.arrow(222, 90, 286, 90, { label: "training" });
-      b += S.tag(300, 14, "After training");
-      b += S.box({ x: 300, y: 24, w: 210, h: 130, tone: "flat" });
-      var r2 = [[356, 60], [372, 52], [364, 72], [456, 112], [470, 104], [444, 122]];
-      for (i = 0; i < r2.length; i++) {
-        b += '<circle cx="' + r2[i][0] + '" cy="' + r2[i][1] + '" r="5" class="d-fill-sys d-str-sys" stroke-width="1"/>';
-      }
-      b += S.text(348, 100, "tokens used alike", "d-t-s");
-      b += S.text(408, 146, "sit near each other", "d-t-s");
-      return S.frame(600, 166, b);
-    }
-  };
-
-  DIA.nyquist = {
-    title: "A waveform is a list of pressure readings, taken at some rate",
-    cap: "<b>Nyquist.</b> A sample rate of N represents frequencies up to N/2 and nothing above. Analysing audio at the wrong assumed rate shifts every frequency you measure by that ratio — which is exactly how a project juggling 16k, 22.05k, 24k and 44.1k ends up with a result that reverses once the rate is fixed.",
-    svg: function () {
-      var b = "", i, x, y;
-      b += S.path("M0,80 C40,20 80,140 120,80 C160,20 200,140 240,80 C280,20 320,140 360,80", "sys");
-      for (i = 0; i <= 18; i++) {
-        x = i * 20;
-        y = 80 - 52 * Math.sin(i * 20 / 120 * Math.PI);
-        b += '<circle cx="' + x + '" cy="' + y.toFixed(1) + '" r="2.6" class="d-fill-now d-str-now" stroke-width="1"/>';
-      }
-      b += S.text(0, 132, "samples, taken at a fixed rate", "d-t-s");
-      b += S.text(400, 46, "rate N \u2192 frequencies up to N/2", "d-t-b");
-      b += S.text(400, 70, "sample too slowly and the", "d-t-s");
-      b += S.text(400, 86, "high end is not merely lost,", "d-t-s");
-      b += S.text(400, 102, "it comes back as something else.", "d-t-s");
-      return S.frame(600, 142, b);
-    }
-  };
-
-  DIA.source = {
-    title: "Change the buzz and it is the same person. Change the tube and it is not.",
-    cap: "<b>The source-filter split.</b> The vocal folds produce a buzz at F0 — that is the source, and it carries pitch. The vocal tract is a tube that resonates at certain frequencies — those are the formants, and they carry identity. Every measurement in Alaap sits on one side of this split, which is why a measure that leaks across it fails to separate anything.",
-    svg: function () {
-      var b = "";
-      b += S.box({ x: 0, y: 40, w: 104, h: 48, label: "vocal folds", sub: "buzz at F0", tone: "req" });
-      b += S.arrow(108, 64, 148, 64, { label: "source" });
-      b += S.box({ x: 152, y: 40, w: 118, h: 48, label: "vocal tract", sub: "resonant tube", tone: "sys" });
-      b += S.arrow(274, 64, 314, 64, { label: "filter" });
-      b += S.box({ x: 318, y: 40, w: 104, h: 48, label: "voice", tone: "now" });
-      b += S.text(0, 120, "pitch lives here", "d-t-s");
-      b += S.text(152, 120, "identity lives here", "d-t-b");
-      b += S.text(0, 150, "f0_mean measures the source. Formants and vocal-tract length measure the filter.", "d-t-s");
-      b += S.text(0, 168, "A measure that mixes the two cannot separate speakers.", "d-t-s");
-      return S.frame(600, 178, b);
-    }
-  };
-
-  DIA.arc = {
-    title: "Milestone 1, in one picture",
-    cap: "<b>Systems leads, mathematics runs underneath, Alaap stays warm.</b> The systems track moves outward from vocabulary to scale to failure. The mathematics track climbs deliberately toward one target: being ready for TrenTorch. They meet at the gate.",
-    svg: function () {
-      var b = "", i;
-      var weeks = ["Words", "Partitioning", "Storage", "Failure", "Caching"];
-      var math = ["Logs", "Derivatives", "Vectors", "Gradients", "Probability"];
-      for (i = 0; i < 5; i++) {
-        var x = i * 112;
-        b += S.box({ x: x, y: 26, w: 96, h: 40, label: weeks[i], tone: "sys" });
-        b += S.box({ x: x, y: 96, w: 96, h: 40, label: math[i], tone: "math" });
-        b += S.text(x + 48, 16, "wk " + (i + 1), "d-t-x", "middle");
-        if (i < 4) {
-          b += S.arrow(x + 100, 46, x + 108, 46, {});
-          b += S.arrow(x + 100, 116, x + 108, 116, {});
-        }
-      }
-      b += S.arrow(564, 46, 580, 76, {});
-      b += S.arrow(564, 116, 580, 90, {});
-      b += S.box({ x: 520, y: 156, w: 120, h: 38, label: "the gate", tone: "now" });
-      b += S.arrow(580, 96, 580, 152, {});
-      b += S.text(0, 178, "Alaap: orientation, sampling, source-filter \u2014 four hours in total, spread across the five weeks.", "d-t-s");
-      b += S.text(0, 196, "DSA: deliberately zero until milestone 2.", "d-t-s");
-      return S.frame(660, 206, b);
-    }
-  };
-
-  DIA.eigen = {
-    title: "Most vectors get turned. An eigenvector only gets stretched.",
-    cap: "<b>The definition is geometric before it is algebraic.</b> Apply the transformation to any vector and it generally lands somewhere off its original line. An eigenvector is one of the rare vectors that stays on its own line: direction kept, length multiplied by the eigenvalue. That is the whole content of <i>Av = &#955;v</i>, and it is why the null-space answer, although it is a true fact about <i>A - &#955;I</i>, is the answer to a different question.",
-    svg: function () {
-      var b = "";
-      b += S.tag(0, 14, "An ordinary vector");
-      b += S.axes(30, 24, 170, 130, "", "");
-      b += '<path d="M30,154 L140,64" class="d-str-flat" stroke-width="1.75"/>';
-      b += S.arrow(30, 154, 140, 64, {});
-      b += S.arrow(30, 154, 176, 116, { dash: true });
-      b += S.text(146, 60, "v", "d-t-b");
-      b += S.text(180, 114, "Av", "d-t-b");
-      b += S.text(30, 182, "Off its line. Turned.", "d-t-s");
-
-      b += S.tag(268, 14, "An eigenvector");
-      b += S.axes(298, 24, 170, 130, "", "");
-      b += S.arrow(298, 154, 368, 94, {});
-      b += S.arrow(298, 154, 438, 34, { dash: true });
-      b += S.text(360, 104, "v", "d-t-b");
-      b += S.text(444, 32, "Av = λv", "d-t-b");
-      b += S.text(298, 182, "Same line. Scaled by λ.", "d-t-s");
-      return S.frame(560, 196, b);
-    }
-  };
-
-  DIA.overfit = {
-    title: "The moment the two curves part is the whole diagnosis.",
-    cap: "<b>Training loss falling is not evidence of anything.</b> It falls for a model that is learning and for one that is memorising, and the two look identical until validation loss turns. Every intervention is a different way of delaying or detecting that turn: early stopping reads it off the chart, regularisation flattens the climb, more data moves it right, and a smaller model never gets there. Naming the intervention is easy. Saying which part of this picture it acts on is the answer.",
-    svg: function () {
-      var b = "", i, x, y;
-      b += S.axes(46, 20, 330, 150, "epochs", "loss");
-      var tr = "M46,44";
-      for (i = 1; i <= 33; i++) {
-        x = 46 + i * 10;
-        y = 44 + 110 * (1 - Math.exp(-i / 7));
-        tr += " L" + x.toFixed(0) + "," + y.toFixed(1);
-      }
-      b += S.path(tr, "sys");
-      var va = "M46,40";
-      for (i = 1; i <= 33; i++) {
-        x = 46 + i * 10;
-        y = 40 + 78 * (1 - Math.exp(-i / 6)) - Math.max(0, (i - 13)) * 2.6;
-        va += " L" + x.toFixed(0) + "," + y.toFixed(1);
-      }
-      b += S.path(va, "mark", true);
-      var bx = 46 + 13 * 10;
-      b += '<line x1="' + bx + '" y1="24" x2="' + bx + '" y2="170" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
-      b += S.text(bx + 6, 36, "stop here", "d-t-b");
-      b += S.text(390, 130, "training", "d-t-s");
-      b += S.text(390, 62, "validation", "d-t-s");
-      b += S.text(390, 78, "turns upward", "d-t-s");
-      return S.frame(500, 186, b);
-    }
-  };
-
-  DIA.passk = {
-    title: "One good run is not evidence. Eight are.",
-    cap: "<b>pass@k asks whether the agent ever succeeds. pass^k asks whether it always does.</b> On tau-retail the paper reports its own result as bounds, and those bounds are the argument: under half the tasks pass a single trial, and under a quarter pass all eight. Nothing about the agent changed between the two bars. The only thing that changed is how many times it was asked, and that is the difference between a demo and a product. This is also the case for a replay bench: a recorded trajectory that passes once has told you almost nothing.",
-    svg: function () {
-      var b = "";
-      b += S.tag(0, 14, "gpt-4o on tau-retail, as the paper states it");
-      b += S.axes(52, 30, 300, 150, "", "tasks passed");
-
-      /* the bounds the paper gives, drawn as bounds */
-      var y50 = 30 + 150 * 0.5, y25 = 30 + 150 * 0.75;
-      b += '<line x1="52" y1="' + y50 + '" x2="352" y2="' + y50 +
-        '" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
-      b += '<line x1="52" y1="' + y25 + '" x2="352" y2="' + y25 +
-        '" class="d-str-flat" stroke-width="1" stroke-dasharray="3 4"/>';
-      b += S.text(48, y50 + 4, "50%", "d-t-x", "end");
-      b += S.text(48, y25 + 4, "25%", "d-t-x", "end");
-
-      b += S.bar({ x: 96, y: y50 + 4, w: 74, h: 180 - y50 - 4, tone: "iv" });
-      b += S.text(133, y50 - 6, "under 50%", "d-t-b", "middle");
-      b += S.text(133, 196, "pass^1", "d-t-s", "middle");
-
-      b += S.bar({ x: 234, y: y25 + 4, w: 74, h: 180 - y25 - 4, tone: "mark" });
-      b += S.text(271, y25 - 6, "under 25%", "d-t-b", "middle");
-      b += S.text(271, 196, "pass^8", "d-t-s", "middle");
-
-      b += S.arrow(180, y50 + 12, 226, y25 - 2, { curve: 16 });
-
-      b += S.text(380, 46, "Same agent.", "d-t-b");
-      b += S.text(380, 62, "Same tasks.", "d-t-s");
-      b += S.text(380, 78, "Asked eight times", "d-t-s");
-      b += S.text(380, 94, "instead of once.", "d-t-s");
-      b += S.text(380, 122, "The gap is the", "d-t-s");
-      b += S.text(380, 138, "reliability nobody", "d-t-s");
-      b += S.text(380, 154, "measures.", "d-t-b");
-      return S.frame(560, 210, b);
-    }
-  };
-
-  DIA.oxusFrame = {
-    title: "Thirty-five minutes, and where the twelve that matter go",
-    cap: "<b>The hard part takes a third of the clock, and you choose it.</b> Requirements come before boxes precisely because they decide which deep dive earns those twelve minutes; for Oxus it is grounding, which is how the system knows a cited value really sits on that page. The last two minutes are not a summary. They are what you would build first, which is the thing a founding-engineer interview is actually measuring. <b>If she cuts in, follow her.</b> The shape is for when she does not.",
-    svg: function () {
-      var rows = [
-        ["Clarify", "who the user is, the unit of work, what done means", 4, "flat"],
-        ["Requirements", "the non-functional ones first", 4, "sys"],
-        ["Happy path", "end to end, no depth yet", 8, "sys"],
-        ["The hard part", "grounding: citation, verification, insufficient", 12, "iv"],
-        ["Failure and evaluation", "answered before she asks", 5, "sys"],
-        ["What you would build first", "the founding-engineer answer", 2, "now"]
-      ];
-      var b = S.tag(0, 12, "The thirty-five minutes");
-      var y = 26, i, r;
-      for (i = 0; i < rows.length; i++) {
-        r = rows[i];
-        b += S.text(0, y + 14, r[0], "d-t-b");
-        b += S.text(0, y + 28, r[1], "d-t-s");
-        b += S.bar({ x: 250, y: y + 3, w: r[2] * 23, h: 18, tone: r[3] });
-        b += S.text(250 + r[2] * 23 + 8, y + 17, r[2] + " min", "d-t-s");
-        y += 40;
-      }
-      return S.frame(600, y + 6, b);
-    }
-  };
-
-  DIA.oxusControl = {
-    title: "Testing one control: code owns the facts, the model owns the prose",
-    cap: "<b>Blue is deterministic code, ochre is the model.</b> Sample selection is seeded code so the workpaper can be reproduced. The model reads evidence only through opaque handles and must cite one for every claim. A verifier then checks that the cited span actually contains the value, and fails closed. Exceptions are computed from attribute results by code, so the model cannot write \"effective\" over an exception. The model's job is the narrative a reviewer reads.",
-    svg: function () {
-      var b = "", i;
-      var r1 = [["Control", "definition", "flat"], ["Population", "pulled by query", "sys"],
-        ["Sample", "seeded, stored", "sys"], ["Evidence", "chunks as E1..En", "sys"]];
-      for (i = 0; i < r1.length; i++) {
-        b += S.box({ x: i * 150, y: 22, w: 126, h: 44, label: r1[i][0], sub: r1[i][1], tone: r1[i][2] });
-        if (i < r1.length - 1) { b += S.arrow(i * 150 + 128, 44, i * 150 + 148, 44, {}); }
-      }
-      b += S.arrow(513, 68, 60, 108, { curve: -10 });
-      var r2 = [["Attribute test", "cites handles", "req"], ["Verify", "span holds value", "sys"],
-        ["Exceptions", "computed", "sys"], ["Draft", "narrative only", "req"], ["Reviewer", "signs off", "now"]];
-      for (i = 0; i < r2.length; i++) {
-        b += S.box({ x: i * 128, y: 112, w: 112, h: 44, label: r2[i][0], sub: r2[i][1], tone: r2[i][2] });
-        if (i < r2.length - 1) { b += S.arrow(i * 128 + 114, 134, i * 128 + 126, 134, {}); }
-      }
-      b += S.arrow(184, 110, 52, 110, { curve: 22, label: "fail closed", dash: true });
-      b += S.bar({ x: 0, y: 186, w: 12, h: 12, tone: "sys" });
-      b += S.text(18, 196, "deterministic code", "d-t-s");
-      b += S.bar({ x: 140, y: 186, w: 12, h: 12, tone: "req" });
-      b += S.text(158, 196, "model", "d-t-s");
-      b += S.text(230, 196, "Every model call and reviewer decision lands in the audit log.", "d-t-s");
-      return S.frame(640, 206, b);
-    }
-  };
-
-  DIA.oxusIngest = {
-    title: "If coordinates are lost at parse time, citations are impossible later",
-    cap: "<b>The normalised document model is the design.</b> Every source type is parsed into spans that carry where they came from: document, page, bounding box, and for recordings a timestamp, plus a confidence from the parser. Tables stay tables. Retrieval is per tenant and hybrid, because invoice numbers, amounts and dates have to match exactly, which dense embeddings are bad at. Everything downstream cites these coordinates.",
-    svg: function () {
-      var b = "", i;
-      var src = ["Native PDF", "Scanned PDF", "Spreadsheet", "ERP screenshot", "Walkthrough call"];
-      var how = ["text layer", "OCR + layout", "cells", "OCR + layout", "transcript"];
-      for (i = 0; i < src.length; i++) {
-        b += S.box({ x: 0, y: 8 + i * 38, w: 120, h: 30, label: src[i], tone: "flat" });
-        b += S.arrow(122, 23 + i * 38, 160, 23 + i * 38, {});
-        b += S.box({ x: 164, y: 8 + i * 38, w: 100, h: 30, label: how[i], tone: "sys" });
-        b += S.arrow(266, 23 + i * 38, 300, 100, {});
-      }
-      b += S.box({ x: 304, y: 64, w: 150, h: 72, label: "Normalised spans", sub: "doc, page, bbox, time, conf", tone: "req" });
-      b += S.arrow(456, 100, 492, 100, {});
-      b += S.box({ x: 496, y: 64, w: 132, h: 72, label: "Per-tenant index", sub: "lexical + dense", tone: "now" });
-      b += S.text(304, 160, "low OCR confidence travels forward", "d-t-s");
-      b += S.text(304, 176, "and can force an insufficient result", "d-t-s");
-      return S.frame(640, 200, b);
-    }
-  };
-
-  DIA.oxusKB = {
-    title: "Year over year, the risk lives in what changed",
-    cap: "<b>Version the process graph and diff it.</b> Last year's walkthrough produced a graph of steps, actors, systems and controls, each node cited to a timestamp in the recording. This year's is built the same way. The diff is the valuable output: a new approver, a system swapped, a manual step appearing where there used to be an automated one. Those are exactly the places an auditor should look first.",
-    svg: function () {
-      var b = "";
-      b += S.tag(0, 14, "Prior year");
-      b += S.box({ x: 0, y: 26, w: 92, h: 30, label: "Request", tone: "sys" });
-      b += S.arrow(94, 41, 116, 41, {});
-      b += S.box({ x: 118, y: 26, w: 92, h: 30, label: "Approve", sub: "", tone: "sys" });
-      b += S.arrow(212, 41, 234, 41, {});
-      b += S.box({ x: 236, y: 26, w: 92, h: 30, label: "Post", tone: "sys" });
-      b += S.tag(0, 96, "This year");
-      b += S.box({ x: 0, y: 108, w: 92, h: 30, label: "Request", tone: "sys" });
-      b += S.arrow(94, 123, 116, 123, {});
-      b += S.box({ x: 118, y: 108, w: 92, h: 30, label: "Approve", tone: "sys" });
-      b += S.arrow(212, 123, 234, 123, {});
-      b += S.box({ x: 236, y: 108, w: 92, h: 30, label: "Manual edit", tone: "alaap" });
-      b += S.arrow(330, 123, 352, 123, {});
-      b += S.box({ x: 354, y: 108, w: 92, h: 30, label: "Post", tone: "sys" });
-      b += S.arrow(282, 142, 470, 170, { dash: true });
-      b += S.box({ x: 472, y: 150, w: 156, h: 40, label: "Flag for the auditor", sub: "new manual step", tone: "now" });
-      return S.frame(640, 200, b);
-    }
-  };
-
-  DIA.zenEffects = {
-    title: "Replay policy follows what a tool call does to the world",
-    cap: "<b>Classify the call, then pick the policy.</b> Reads can be answered from the recording. Idempotent writes can go through a ledger keyed on session, step and canonical arguments, so a repeat is harmless. Calls with an external effect — an email, a refund — must never pass through by default on a forked replay. A new one the recording never saw either goes to a dry-run adapter or fails loudly. A silent live call is both a real side effect and a hidden false pass.",
-    svg: function () {
-      var b = "";
-      b += S.box({ x: 0, y: 86, w: 104, h: 40, label: "Tool call", tone: "flat" });
-      b += S.arrow(106, 100, 176, 36, {});
-      b += S.arrow(106, 106, 176, 106, {});
-      b += S.arrow(106, 112, 176, 176, {});
-      b += S.box({ x: 180, y: 16, w: 150, h: 40, label: "Read", sub: "no effect", tone: "sys" });
-      b += S.box({ x: 180, y: 86, w: 150, h: 40, label: "Idempotent write", sub: "safe to repeat", tone: "math" });
-      b += S.box({ x: 180, y: 156, w: 150, h: 40, label: "External effect", sub: "email, refund", tone: "alaap" });
-      b += S.arrow(332, 36, 372, 36, {});
-      b += S.arrow(332, 106, 372, 106, {});
-      b += S.arrow(332, 176, 372, 176, {});
-      b += S.text(378, 32, "answer from the recording", "d-t-b");
-      b += S.text(378, 48, "on a miss: explicit on_miss policy", "d-t-s");
-      b += S.text(378, 102, "ledger, keyed on session + step + args", "d-t-b");
-      b += S.text(378, 118, "a repeat returns the stored result", "d-t-s");
-      b += S.text(378, 172, "never passthrough on a fork", "d-t-b");
-      b += S.text(378, 188, "dry-run adapter, or fail loudly", "d-t-s");
-      return S.frame(640, 206, b);
-    }
-  };
-
-  DIA.multiturn = {
-    title: "When the agent's reply changes, the recorded user stops making sense",
-    cap: "<b>The hybrid.</b> Replay recorded user turns while the agent's replies stay equivalent to the recording. At the first real divergence, hand the user side to a simulator conditioned on the goal extracted from the original session, and hold that simulator fixed across baseline and fork so it is a controlled variable rather than a second thing that changed. Calibrate it first: run it against the unchanged baseline and check it reproduces the recorded user turns.",
-    svg: function () {
-      var b = "", i;
-      b += S.tag(0, 14, "Recorded session");
-      var rec = ["U1", "A1", "U2", "A2", "U3", "A3"];
-      for (i = 0; i < rec.length; i++) {
-        b += S.box({ x: i * 72, y: 24, w: 56, h: 30, label: rec[i], tone: i % 2 ? "sys" : "flat" });
-      }
-      b += S.tag(0, 90, "Forked replay");
-      b += S.box({ x: 0, y: 100, w: 56, h: 30, label: "U1", tone: "flat" });
-      b += S.box({ x: 72, y: 100, w: 56, h: 30, label: "A1\u2032", tone: "alaap" });
-      b += S.text(72, 146, "diverges", "d-t-s");
-      b += S.box({ x: 144, y: 100, w: 56, h: 30, label: "U2", tone: "flat", dash: true });
-      b += S.text(144, 146, "no longer fits", "d-t-s");
-      b += S.arrow(172, 132, 250, 170, {});
-      b += S.box({ x: 254, y: 152, w: 150, h: 40, label: "Simulated user", sub: "goal from session", tone: "now" });
-      b += S.arrow(406, 172, 446, 172, {});
-      b += S.box({ x: 450, y: 152, w: 56, h: 40, label: "U2\u2032", tone: "req" });
-      b += S.arrow(508, 172, 530, 172, {});
-      b += S.box({ x: 532, y: 152, w: 56, h: 40, label: "A2\u2032", tone: "sys" });
-      return S.frame(640, 202, b);
-    }
-  };
+  /* The figures live in figures/figures.js, shared with the interview pages. */
+  var S = FIGURES.S, DIA = FIGURES.DIA;
 
   /* ------------------------------------------------------------------ plan */
 
@@ -6627,7 +5940,9 @@
      Pointers keep the older view/anchor shape; the guide also redirects that shape. */
   function sdHref(p) {
     var parts;
-    if (p.v === "overview") {
+    if (p.p) {
+      parts = ["patterns", p.p].concat(p.t ? [p.t] : []);
+    } else if (p.v === "overview") {
       parts = !p.a ? ["framework"]
         : p.a.indexOf("pattern-") === 0 ? ["patterns", p.a.slice(8)]
         : ["framework", p.a];
@@ -6637,6 +5952,9 @@
     return SD.file + "#/" + parts.map(encodeURIComponent).join("/");
   }
   function sdLabel(p) {
+    if (p.p) {
+      return p.t ? "Technique: " + ((window.SD_TECH && window.SD_TECH[p.t]) || p.t) : "Pattern: " + (SD.patterns[p.p] || p.p);
+    }
     if (p.a && p.a.indexOf("pattern-") === 0) {
       return "Pattern: " + (SD.patterns[p.a.slice(8)] || p.a.slice(8));
     }
@@ -6869,7 +6187,7 @@
       });
       side.appendChild(foot);
     });
-    side.appendChild(htm("div", "keys", "Arrows move between cards; Shift and an arrow, between sessions.<br>Escape goes up a level."));
+    side.appendChild(htm("div", "keys", "Left and right arrows move between sessions.<br>Escape goes up a level."));
   }
   function drawCrumb() {
     var host = document.getElementById("crumb");
@@ -7524,33 +6842,128 @@
      write your own answer, then check it against the model answer and rate yourself.
      Progress uses the same keys as before: state.steps, state.answers, state.recall. */
 
-  var wbAt = {};
+  /* ------------------------------------------------- a session, as a list of steps
 
-  function wbCards(s) {
-    var cards = [];
-    if (s.diagrams && s.diagrams.length) { cards.push({ kind: "figs" }); }
-    (s.study || []).forEach(function (it, i) { cards.push({ kind: "study", it: it, i: i, key: s.id + ":s" + i }); });
-    s.steps.forEach(function (st, i) { cards.push({ kind: "step", st: st, i: i, key: sKey(s.id, i) }); });
-    cards.push({ kind: "finish" });
-    return cards;
+     Every step starts shut, so a session reads as its outline. Open, a step gives what it
+     is, the figure that draws it, what to read with minutes, where it sits in the system
+     design guide, and the answer, which stays behind its own toggle until you have tried.
+     Reading added on top of a step's own lives in data/reading.js, keyed like progress. */
+  function extraOf(key) { return (window.READING && window.READING[key]) || {}; }
+  function extraMinutes(s) {
+    var m = 0;
+    function add(key) { ["read", "aieng"].forEach(function (k) { (extraOf(key)[k] || []).forEach(function (r) { m += r.m || 0; }); }); }
+    s.steps.forEach(function (st, i) { add(sKey(s.id, i)); });
+    (s.study || []).forEach(function (it, i) { add(s.id + ":s" + i); });
+    return m;
   }
-  function wbStart(s, cards) {
-    if (wbAt[s.id] !== undefined) { return Math.min(wbAt[s.id], cards.length - 1); }
-    if (!anyDone(s)) { return 0; }
-    for (var i = 0; i < cards.length; i++) { if (cards[i].key && !state.steps[cards[i].key]) { return i; } }
-    return cards.length - 1;
+  function readList(s, items) {
+    var ul = el("ul", "rlist"), seen = {};
+    items.forEach(function (r) {
+      var k = r.url || r.book;
+      if (!k || seen[k]) { return; }
+      seen[k] = true;
+      var li = document.createElement("li");
+      if (r.url) {
+        var a = document.createElement("a");
+        a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = r.label || r.url;
+        a.addEventListener("click", function () { logVisit(s.id, r.label || r.url, r.url); });
+        li.appendChild(a);
+      } else { li.appendChild(document.createTextNode(r.book)); }
+      if (r.m) { li.appendChild(el("span", "rm", mins(r.m))); }
+      ul.appendChild(li);
+    });
+    return ul.children.length ? ul : null;
   }
-  function anyDone(s) { return stepsDone(s) + studyDone(s) > 0; }
-  function wbMove(d) {
-    var s = sessionsOf(view.week)[view.session];
-    if (!s) { return false; }
-    var cards = wbCards(s);
-    var at = wbStart(s, cards) + d;
-    if (at < 0 || at >= cards.length) { return false; }
-    wbAt[s.id] = at;
-    draw();
-    window.scrollTo(0, 0);
-    return true;
+  function stepItem(s, key, it, isStudy, i) {
+    var x = extraOf(key);
+    var d = el("details", "sx" + (state.steps[key] ? " done" : ""));
+    d.open = !!open[key + ":o"];
+    d.addEventListener("toggle", function () { open[key + ":o"] = d.open; });
+    var sm = el("summary");
+    var tick = el("button", "sxt" + (state.steps[key] ? " on" : ""), state.steps[key] ? "&#10003;" : "");
+    tick.setAttribute("aria-label", (state.steps[key] ? "Mark not done: " : "Mark done: ") + it.t);
+    tick.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (state.steps[key]) { delete state.steps[key]; delete state.steps[key + ":at"]; }
+      else { state.steps[key] = true; state.steps[key + ":at"] = stampNow(); }
+      markSession(s); save(); draw();
+    });
+    sm.appendChild(tick);
+    sm.appendChild(el("span", "sxh", it.t));
+    var m = isStudy ? (it.do || []).reduce(function (a, q) { return a + (q.m || 0); }, 0) : (it.m || 0);
+    sm.appendChild(el("span", "sxm", m ? mins(m) : ""));
+    d.appendChild(sm);
+
+    var body = el("div", "sxb");
+    if (!isStudy && it.d && !s.study) { body.appendChild(el("p", "sxd", it.d)); }
+    (x.figs || []).forEach(function (k, n) { var f = plate(k, n + 1); if (f) { body.appendChild(f); } });
+    var act = isStudy ? doList(s, it, i, true) : stepDo(s, it, true);
+    if (act) { body.appendChild(act); }
+    var reads = readList(s, [].concat(isStudy ? (it.res || []) : (it.links || []), x.read || [], x.aieng || []));
+    if (reads) { body.appendChild(el("div", "sxl", "Read")); body.appendChild(reads); }
+    var sds = sdRow(s, [].concat(it.sd || [], x.sd || []));
+    if (sds) { body.appendChild(sds); }
+    var als = alRow(s, it.al);
+    if (als) { body.appendChild(als); }
+
+    var model = isStudy ? it.say : modelOf(s, it);
+    if (model) {
+      var say = el("details", "sxs");
+      say.open = !!open[key + ":say"];
+      say.addEventListener("toggle", function () { open[key + ":say"] = say.open; });
+      say.appendChild(el("summary", "", isStudy ? "The idea, in the words you would use" : "What you would say, once you have tried it yourself"));
+      var mb = el("div", "wb-model");
+      if (Array.isArray(model)) {
+        var ul = el("ul");
+        model.forEach(function (q) { ul.appendChild(el("li", "", q)); });
+        mb.appendChild(ul);
+      } else { mb.appendChild(el("p", "", model)); }
+      say.appendChild(mb);
+      var rkey = isStudy ? s.id + ":s" + i : key;
+      var rate = el("div", "wb-rate");
+      rate.appendChild(el("span", "wb-quiet", "How close were you?"));
+      var was = state.recall[rkey];
+      [["got", "Had it"], ["shaky", "Partly"], ["no", "Missed it"]].forEach(function (r) {
+        var rb = el("button", "wb-btn" + (was && was.r === r[0] ? " on" : ""), r[1]);
+        rb.addEventListener("click", function () { rateCard(rkey, r[0]); draw(); });
+        rate.appendChild(rb);
+      });
+      say.appendChild(rate);
+      body.appendChild(say);
+    }
+    d.appendChild(body);
+    return d;
+  }
+  function sessionList(s, list, wild) {
+    var box = el("div", "sxlist");
+    /* figures a step does not already carry are drawn once, above the steps */
+    var placed = {};
+    s.steps.forEach(function (st, i) { (extraOf(sKey(s.id, i)).figs || []).forEach(function (k) { placed[k] = true; }); });
+    (s.study || []).forEach(function (it, i) { (extraOf(s.id + ":s" + i).figs || []).forEach(function (k) { placed[k] = true; }); });
+    (s.diagrams || []).filter(function (k) { return !placed[k]; }).forEach(function (k, n) {
+      var f = plate(k, n + 1); if (f) { box.appendChild(f); }
+    });
+    var bulk = el("div", "sxbulk");
+    var oa = el("button", "wb-link", "Open all"), ca = el("button", "wb-link", "Close all");
+    function setAll(v) {
+      s.steps.forEach(function (st, i) { open[sKey(s.id, i) + ":o"] = v; });
+      (s.study || []).forEach(function (it, i) { open[s.id + ":s" + i + ":o"] = v; });
+      draw();
+    }
+    oa.addEventListener("click", function () { setAll(true); });
+    ca.addEventListener("click", function () { setAll(false); });
+    bulk.appendChild(oa); bulk.appendChild(ca);
+    box.appendChild(bulk);
+    if (s.study && s.study.length) {
+      box.appendChild(el("h2", "sxg", "What to know first"));
+      s.study.forEach(function (it, i) { box.appendChild(stepItem(s, s.id + ":s" + i, it, true, i)); });
+      box.appendChild(el("h2", "sxg", "Then the steps"));
+    }
+    s.steps.forEach(function (st, i) { box.appendChild(stepItem(s, sKey(s.id, i), st, false, i)); });
+    var fin = el("section", "sxfin");
+    finishCard(fin, s, list, wild);
+    box.appendChild(fin);
+    return box;
   }
 
   /* Open questions for the end of a session: why and short closers, pick closers asked
@@ -7585,171 +6998,9 @@
     p.appendChild(el("div", "wb-pl", label));
     return p;
   }
-  function wbWrite(s, key, placeholder) {
-    var ph = wbPhase("Write", "write");
-    var rec = state.answers[key];
-    var ta = document.createElement("textarea");
-    ta.value = (rec && rec.text) || "";
-    ta.placeholder = placeholder || "Your answer, in your own words, before you look. Type it, press Win+H to dictate, or use Dictate.";
-    ta.addEventListener("input", function () {
-      if (ta.value.trim()) { state.answers[key] = { text: ta.value, at: stampNow(), via: "typed" }; }
-      else { delete state.answers[key]; }
-      save();
-    });
-    ph.appendChild(ta);
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var meta = el("div", "wb-meta");
-    meta.appendChild(el("span", "", rec && rec.at ? "Last written " + rec.at : "Nothing written yet"));
-    if (SR) {
-      var mic = el("button", "wb-link", "Dictate");
-      var r = null, on = false, base = "";
-      mic.addEventListener("click", function () {
-        try {
-          if (on) { if (r) { r.stop(); } return; }
-          r = new SR(); r.lang = "en-US"; r.interimResults = true; r.continuous = true;
-          base = ta.value; on = true; mic.textContent = "Stop dictating";
-          r.onresult = function (ev) {
-            var fin = "", tmp = "";
-            for (var i = ev.resultIndex; i < ev.results.length; i++) {
-              if (ev.results[i].isFinal) { fin += ev.results[i][0].transcript; } else { tmp += ev.results[i][0].transcript; }
-            }
-            if (fin) { base = (base && !/\s$/.test(base) ? base + " " : base) + fin.trim() + " "; state.answers[key] = { text: base, at: stampNow(), via: "spoken" }; save(); }
-            ta.value = base + tmp;
-          };
-          r.onerror = function (err) { console.error("Dictation failed", err); on = false; mic.textContent = "Dictate"; };
-          r.onend = function () { on = false; mic.textContent = "Dictate"; };
-          r.start();
-        } catch (err) { console.error("Dictation could not start", err); on = false; mic.textContent = "Dictate"; }
-      });
-      meta.appendChild(mic);
-    }
-    ph.appendChild(meta);
-    return ph;
-  }
-  function wbCheck(s, key, model, cardKey, ansKey) {
-    var ph = wbPhase("Check", "check");
-    var shown = open[key + ":reveal"] || !!state.steps[key];
-    if (!model) { ph.appendChild(el("p", "wb-quiet", "No model answer for this one. Tick it when the Write box says what you would say out loud.")); return ph; }
-    if (!shown) {
-      var hasText = state.answers[ansKey] && state.answers[ansKey].text && state.answers[ansKey].text.trim();
-      var b = el("button", "wb-btn" + (hasText ? " primary" : ""), hasText ? "Show the model answer" : "Show the model answer without writing");
-      b.addEventListener("click", function () { open[key + ":reveal"] = true; draw(); });
-      ph.appendChild(b);
-      return ph;
-    }
-    var m = el("div", "wb-model");
-    if (Array.isArray(model)) {
-      var ul = el("ul");
-      model.forEach(function (x) { ul.appendChild(el("li", "", x)); });
-      m.appendChild(ul);
-    } else { m.appendChild(el("p", "", model)); }
-    ph.appendChild(m);
-    var rate = el("div", "wb-rate");
-    rate.appendChild(el("span", "wb-quiet", "How close was yours?"));
-    var was = state.recall[cardKey];
-    [["got", "Had it"], ["shaky", "Partly"], ["no", "Missed it"]].forEach(function (r) {
-      var rb = el("button", "wb-btn" + (was && was.r === r[0] ? " on" : ""), r[1]);
-      rb.addEventListener("click", function () { rateCard(cardKey, r[0]); draw(); });
-      rate.appendChild(rb);
-    });
-    ph.appendChild(rate);
-    return ph;
-  }
-  function wbRead(s, parts) {
-    var ph = wbPhase("Read", "read");
-    parts.forEach(function (n) { if (n) { ph.appendChild(n); } });
-    if (ph.children.length === 1) { return null; }
-    return ph;
-  }
-  function wbLinks(s, links) {
-    if (!links || !links.length) { return null; }
-    var res = el("div", "wb-res");
-    links.forEach(function (r) {
-      if (r.book) { res.appendChild(el("span", "", r.book)); return; }
-      var a = document.createElement("a");
-      a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = r.label;
-      a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
-      res.appendChild(a);
-    });
-    return res;
-  }
-
-  function workbench(s, list, wild) {
-    var cards = wbCards(s);
-    var at = wbStart(s, cards);
-    wbAt[s.id] = at;
-    var c = cards[at];
-    var box = el("div", "wb");
-
-    /* where you are: one mark per card */
-    var strip = el("div", "wb-strip");
-    cards.forEach(function (x, k) {
-      var done = x.key && state.steps[x.key];
-      var d = el("button", "wb-dot" + (k === at ? " on" : "") + (done ? " done" : "") + (x.kind === "figs" || x.kind === "finish" ? " edge" : ""));
-      d.title = x.kind === "figs" ? "Figures" : x.kind === "finish" ? "Finish" : x.kind === "study" ? x.it.t : x.st.t;
-      d.setAttribute("aria-label", d.title);
-      d.addEventListener("click", function () { wbAt[s.id] = k; draw(); });
-      strip.appendChild(d);
-    });
-    box.appendChild(strip);
-
-    var card = el("article", "wb-card");
-    var stepsTotal = s.steps.length + studyLen(s);
-    if (c.kind === "figs") {
-      card.appendChild(el("div", "wb-count", "Before you start"));
-      card.appendChild(el("h2", "", s.diagrams.length === 1 ? "The figure this session is about" : "The figures this session is about"));
-      s.diagrams.forEach(function (k, i) { var f = plate(k, i + 1); if (f) { card.appendChild(f); } });
-    } else if (c.kind === "study" || c.kind === "step") {
-      var n = c.kind === "study" ? c.i + 1 : studyLen(s) + c.i + 1;
-      var mins2 = c.kind === "step" && c.st.m ? ", " + mins(c.st.m) : "";
-      card.appendChild(el("div", "wb-count", (c.kind === "study" ? "Know it, " : "Step ") + n + " of " + stepsTotal + mins2 + (state.steps[c.key] ? ", done " + (state.steps[c.key + ":at"] || "") : "")));
-      if (c.kind === "study") {
-        var it = c.it;
-        card.appendChild(el("h2", "", it.t));
-        card.appendChild(wbRead(s, [wbLinks(s, it.res), doList(s, it, c.i, true), sdRow(s, it.sd), alRow(s, it.al)]) || document.createTextNode(""));
-        card.appendChild(wbWrite(s, c.key + ":mine", "Say it in your own words first: what it is and why it matters."));
-        card.appendChild(wbCheck(s, c.key, it.say, s.id + ":s" + c.i, c.key + ":mine"));
-      } else {
-        var st = c.st;
-        card.appendChild(el("h2", "", st.t));
-        card.appendChild(wbRead(s, [!s.study && st.d ? el("p", "", st.d) : null, stepDo(s, st, true), wbLinks(s, st.links), sdRow(s, st.sd), alRow(s, st.al)]) || document.createTextNode(""));
-        card.appendChild(wbWrite(s, c.key + ":a"));
-        card.appendChild(wbCheck(s, c.key, modelOf(s, st), c.key, c.key + ":a"));
-      }
-      var foot = el("div", "wb-foot");
-      var mark = el("button", "wb-btn" + (state.steps[c.key] ? "" : " primary"), state.steps[c.key] ? "Done. Undo" : "Mark done and go on");
-      mark.addEventListener("click", function () {
-        if (state.steps[c.key]) { delete state.steps[c.key]; delete state.steps[c.key + ":at"]; }
-        else { state.steps[c.key] = true; state.steps[c.key + ":at"] = stampNow(); wbAt[s.id] = at + 1; }
-        markSession(s); save(); draw(); window.scrollTo(0, 0);
-      });
-      foot.appendChild(mark);
-      card.appendChild(foot);
-    } else {
-      finishCard(card, s, list, wild);
-    }
-    box.appendChild(card);
-
-    var nav = el("div", "wb-nav");
-    var prev = el("button", "wb-btn", "Previous"); prev.disabled = at === 0;
-    prev.addEventListener("click", function () { wbMove(-1); });
-    var next = el("button", "wb-btn", at === cards.length - 1 ? "Next session" : "Next");
-    next.addEventListener("click", function () {
-      if (at < cards.length - 1) { wbMove(1); return; }
-      if (view.session < list.length - 1) { go("session", view.week, view.session + 1); }
-    });
-    next.disabled = at === cards.length - 1 && view.session >= list.length - 1;
-    nav.appendChild(prev);
-    nav.appendChild(el("span", "wb-quiet", "Arrow keys move between cards. Shift and an arrow moves between sessions."));
-    nav.appendChild(next);
-    box.appendChild(nav);
-    return box;
-  }
-
   function finishCard(card, s, list, wild) {
     var total = s.steps.length + studyLen(s), dn = stepsDone(s) + studyDone(s);
-    card.appendChild(el("div", "wb-count", "Finish"));
-    card.appendChild(el("h2", "", dn === total ? "Every card done" : dn + " of " + total + " cards done"));
+    card.appendChild(el("h2", "sxg", dn === total ? "Every step done. Close it off" : "Close it off, " + dn + " of " + total + " steps done"));
     var qs = endQuestions(s);
     var rec = state.quiz[s.id];
     if (qs.length) {
@@ -7901,7 +7152,8 @@
     sw.appendChild(document.createTextNode(s.track));
     kick.appendChild(sw);
     kick.appendChild(el("span", "", wild ? (s.forWhat || "Wildcard") : "Week " + (view.week + 1) + ", " + range(view.week)));
-    kick.appendChild(el("span", "", s.len + " planned"));
+    var xm = extraMinutes(s);
+    kick.appendChild(el("span", "", s.len + " planned" + (xm ? ", and " + mins(xm) + " of added reading" : "")));
     if (state.done[s.id]) { kick.appendChild(el("span", "posted", "Posted " + state.done[s.id])); }
     if (isFolded(s)) { kick.appendChild(el("span", "folded-note", "Folded into wildcard work on " + state.folded[s.id].at)); }
     head.appendChild(kick);
@@ -7926,7 +7178,7 @@
 
     var myCards = cardsOf(s);
     if (myCards.length) { var band = coldBand(myCards); if (band) { v.appendChild(band); } }
-    v.appendChild(workbench(s, list, wild));
+    v.appendChild(sessionList(s, list, wild));
 
     var acts = el("div", "row-act");
     var back = el("button", "sec", wild ? "Back to the wildcard" : "Back to week " + (view.week + 1));
@@ -9878,7 +9130,6 @@
         }
       }
       if (view.page === "session" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
-        if (!e.shiftKey && wbMove(e.key === "ArrowRight" ? 1 : -1)) { e.preventDefault(); return; }
         var x = neighbour(e.key === "ArrowRight" ? 1 : -1);
         if (x) { e.preventDefault(); go("session", x.w, x.i); }
       } else if (e.key === "Escape") {

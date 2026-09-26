@@ -1,0 +1,14 @@
+/* Classes the figures in figures.js draw with. Colours come from the page's own tokens
+   where it has them, and fall back to the tracker's light palette where it does not. */
+.d-fill-sys { fill: var(--sys-p, #dbe4ef); } .d-str-sys { stroke: var(--sys, #3f6ea8); }
+.d-fill-math { fill: var(--math-p, #dde9e1); } .d-str-math { stroke: var(--math, #3f7a55); }
+.d-fill-alaap { fill: var(--alaap-p, #f0e0d8); } .d-str-alaap { stroke: var(--alaap, #a85f3f); }
+.d-fill-req { fill: var(--req-p, #ece4cf); } .d-str-req { stroke: var(--req, #8a6f2f); }
+.d-fill-iv { fill: var(--iv-p, #efdfe7); } .d-str-iv { stroke: var(--iv, #7a3b5c); }
+.d-fill-now { fill: var(--live, #fffdf5); } .d-str-now { stroke: var(--ink, #1a1a19); }
+.d-fill-flat { fill: none; } .d-str-flat { stroke: var(--line, #c3c0b7); }
+.d-line { stroke: var(--dim, #6b6a65); fill: none; }
+.d-t { fill: var(--ink, #1a1a19); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 12px; }
+.d-t-s { fill: var(--dim, #6b6a65); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 11px; }
+.d-t-b { fill: var(--ink, #1a1a19); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 12px; font-weight: 700; }
+.d-t-x { fill: var(--faint, #a2a09a); font-family: var(--sans, "Helvetica Neue", Arial, sans-serif); font-size: 10.5px; }
