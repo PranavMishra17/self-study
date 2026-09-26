@@ -16,7 +16,7 @@
 html.fv-open, html.fv-open body { overflow: hidden; }
 .fv { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; background: #f4f3ef; color: #1a1a19;
   font-family: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif; }
-.fv-bar { display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid #d9d6cd; background: #fbfaf7; }
+.fv-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 18px; border-bottom: 1px solid #d9d6cd; background: #fbfaf7; }
 .fv-title { font-size: 17px; font-weight: 700; flex: 1; min-width: 0; }
 .fv-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .fv-b { font: inherit; font-size: 14px; min-width: 34px; height: 32px; padding: 0 10px; border: 1px solid #c3c0b7; background: #fff; color: #1a1a19; cursor: pointer; border-radius: 6px; }
@@ -52,6 +52,9 @@ html.fv-open, html.fv-open body { overflow: hidden; }
 @media (max-width: 800px) {
   .fv-main { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr); }
   .fv-side { border-left: 0; border-top: 1px solid #d9d6cd; }
-  .fv-title { font-size: 15px; }
+  .fv-title { font-size: 15px; flex-basis: 100%; }
+  .fv-tools { gap: 4px; }
+  .fv-b { min-width: 30px; height: 30px; padding: 0 8px; }
+  .fv-x { margin-left: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .fv-pan svg.fv-dim [data-n], .fv-pan svg.fv-dim [data-e] { transition: none; } }

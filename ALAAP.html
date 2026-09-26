@@ -819,7 +819,7 @@ this repo. Know exactly what each turns off — they are not the same thing.</p>
 <g data-n="g1">
 <rect class="b3" x="232" y="118" width="176" height="54" rx="9"/>
 <text class="t" x="320" y="138">W.grad, x.grad</text>
-<text class="tm" x="320" y="156">g @ W.T, x.T @ g</text>
+<text class="tm" x="320" y="156">x.T @ g, g @ W.T</text>
 </g>
 </svg><figcaption><b>The graph is a tape recorded on the way forward.</b> Each operation saves what its gradient rule needs; backward() walks the tape in reverse and multiplies by each local derivative. no_grad() stops the recording, which is why it saves memory.</figcaption></figure>
 <article class="tt" id="tt-06">

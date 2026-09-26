@@ -301,7 +301,7 @@ DIAGRAMS = {
             {"id": "L", "c": 3, "r": 0, "label": "loss", "sub": "loss.backward()", "cls": "b4"},
             {"id": "g3", "c": 3, "r": 1, "label": "grad = 1", "sub": "seed", "cls": "b3"},
             {"id": "g2", "c": 2, "r": 1, "label": "grad x mask", "sub": "chain rule", "cls": "b3"},
-            {"id": "g1", "c": 1, "r": 1, "label": "W.grad, x.grad", "sub": "g @ W.T, x.T @ g", "cls": "b3"},
+            {"id": "g1", "c": 1, "r": 1, "label": "W.grad, x.grad", "sub": "x.T @ g, g @ W.T", "cls": "b3"},
         ],
         "edges": [("x", "mm", ""), ("mm", "relu", ""), ("relu", "L", ""), ("L", "g3", "", "ln2"), ("g3", "g2", "", "ln2"), ("g2", "g1", "", "ln2")],
         "caption": "<b>The graph is a tape recorded on the way forward.</b> Each operation saves what its gradient rule needs; backward() walks the tape in reverse and multiplies by each local derivative. no_grad() stops the recording, which is why it saves memory."},

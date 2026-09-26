@@ -911,7 +911,7 @@ GUIDE.patterns = {
         { from: "client", to: "check", label: "1. key" },
         { from: "check", to: "effect", label: "2. new: run" },
         { from: "effect", to: "stored", label: "3. save" },
-        { from: "check", to: "stored", label: "repeat: return", async: true }
+        { from: "check", to: "stored", label: "repeat: return" }
       ]}, short: "Make every step safe to retry.", detail: "The caller sends a unique key; the server stores the result and returns it for repeats.", example: "A clearinghouse retries a submission and gets the same case id back.", tradeoff: "Keys need storage and expiry, and the caller must generate them." }
       ]
     },
