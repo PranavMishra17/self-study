@@ -232,3 +232,14 @@ are served from the same address. Oxus has a minimal archive page. The tracker's
 page leads with a card per loop, and the home page's button opens the loop's page. Full
 mock interviews run in the Claude Code chat, by the protocol in `interviews/MOCKS.md`.
 The whole-tracker overhaul waits on a choice between layout variants.
+
+**2026-09-25 — Sessions become a workbench, one card at a time.**
+Picked from the five layouts in `variants/sessions.html`: a mix of B (one step at a
+time) and E (read, write, check). Every session in every week now shows one card at
+a time: the figures, then each thing to know, then each step. Each card has Read
+(the source and actions), Write (your answer, typed or dictated), and Check (the
+model answer, then Had it, Partly or Missed it). A finish card runs the end quiz
+as a popup, one open question at a time, five to eight per session. Arrows move
+between cards; Shift and an arrow moves between sessions. Progress keys are
+unchanged, so earlier ticks, answers and quiz results carry over. No change to the
+plan or to `CHARTER.md`.

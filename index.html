@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Accelerate</title>
 <link rel="icon" type="image/svg+xml" href="brand/accelerate.svg">
+<link rel="stylesheet" href="fonts/fonts.css">
 <link rel="alternate icon" type="image/png" href="brand/accelerate-32.png">
 <style>
   :root {
@@ -225,6 +226,48 @@
   .res span.bk { color: var(--dim); }
   .res a:hover { border-color: var(--sys); }
 
+  /* the workbench: one card at a time, read, write, check */
+  .wb { max-width: 780px; font-family: "Atkinson Hyperlegible", var(--sans); }
+  .wb-strip { display: flex; gap: 6px; flex-wrap: wrap; margin: 22px 0 16px; }
+  .wb-dot { width: 30px; height: 8px; border: 0; padding: 0; background: var(--line); cursor: pointer; }
+  .wb-dot.edge { width: 14px; }
+  .wb-dot.done { background: var(--math); }
+  .wb-dot.on { background: var(--ink); }
+  .wb-card { background: var(--sheet); border: 1px solid var(--line); padding: 28px 34px 26px; }
+  .wb-count { font-size: 14px; color: var(--dim); }
+  .wb-card h2 { font-size: 25px; line-height: 1.28; margin: 6px 0 16px; font-weight: 700; }
+  .wb-phase { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 4px 18px; padding: 16px 0; border-top: 1px solid var(--line); font-size: 17px; line-height: 1.7; }
+  .wb-phase > * { grid-column: 2; }
+  .wb-phase > .wb-pl { grid-column: 1; grid-row: 1 / span 20; font-size: 14px; font-weight: 700; color: var(--dim); padding-top: 3px; }
+  .wb-phase.check > .wb-pl { color: var(--math); }
+  .wb-phase p { margin: 0 0 10px; }
+  .wb-phase textarea { width: 100%; min-height: 120px; font: inherit; font-size: 17px; line-height: 1.6; padding: 12px 14px; border: 1px solid var(--line); background: var(--live); color: var(--ink); resize: vertical; }
+  .wb-model { background: var(--live); border-left: 3px solid var(--math); padding: 12px 16px; font-size: 17px; }
+  .wb-model ul { margin: 0; padding-left: 20px; } .wb-model li { margin: 4px 0; } .wb-model p { margin: 0; }
+  .wb-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--dim); margin-top: 6px; }
+  .wb-rate { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+  .wb-res a, .wb-res span { margin-right: 16px; font-size: 16px; }
+  .wb-btn { border: 1px solid var(--line); background: var(--live); color: var(--ink); padding: 7px 14px; font: inherit; font-size: 15px; cursor: pointer; }
+  .wb-btn:hover { border-color: var(--ink); }
+  .wb-btn.primary { background: var(--ink); color: var(--live); border-color: var(--ink); }
+  .wb-btn.on { border-color: var(--ink); font-weight: 700; }
+  .wb-btn:disabled { opacity: .4; cursor: default; }
+  .wb-link { background: none; border: 0; padding: 0; font: inherit; font-size: 14.5px; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .wb-quiet { color: var(--dim); font-size: 14.5px; }
+  .wb-foot { margin-top: 18px; }
+  .wb-nav { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 16px; }
+  .wb .stepdo, .wb .sdrow { font-size: 15.5px; }
+  dialog.wbq { width: min(640px, 94vw); border: 1px solid var(--line); padding: 0; background: var(--sheet); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.3); font-family: "Atkinson Hyperlegible", var(--sans); }
+  dialog.wbq::backdrop { background: rgba(20, 18, 14, .5); }
+  .wbq-in { padding: 26px 30px 22px; font-size: 17px; line-height: 1.65; }
+  .wbq-dots { display: flex; gap: 5px; margin-bottom: 16px; }
+  .wbq-dots i { width: 22px; height: 4px; background: var(--line); }
+  .wbq-dots i.on { background: var(--ink); } .wbq-dots i.got { background: var(--math); }
+  .wbq-q { font-size: 21px; font-weight: 700; line-height: 1.35; }
+  .wbq-in textarea { width: 100%; min-height: 110px; margin-top: 12px; font: inherit; padding: 10px 12px; border: 1px solid var(--line); background: var(--live); color: var(--ink); }
+  .wbq-in .wb-model { margin-top: 12px; }
+  .wbq-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  @media (max-width: 700px) { .wb-phase { grid-template-columns: minmax(0, 1fr); } .wb-phase > .wb-pl { grid-row: auto; } .wb-card { padding: 22px 18px; } .wb-nav .wb-quiet { display: none; } }
   .linkform { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   input[type=text] { flex: 1 1 200px; border: 1px solid var(--line); background: var(--sheet);
     padding: 8px 11px; font: inherit; font-size: 13.5px; color: inherit; }
@@ -6077,7 +6120,7 @@
      rather than nesting a do array: how long, exactly where, what is true when it
      is finished, and what to skip. These sit above the fold on purpose. Knowing
      what to do should never be behind a toggle; only the model answer is. */
-  function stepDo(s, st) {
+  function stepDo(s, st, noAns) {
     if (!st.where && !st.url && !st.out && !st.skip && !st.nlm) { return null; }
     var box = el("div", "stepdo");
     if (st.where || st.url) {
@@ -6095,7 +6138,7 @@
     if (st.out) { box.appendChild(el("div", "dout", "Done when: " + st.out)); }
     if (st.skip) { box.appendChild(el("div", "dskip", "Skip: " + st.skip)); }
     if (st.nlm) { box.appendChild(el("div", "dnlm", "Ask NotebookLM: " + st.nlm)); }
-    if (st.ans) {
+    if (st.ans && !noAns) {
       var akey = sKey(s.id, s.steps.indexOf(st)) + ":a";
       var held = state.answers[akey];
       var ab = el("button", "xp" + (held && held.text ? " has" : ""),
@@ -6367,7 +6410,7 @@
     return wrap;
   }
 
-  function doList(s, it, i) {
+  function doList(s, it, i, noAns) {
     if (!it.do || !it.do.length) { return null; }
     var ol = el("div", "dolist");
     it.do.forEach(function (d, j) {
@@ -6404,13 +6447,15 @@
       if (d.out) { body.appendChild(el("div", "dout", "Done when: " + d.out)); }
       if (d.skip) { body.appendChild(el("div", "dskip", "Skip: " + d.skip)); }
 
-      var akey = doKey(s.id, i, j) + ":a";
-      var held = state.answers[akey];
-      var ab = el("button", "xp" + (held && held.text ? " has" : ""),
-        open[akey] ? "Close" : (held && held.text ? "Answer kept" : (d.ans ? "Answer, then check" : "Answer")));
-      ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
-      body.appendChild(ab);
-      if (open[akey]) { body.appendChild(answerBox(akey, d.ans, null)); }
+      if (!noAns) {
+        var akey = doKey(s.id, i, j) + ":a";
+        var held = state.answers[akey];
+        var ab = el("button", "xp" + (held && held.text ? " has" : ""),
+          open[akey] ? "Close" : (held && held.text ? "Answer kept" : (d.ans ? "Answer, then check" : "Answer")));
+        ab.addEventListener("click", function () { open[akey] = !open[akey]; draw(); });
+        body.appendChild(ab);
+        if (open[akey]) { body.appendChild(answerBox(akey, d.ans, null)); }
+      }
 
       li.appendChild(body);
       ol.appendChild(li);
@@ -6824,7 +6869,7 @@
       });
       side.appendChild(foot);
     });
-    side.appendChild(htm("div", "keys", "Left and right arrows move between sessions.<br>Escape goes up a level."));
+    side.appendChild(htm("div", "keys", "Arrows move between cards; Shift and an arrow, between sessions.<br>Escape goes up a level."));
   }
   function drawCrumb() {
     var host = document.getElementById("crumb");
@@ -7473,6 +7518,373 @@
 
   /* ------------------------------------------------------------- session view */
 
+  /* ---------------------------------------------------------------- the workbench
+     A session is worked one card at a time: the figures, any study items, each step,
+     then a finish card. Every step is three phases: read what to know and where to go,
+     write your own answer, then check it against the model answer and rate yourself.
+     Progress uses the same keys as before: state.steps, state.answers, state.recall. */
+
+  var wbAt = {};
+
+  function wbCards(s) {
+    var cards = [];
+    if (s.diagrams && s.diagrams.length) { cards.push({ kind: "figs" }); }
+    (s.study || []).forEach(function (it, i) { cards.push({ kind: "study", it: it, i: i, key: s.id + ":s" + i }); });
+    s.steps.forEach(function (st, i) { cards.push({ kind: "step", st: st, i: i, key: sKey(s.id, i) }); });
+    cards.push({ kind: "finish" });
+    return cards;
+  }
+  function wbStart(s, cards) {
+    if (wbAt[s.id] !== undefined) { return Math.min(wbAt[s.id], cards.length - 1); }
+    if (!anyDone(s)) { return 0; }
+    for (var i = 0; i < cards.length; i++) { if (cards[i].key && !state.steps[cards[i].key]) { return i; } }
+    return cards.length - 1;
+  }
+  function anyDone(s) { return stepsDone(s) + studyDone(s) > 0; }
+  function wbMove(d) {
+    var s = sessionsOf(view.week)[view.session];
+    if (!s) { return false; }
+    var cards = wbCards(s);
+    var at = wbStart(s, cards) + d;
+    if (at < 0 || at >= cards.length) { return false; }
+    wbAt[s.id] = at;
+    draw();
+    window.scrollTo(0, 0);
+    return true;
+  }
+
+  /* Open questions for the end of a session: why and short closers, pick closers asked
+     as open questions, then prompts from the steps themselves. Never blanks or single words. */
+  function endQuestions(s) {
+    var qs = [];
+    function take(list) {
+      (list || []).forEach(function (c) {
+        if (c.k === "short" || c.k === "why" || c.k === "figure") { qs.push({ q: c.q, a: c.a }); }
+        else if (c.k === "pick" && typeof c.a === "number" && c.o) { qs.push({ q: c.q, a: c.o[c.a] + (c.why ? ". " + c.why : "") }); }
+      });
+    }
+    s.steps.forEach(function (st) { take(st.close); });
+    (s.study || []).forEach(function (it) { take(it.close); });
+    var seen = {}, uniq = qs.filter(function (q) { if (seen[q.q]) { return false; } seen[q.q] = true; return true; });
+    if (uniq.length > 8) {
+      var step = uniq.length / 8, spread = [];
+      for (var i = 0; i < 8; i++) { spread.push(uniq[Math.floor(i * step)]); }
+      uniq = spread;
+    }
+    s.steps.forEach(function (st) {
+      if (uniq.length >= 5) { return; }
+      var model = modelOf(s, st);
+      if (model) { uniq.push({ q: "In your own words: " + st.t.replace(/\.$/, "") + ".", a: Array.isArray(model) ? model.join(" ") : model }); }
+    });
+    return uniq;
+  }
+  function modelOf(s, st) { return st.ans || (s.study ? st.d : null); }
+
+  function wbPhase(label, cls) {
+    var p = el("section", "wb-phase " + (cls || ""));
+    p.appendChild(el("div", "wb-pl", label));
+    return p;
+  }
+  function wbWrite(s, key, placeholder) {
+    var ph = wbPhase("Write", "write");
+    var rec = state.answers[key];
+    var ta = document.createElement("textarea");
+    ta.value = (rec && rec.text) || "";
+    ta.placeholder = placeholder || "Your answer, in your own words, before you look. Type it, press Win+H to dictate, or use Dictate.";
+    ta.addEventListener("input", function () {
+      if (ta.value.trim()) { state.answers[key] = { text: ta.value, at: stampNow(), via: "typed" }; }
+      else { delete state.answers[key]; }
+      save();
+    });
+    ph.appendChild(ta);
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var meta = el("div", "wb-meta");
+    meta.appendChild(el("span", "", rec && rec.at ? "Last written " + rec.at : "Nothing written yet"));
+    if (SR) {
+      var mic = el("button", "wb-link", "Dictate");
+      var r = null, on = false, base = "";
+      mic.addEventListener("click", function () {
+        try {
+          if (on) { if (r) { r.stop(); } return; }
+          r = new SR(); r.lang = "en-US"; r.interimResults = true; r.continuous = true;
+          base = ta.value; on = true; mic.textContent = "Stop dictating";
+          r.onresult = function (ev) {
+            var fin = "", tmp = "";
+            for (var i = ev.resultIndex; i < ev.results.length; i++) {
+              if (ev.results[i].isFinal) { fin += ev.results[i][0].transcript; } else { tmp += ev.results[i][0].transcript; }
+            }
+            if (fin) { base = (base && !/\s$/.test(base) ? base + " " : base) + fin.trim() + " "; state.answers[key] = { text: base, at: stampNow(), via: "spoken" }; save(); }
+            ta.value = base + tmp;
+          };
+          r.onerror = function (err) { console.error("Dictation failed", err); on = false; mic.textContent = "Dictate"; };
+          r.onend = function () { on = false; mic.textContent = "Dictate"; };
+          r.start();
+        } catch (err) { console.error("Dictation could not start", err); on = false; mic.textContent = "Dictate"; }
+      });
+      meta.appendChild(mic);
+    }
+    ph.appendChild(meta);
+    return ph;
+  }
+  function wbCheck(s, key, model, cardKey, ansKey) {
+    var ph = wbPhase("Check", "check");
+    var shown = open[key + ":reveal"] || !!state.steps[key];
+    if (!model) { ph.appendChild(el("p", "wb-quiet", "No model answer for this one. Tick it when the Write box says what you would say out loud.")); return ph; }
+    if (!shown) {
+      var hasText = state.answers[ansKey] && state.answers[ansKey].text && state.answers[ansKey].text.trim();
+      var b = el("button", "wb-btn" + (hasText ? " primary" : ""), hasText ? "Show the model answer" : "Show the model answer without writing");
+      b.addEventListener("click", function () { open[key + ":reveal"] = true; draw(); });
+      ph.appendChild(b);
+      return ph;
+    }
+    var m = el("div", "wb-model");
+    if (Array.isArray(model)) {
+      var ul = el("ul");
+      model.forEach(function (x) { ul.appendChild(el("li", "", x)); });
+      m.appendChild(ul);
+    } else { m.appendChild(el("p", "", model)); }
+    ph.appendChild(m);
+    var rate = el("div", "wb-rate");
+    rate.appendChild(el("span", "wb-quiet", "How close was yours?"));
+    var was = state.recall[cardKey];
+    [["got", "Had it"], ["shaky", "Partly"], ["no", "Missed it"]].forEach(function (r) {
+      var rb = el("button", "wb-btn" + (was && was.r === r[0] ? " on" : ""), r[1]);
+      rb.addEventListener("click", function () { rateCard(cardKey, r[0]); draw(); });
+      rate.appendChild(rb);
+    });
+    ph.appendChild(rate);
+    return ph;
+  }
+  function wbRead(s, parts) {
+    var ph = wbPhase("Read", "read");
+    parts.forEach(function (n) { if (n) { ph.appendChild(n); } });
+    if (ph.children.length === 1) { return null; }
+    return ph;
+  }
+  function wbLinks(s, links) {
+    if (!links || !links.length) { return null; }
+    var res = el("div", "wb-res");
+    links.forEach(function (r) {
+      if (r.book) { res.appendChild(el("span", "", r.book)); return; }
+      var a = document.createElement("a");
+      a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = r.label;
+      a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
+      res.appendChild(a);
+    });
+    return res;
+  }
+
+  function workbench(s, list, wild) {
+    var cards = wbCards(s);
+    var at = wbStart(s, cards);
+    wbAt[s.id] = at;
+    var c = cards[at];
+    var box = el("div", "wb");
+
+    /* where you are: one mark per card */
+    var strip = el("div", "wb-strip");
+    cards.forEach(function (x, k) {
+      var done = x.key && state.steps[x.key];
+      var d = el("button", "wb-dot" + (k === at ? " on" : "") + (done ? " done" : "") + (x.kind === "figs" || x.kind === "finish" ? " edge" : ""));
+      d.title = x.kind === "figs" ? "Figures" : x.kind === "finish" ? "Finish" : x.kind === "study" ? x.it.t : x.st.t;
+      d.setAttribute("aria-label", d.title);
+      d.addEventListener("click", function () { wbAt[s.id] = k; draw(); });
+      strip.appendChild(d);
+    });
+    box.appendChild(strip);
+
+    var card = el("article", "wb-card");
+    var stepsTotal = s.steps.length + studyLen(s);
+    if (c.kind === "figs") {
+      card.appendChild(el("div", "wb-count", "Before you start"));
+      card.appendChild(el("h2", "", s.diagrams.length === 1 ? "The figure this session is about" : "The figures this session is about"));
+      s.diagrams.forEach(function (k, i) { var f = plate(k, i + 1); if (f) { card.appendChild(f); } });
+    } else if (c.kind === "study" || c.kind === "step") {
+      var n = c.kind === "study" ? c.i + 1 : studyLen(s) + c.i + 1;
+      var mins2 = c.kind === "step" && c.st.m ? ", " + mins(c.st.m) : "";
+      card.appendChild(el("div", "wb-count", (c.kind === "study" ? "Know it, " : "Step ") + n + " of " + stepsTotal + mins2 + (state.steps[c.key] ? ", done " + (state.steps[c.key + ":at"] || "") : "")));
+      if (c.kind === "study") {
+        var it = c.it;
+        card.appendChild(el("h2", "", it.t));
+        card.appendChild(wbRead(s, [wbLinks(s, it.res), doList(s, it, c.i, true), sdRow(s, it.sd), alRow(s, it.al)]) || document.createTextNode(""));
+        card.appendChild(wbWrite(s, c.key + ":mine", "Say it in your own words first: what it is and why it matters."));
+        card.appendChild(wbCheck(s, c.key, it.say, s.id + ":s" + c.i, c.key + ":mine"));
+      } else {
+        var st = c.st;
+        card.appendChild(el("h2", "", st.t));
+        card.appendChild(wbRead(s, [!s.study && st.d ? el("p", "", st.d) : null, stepDo(s, st, true), wbLinks(s, st.links), sdRow(s, st.sd), alRow(s, st.al)]) || document.createTextNode(""));
+        card.appendChild(wbWrite(s, c.key + ":a"));
+        card.appendChild(wbCheck(s, c.key, modelOf(s, st), c.key, c.key + ":a"));
+      }
+      var foot = el("div", "wb-foot");
+      var mark = el("button", "wb-btn" + (state.steps[c.key] ? "" : " primary"), state.steps[c.key] ? "Done. Undo" : "Mark done and go on");
+      mark.addEventListener("click", function () {
+        if (state.steps[c.key]) { delete state.steps[c.key]; delete state.steps[c.key + ":at"]; }
+        else { state.steps[c.key] = true; state.steps[c.key + ":at"] = stampNow(); wbAt[s.id] = at + 1; }
+        markSession(s); save(); draw(); window.scrollTo(0, 0);
+      });
+      foot.appendChild(mark);
+      card.appendChild(foot);
+    } else {
+      finishCard(card, s, list, wild);
+    }
+    box.appendChild(card);
+
+    var nav = el("div", "wb-nav");
+    var prev = el("button", "wb-btn", "Previous"); prev.disabled = at === 0;
+    prev.addEventListener("click", function () { wbMove(-1); });
+    var next = el("button", "wb-btn", at === cards.length - 1 ? "Next session" : "Next");
+    next.addEventListener("click", function () {
+      if (at < cards.length - 1) { wbMove(1); return; }
+      if (view.session < list.length - 1) { go("session", view.week, view.session + 1); }
+    });
+    next.disabled = at === cards.length - 1 && view.session >= list.length - 1;
+    nav.appendChild(prev);
+    nav.appendChild(el("span", "wb-quiet", "Arrow keys move between cards. Shift and an arrow moves between sessions."));
+    nav.appendChild(next);
+    box.appendChild(nav);
+    return box;
+  }
+
+  function finishCard(card, s, list, wild) {
+    var total = s.steps.length + studyLen(s), dn = stepsDone(s) + studyDone(s);
+    card.appendChild(el("div", "wb-count", "Finish"));
+    card.appendChild(el("h2", "", dn === total ? "Every card done" : dn + " of " + total + " cards done"));
+    var qs = endQuestions(s);
+    var rec = state.quiz[s.id];
+    if (qs.length) {
+      var qp = wbPhase("Quiz", "read");
+      qp.appendChild(el("p", "", qs.length + " open questions, one at a time. Answer each, then compare with the model answer and rate yourself." +
+        (rec ? " Last run " + rec.at + "." : "")));
+      var qb = el("button", "wb-btn primary", rec ? "Run the quiz again" : "Start the quiz");
+      qb.addEventListener("click", function () { runEndQuiz(s, qs); });
+      qp.appendChild(qb);
+      card.appendChild(qp);
+    }
+
+    var kp = wbPhase("Kept", "read");
+    var vs = state.visits[s.id] || [];
+    if (vs.length) {
+      var ul = el("ul", "visits");
+      vs.slice().reverse().forEach(function (r) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener"; a.textContent = r.label || r.url;
+        li.appendChild(a); li.appendChild(el("span", "w", r.at));
+        ul.appendChild(li);
+      });
+      kp.appendChild(ul);
+    } else { kp.appendChild(el("p", "wb-quiet", "Links you open from this session are kept here.")); }
+    var form = el("div", "linkform");
+    var t1 = document.createElement("input"); t1.type = "text"; t1.placeholder = "What it is";
+    var t2 = document.createElement("input"); t2.type = "text"; t2.placeholder = "https://";
+    var add = el("button", "sec", "Keep this link");
+    add.addEventListener("click", function () {
+      var url = t2.value.trim();
+      if (!url) { t2.placeholder = "Paste a link first"; return; }
+      if (!/^https?:\/\//i.test(url)) { url = "https://" + url; }
+      logVisit(s.id, t1.value.trim() || url, url); draw();
+    });
+    form.appendChild(t1); form.appendChild(t2); form.appendChild(add);
+    kp.appendChild(form);
+    card.appendChild(kp);
+
+    var rp = wbPhase("Set aside", "read");
+    rp.appendChild(el("p", "wb-quiet", "Something you are not resolving now goes to the requeue, not lost."));
+    var rqform = el("div", "linkform");
+    var rqt = document.createElement("input"); rqt.type = "text"; rqt.placeholder = "What to come back to";
+    var rqw = document.createElement("input"); rqw.type = "text"; rqw.placeholder = "Why it matters (optional)";
+    var rqadd = el("button", "sec", "Add to requeue");
+    rqadd.addEventListener("click", function () {
+      if (!rqt.value.trim()) { rqt.placeholder = "Say what it is first"; return; }
+      state.requeue.added.push({ id: "U" + Date.now(), t: rqt.value.trim(), w: rqw.value.trim(), session: s.id, at: stampNow() });
+      save(); draw();
+    });
+    rqform.appendChild(rqt); rqform.appendChild(rqw); rqform.appendChild(rqadd);
+    rp.appendChild(rqform);
+    card.appendChild(rp);
+
+    if (!wild && (isFolded(s) || (foldsFree() > 0 && !sessionDone(s)))) {
+      var cr = el("div", "credit");
+      if (isFolded(s)) {
+        cr.appendChild(htm("span", "", "Covered by wildcard work, recorded " + state.folded[s.id].at + "."));
+        var un = el("button", "sec", "Undo the fold");
+        un.addEventListener("click", function () { delete state.folded[s.id]; save(); draw(); });
+        cr.appendChild(un);
+      } else {
+        cr.appendChild(htm("span", "", "You have <b>" + foldsFree() + "</b> wildcard credit left. If interview prep genuinely covered this session, fold it in."));
+        var fold = el("button", "sec", "Fold this in");
+        fold.addEventListener("click", function () { if (foldsFree() > 0) { state.folded[s.id] = { at: stampNow() }; save(); draw(); } });
+        cr.appendChild(fold);
+      }
+      card.appendChild(cr);
+    }
+  }
+
+  /* One question at a time, in a pop-up. Finishing it counts as the session's quiz. */
+  function runEndQuiz(s, qs) {
+    var dlg = document.getElementById("wbquiz");
+    if (!dlg) { dlg = document.createElement("dialog"); dlg.id = "wbquiz"; dlg.className = "wbq"; document.body.appendChild(dlg); }
+    var i = 0, rated = [];
+    function show() {
+      var q = qs[i];
+      dlg.innerHTML = "";
+      var box = el("div", "wbq-in");
+      var dots = el("div", "wbq-dots");
+      qs.forEach(function (_, k) { dots.appendChild(el("i", k < i ? "got" : (k === i ? "on" : ""))); });
+      box.appendChild(dots);
+      box.appendChild(el("div", "wbq-q", q.q));
+      var ta = document.createElement("textarea"); ta.placeholder = "Your answer. Win+H to dictate.";
+      box.appendChild(ta);
+      var row = el("div", "wbq-row");
+      var rv = el("button", "wb-btn primary", "Show the answer");
+      var stop = el("button", "wb-link", "Stop");
+      stop.addEventListener("click", function () { dlg.close(); });
+      rv.addEventListener("click", function () {
+        rv.remove();
+        box.insertBefore(el("div", "wb-model", q.a), row);
+        [["got", "Had it"], ["shaky", "Partly"], ["no", "Missed it"]].forEach(function (r, ri) {
+          var b = el("button", "wb-btn", r[1]);
+          b.addEventListener("click", function () {
+            rated.push(ri);
+            rateCard(s.id + ":eq" + i, r[0]);
+            i += 1;
+            if (i < qs.length) { show(); } else { finish(); }
+          });
+          row.insertBefore(b, stop);
+        });
+      });
+      row.appendChild(rv); row.appendChild(stop);
+      box.appendChild(row);
+      dlg.appendChild(box);
+      ta.focus();
+    }
+    function finish() {
+      var got = rated.filter(function (r) { return r === 0; }).length;
+      var missed = [];
+      rated.forEach(function (r, k) { if (r === 2) { missed.push(k); } });
+      var qrec = { score: got, passed: true, at: stampNow(), missed: missed, via: "end quiz" };
+      state.quiz[s.id] = qrec;
+      state.quizHistory[s.id] = (state.quizHistory[s.id] || []).concat([qrec]);
+      markSession(s); save();
+      dlg.innerHTML = "";
+      var box = el("div", "wbq-in");
+      box.appendChild(el("div", "wbq-q", got + " of " + qs.length + " you had."));
+      if (missed.length) {
+        box.appendChild(el("p", "", "Say these again before moving on:"));
+        var ul = el("ul");
+        missed.forEach(function (k) { ul.appendChild(el("li", "", qs[k].q)); });
+        box.appendChild(ul);
+      }
+      var close = el("button", "wb-btn primary", "Close");
+      close.addEventListener("click", function () { dlg.close(); draw(); });
+      box.appendChild(close);
+      dlg.appendChild(box);
+    }
+    show();
+    try { dlg.showModal(); } catch (err) { dlg.setAttribute("open", ""); }
+  }
+
   function viewSession() {
     var v = document.getElementById("view");
     var list = sessionsOf(view.week);
@@ -7513,359 +7925,8 @@
     }
 
     var myCards = cardsOf(s);
-    if (myCards.length) {
-      v.appendChild(recallBar(myCards, s.id));
-      var band = coldBand(myCards);
-      if (band) { v.appendChild(band); }
-    }
-
-    if (s.study && s.study.length) {
-      var stMin = studyMinutes(s);
-      v.appendChild(rubric("Study first", studyDone(s) + " of " + s.study.length + " owned" +
-        (stMin ? "   \u00b7   " + mins(stMin) + " of actions" : "")));
-      v.appendChild(el("p", "sm dim", "Each item is something you should be able to say out loud without notes. Tick it only when you can. The numbered actions under an item are what to actually do, and tick separately."));
-      s.study.forEach(function (it, i) {
-        var key = s.id + ":s" + i;
-        var wrap = el("div", "step");
-        var row = el("div", "srow");
-        var bx = el("button", "bx" + (state.steps[key] ? " on" : ""));
-        bx.setAttribute("aria-label", "Mark owned");
-        bx.addEventListener("click", function () {
-          if (state.steps[key]) { delete state.steps[key]; delete state.steps[key + ":at"]; }
-          else { state.steps[key] = true; state.steps[key + ":at"] = stampNow(); }
-          markSession(s); save(); draw();
-        });
-        row.appendChild(bx);
-        var tx = el("div", "tx" + (state.steps[key] ? " off" : ""));
-        var tb = document.createElement("b");
-        tb.textContent = it.t;
-        tx.appendChild(tb);
-        tx.appendChild(el("div", "sm dim", it.say));
-        if (it.res && it.res.length) {
-          var res = el("div", "res");
-          res.style.marginTop = "8px";
-          it.res.forEach(function (r) {
-            if (r.book) { res.appendChild(el("span", "bk", r.book)); return; }
-            var a = document.createElement("a");
-            a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-            a.textContent = r.label;
-            a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
-            res.appendChild(a);
-          });
-          tx.appendChild(res);
-        }
-        var sdIt = sdRow(s, it.sd);
-        if (sdIt) { tx.appendChild(sdIt); }
-        var alIt = alRow(s, it.al);
-        if (alIt) { tx.appendChild(alIt); }
-        var acts = doList(s, it, i);
-        if (acts) { tx.appendChild(acts); }
-        var itClose = closerFor(key, it.close, !!state.steps[key]);
-        if (itClose) { tx.appendChild(itClose); }
-        row.appendChild(tx);
-        row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
-        row.appendChild(el("span", "", ""));
-        row.appendChild(el("span", "", ""));
-        wrap.appendChild(row);
-        v.appendChild(wrap);
-      });
-    }
-
-    if (s.diagrams && s.diagrams.length) {
-      if (s.diagrams.length > 1) {
-        var diaAll = el("button", "sec", "Diagram-first, all " + s.diagrams.length + " figures");
-        diaAll.addEventListener("click", function () { go("dia", s.id, 0); });
-        v.appendChild(diaAll);
-      }
-      s.diagrams.forEach(function (k, i) {
-        var f = plate(k, i + 1);
-        if (f) {
-          var dfb = el("button", "sec diafirst-btn", "Diagram-first");
-          dfb.addEventListener("click", function () { go("dia", s.id, i); });
-          f.appendChild(dfb);
-          v.appendChild(f);
-        }
-      });
-    }
-
-    var stpMin = stepMinutes(s);
-    v.appendChild(rubric(s.study ? "Practice" : "The work",
-      stepsDone(s) + " of " + s.steps.length + " done" +
-      (stpMin ? "   ·   " + mins(stpMin) + " of work" : "")));
-    if (s.study) {
-      v.appendChild(el("p", "sm dim", "Do each one yourself first, in the Answer field. Then open the model answer and compare."));
-    }
-    s.steps.forEach(function (st, i) {
-      var key = sKey(s.id, i);
-      var wrap = el("div", "step");
-      var row = el("div", "srow");
-      var bx = el("button", "bx" + (state.steps[key] ? " on" : ""));
-      bx.setAttribute("aria-label", "Mark step done");
-      bx.addEventListener("click", function () {
-        if (state.steps[key]) {
-          delete state.steps[key];
-          delete state.steps[key + ":at"];
-        } else {
-          state.steps[key] = true;
-          state.steps[key + ":at"] = stampNow();
-        }
-        markSession(s);
-        save();
-        draw();
-      });
-      row.appendChild(bx);
-      var tcell = el("div", "tx" + (state.steps[key] ? " off" : ""));
-      var thead = el("div", "dhead");
-      thead.appendChild(el("span", "", st.t));
-      if (st.m) { thead.appendChild(el("span", "dm", mins(st.m))); }
-      tcell.appendChild(thead);
-      var sdo = stepDo(s, st);
-      if (sdo) { tcell.appendChild(sdo); }
-      var sdSt = sdRow(s, st.sd);
-      if (sdSt) { tcell.appendChild(sdSt); }
-      var alSt = alRow(s, st.al);
-      if (alSt) { tcell.appendChild(alSt); }
-      var stClose = closerFor(key, st.close, !!state.steps[key]);
-      if (stClose) { tcell.appendChild(stClose); }
-      row.appendChild(tcell);
-      row.appendChild(el("div", "ts", state.steps[key] ? (state.steps[key + ":at"] || "") : ""));
-      var compareMode = !!(s.study && (st.d || st.links));
-      if (st.d || st.links) {
-        var xp = el("button", "xp", open[key] ? "Hide" : (s.study ? "Model answer" : "Detail"));
-        xp.addEventListener("click", function () {
-          var willOpen = !open[key];
-          open[key] = willOpen;
-          if (compareMode) { open[akey] = willOpen; }
-          draw();
-        });
-        row.appendChild(xp);
-      } else {
-        row.appendChild(el("span", "", ""));
-      }
-      var ans = state.answers[key];
-      var akey = key + ":ans";
-      var ab = el("button", "xp" + (ans && ans.text ? " has" : ""),
-        open[akey] ? "Close" : (ans && ans.text ? "Answer kept" : "Answer"));
-      ab.addEventListener("click", function () {
-        var willOpen = !open[akey];
-        open[akey] = willOpen;
-        if (compareMode) { open[key] = willOpen; }
-        draw();
-      });
-      row.appendChild(ab);
-      wrap.appendChild(row);
-      var exNode = null;
-      if (open[key] && (st.d || st.links)) {
-        exNode = el("div", "expand");
-        var revealed = !compareMode || (ans && ans.text && ans.text.trim()) || open[key + ":reveal"];
-        if (!revealed) {
-          exNode.appendChild(el("p", "sm dim", "Kept closed until you write an answer, or ask for it outright."));
-          var rv = el("button", "sec", "Show the model answer anyway");
-          rv.addEventListener("click", function () { open[key + ":reveal"] = true; draw(); });
-          exNode.appendChild(rv);
-        } else {
-          if (st.d) { exNode.appendChild(el("p", "", st.d)); }
-          if (st.links) {
-            var res = el("div", "res");
-            st.links.forEach(function (r) {
-              if (r.book) { res.appendChild(el("span", "bk", r.book)); return; }
-              var a = document.createElement("a");
-              a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-              a.textContent = r.label;
-              a.addEventListener("click", function () { logVisit(s.id, r.label, r.url); });
-              res.appendChild(a);
-            });
-            exNode.appendChild(res);
-          }
-        }
-      }
-      var apNode = null;
-      if (open[akey]) {
-        apNode = el("div", "answer");
-        var ta2 = document.createElement("textarea");
-        ta2.value = (ans && ans.text) || "";
-        ta2.placeholder = "Type it, or dictate it. This is where the work goes.";
-        var meta = el("div", "meta");
-        var wc = el("span", "", "");
-        var when = el("span", "", ans && ans.at ? "last written " + ans.at +
-          (ans.via === "spoken" ? "   \u2014   spoken" : "") : "");
-        function counts() {
-          var t2 = ta2.value.trim();
-          wc.textContent = (t2 ? t2.split(/\s+/).length : 0) + " words";
-        }
-        counts();
-        ta2.addEventListener("input", function () {
-          state.answers[key] = { text: ta2.value, at: stampNow(), via: "typed" };
-          if (!ta2.value.trim()) { delete state.answers[key]; }
-          counts();
-          when.textContent = ta2.value.trim() ? "last written " + stampNow() : "";
-          save();
-        });
-        meta.appendChild(wc);
-        meta.appendChild(when);
-        apNode.appendChild(ta2);
-        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SR) {
-          var mic = el("button", "xp", "Dictate");
-          mic.setAttribute("aria-label", "Dictate this answer");
-          var rec = null;
-          var listening = false;
-          var base = ta2.value;
-          mic.addEventListener("click", function () {
-            try {
-              if (listening) { if (rec) { rec.stop(); } return; }
-              rec = new SR();
-              rec.lang = "en-US";
-              rec.interimResults = true;
-              rec.continuous = true;
-              base = ta2.value;
-              listening = true;
-              mic.textContent = "Stop";
-              rec.onresult = function (ev) {
-                var finalText = "", interim = "";
-                for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
-                  var chunk = ev.results[ri][0].transcript;
-                  if (ev.results[ri].isFinal) { finalText += chunk; } else { interim += chunk; }
-                }
-                if (finalText) {
-                  base = (base && !/\s$/.test(base) ? base + " " : base) + finalText.trim() + " ";
-                  state.answers[key] = { text: base, at: stampNow(), via: "spoken" };
-                  save();
-                }
-                ta2.value = base + interim;
-                counts();
-              };
-              rec.onerror = function (err) {
-                console.error("Dictation failed", err);
-                listening = false;
-                mic.textContent = "Dictate";
-              };
-              rec.onend = function () {
-                listening = false;
-                draw();
-              };
-              rec.start();
-            } catch (err) {
-              console.error("Dictation could not start", err);
-              listening = false;
-              mic.textContent = "Dictate";
-            }
-          });
-          meta.appendChild(mic);
-        }
-        apNode.appendChild(meta);
-      }
-      if (compareMode && exNode && apNode) {
-        var cmp = el("div", "compare");
-        var leftCol = el("div", "half");
-        leftCol.appendChild(el("div", "sm dim", "Your answer"));
-        leftCol.appendChild(apNode);
-        var rightCol = el("div", "half");
-        rightCol.appendChild(el("div", "sm dim", "Model answer"));
-        rightCol.appendChild(exNode);
-        cmp.appendChild(leftCol);
-        cmp.appendChild(rightCol);
-        wrap.appendChild(cmp);
-      } else {
-        if (exNode) { wrap.appendChild(exNode); }
-        if (apNode) { wrap.appendChild(apNode); }
-      }
-      v.appendChild(wrap);
-    });
-
-    /* resources opened and kept */
-    v.appendChild(rubric("Resources", "opened links are stamped automatically"));
-    var form = el("div", "linkform");
-    var t1 = document.createElement("input");
-    t1.type = "text"; t1.placeholder = "What it is";
-    var t2 = document.createElement("input");
-    t2.type = "text"; t2.placeholder = "https://";
-    var add = el("button", "sec", "Keep this link");
-    add.addEventListener("click", function () {
-      var label = t1.value.trim() || t2.value.trim();
-      var url = t2.value.trim();
-      if (!url) { t2.placeholder = "Paste a link first"; return; }
-      if (!/^https?:\/\//i.test(url)) { url = "https://" + url; }
-      logVisit(s.id, label, url);
-      t1.value = ""; t2.value = "";
-      draw();
-    });
-    form.appendChild(t1);
-    form.appendChild(t2);
-    form.appendChild(add);
-    v.appendChild(form);
-
-    var vs = state.visits[s.id] || [];
-    if (vs.length) {
-      var ul = el("ul", "visits");
-      vs.slice().reverse().forEach(function (r, ri) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = r.url; a.target = "_blank"; a.rel = "noreferrer noopener";
-        a.textContent = r.label || r.url;
-        li.appendChild(a);
-        var right = el("span", "w", r.at);
-        li.appendChild(right);
-        var del = el("button", "xp", "remove");
-        del.style.marginLeft = "10px";
-        del.addEventListener("click", function () {
-          state.visits[s.id].splice(vs.length - 1 - ri, 1);
-          save(); draw();
-        });
-        right.appendChild(del);
-        ul.appendChild(li);
-      });
-      v.appendChild(ul);
-    } else {
-      v.appendChild(el("p", "sm dim", "Nothing opened from this session yet."));
-    }
-
-    if (s.quiz) { v.appendChild(quizPanel(s)); }
-
-    v.appendChild(rubric("Set this aside", "goes to the requeue, not lost"));
-    v.appendChild(el("p", "sm dim", "Something you are not resolving now. It stays open until you answer it, whenever that is."));
-    var rqform = el("div", "linkform");
-    var rqt = document.createElement("input");
-    rqt.type = "text"; rqt.placeholder = "What to come back to";
-    var rqw = document.createElement("input");
-    rqw.type = "text"; rqw.placeholder = "Why it matters (optional)";
-    var rqadd = el("button", "sec", "Add to requeue");
-    rqadd.addEventListener("click", function () {
-      var rqtext = rqt.value.trim();
-      if (!rqtext) { rqt.placeholder = "Say what it is first"; return; }
-      state.requeue.added.push({ id: "U" + Date.now(), t: rqtext, w: rqw.value.trim(), session: s.id, at: stampNow() });
-      save();
-      draw();
-    });
-    rqform.appendChild(rqt);
-    rqform.appendChild(rqw);
-    rqform.appendChild(rqadd);
-    v.appendChild(rqform);
-
-    if (!wild && (isFolded(s) || (foldsFree() > 0 && !sessionDone(s)))) {
-      var cr = el("div", "credit");
-      if (isFolded(s)) {
-        cr.appendChild(htm("span", "", "Covered by wildcard work, recorded " + state.folded[s.id].at +
-          ". It counts toward the week, and the material stays here if you want it later."));
-        var un = el("button", "sec", "Undo the fold");
-        un.addEventListener("click", function () {
-          delete state.folded[s.id];
-          save(); draw();
-        });
-        cr.appendChild(un);
-      } else {
-        cr.appendChild(htm("span", "", "You have <b>" + foldsFree() + "</b> wildcard credit left. " +
-          "If the interview prep genuinely covered this session, fold it in."));
-        var fold = el("button", "sec", "Fold this in");
-        fold.addEventListener("click", function () {
-          if (foldsFree() <= 0) { return; }
-          state.folded[s.id] = { at: stampNow() };
-          save(); draw();
-        });
-        cr.appendChild(fold);
-      }
-      v.appendChild(cr);
-    }
+    if (myCards.length) { var band = coldBand(myCards); if (band) { v.appendChild(band); } }
+    v.appendChild(workbench(s, list, wild));
 
     var acts = el("div", "row-act");
     var back = el("button", "sec", wild ? "Back to the wildcard" : "Back to week " + (view.week + 1));
@@ -9817,6 +9878,7 @@
         }
       }
       if (view.page === "session" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+        if (!e.shiftKey && wbMove(e.key === "ArrowRight" ? 1 : -1)) { e.preventDefault(); return; }
         var x = neighbour(e.key === "ArrowRight" ? 1 : -1);
         if (x) { e.preventDefault(); go("session", x.w, x.i); }
       } else if (e.key === "Escape") {
