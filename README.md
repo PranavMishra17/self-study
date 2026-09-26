@@ -123,6 +123,7 @@ first.
 | `python alaap/build.py` | `ALAAP.html`, from the Alaap repo's `learning/` folder and `E:/TrenTorch`, both read in place. It also refreshes the plan's stage list and link names inside `index.html`. The sequence itself is `alaap/plan.py`. Never edit the page by hand. |
 | `python fonts/fetch.py` | The system design guide's three typefaces in `fonts/`, so it looks the same offline. |
 | `python brand/render.py` | `accelerate.ico` and the favicon PNGs from `brand/accelerate.svg`, through headless Edge. |
+| `python interviews/build.py <module>` | One interview loop's page, `interviews/<loop>.html`, from `interviews/<module>.py` and the template. |
 
 `brand/` holds the three icons: `accelerate.svg` for the tracker and the desktop
 shortcut, `system-design.svg` (the same craft, colours inverted) for the guide, and
@@ -135,8 +136,9 @@ it for the full explanation and its links, zoom and pan, or Walk through the flo
 time (arrow keys move, Escape closes). The pieces: `figures/viewer.js` and `viewer.css` (the
 viewer), `figures/notes.js`, `notes-sd.js`, `notes-alaap.js` (what each node and edge means,
 keyed by figure), `figures/icons.js` (Lucide icons, ISC, bundled), `figures/annotate.py`
-(names the parts of hand-drawn svgs, used by the Alaap build), and `figures/REVIEW.md` (what
-the reviewers flagged for the next figure pass).
+(names the parts of hand-drawn svgs, used by the Alaap build), `figures/check.js` (run
+`node figures/check.js` after any figure change: every figure renders and every part has a
+note), and `figures/REVIEW.md` (what the reviewers flagged for the next figure pass).
 
 `data/reading.js` holds the reading added on top of each step, keyed like progress
 (`w2a:0`, `wc3:s2`): outside links with minutes, AI Engineering from Scratch lessons, system
@@ -148,6 +150,9 @@ Every URL in it was opened and checked. The tracker and the interview pages both
 Read `CHARTER.md`, then `CHANGELOG.md`, then the newest file in `diagnostics/`, then
 `REQUEUE.md` and `WILDCARD.md`. That is enough context to re-plan without re-explaining
 anything.
+
+`CLAUDE.md` holds the working notes for an agent: commands, where each piece of data
+lives, the figure contract, how the work is wanted, the gotchas, and the open lines of work.
 
 `index.html` is one file on purpose. Its script runs in this order:
 

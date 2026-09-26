@@ -138,3 +138,12 @@ _Date each one as it lands, and say which item number it was._
 Not on this list because it predates it; recorded in `CHANGELOG.md`. It is the
 mechanism for "ticked but could not say it", which is the same shape of gap as
 Tier 1.
+
+**2026-09-22 — Items 1 to 21.** Built in parallel the same day; see `CHANGELOG.md`
+("Repo initialised. Twenty-one improvements").
+
+**2026-09-26 — Superseded or reversed.** The ten-minute floor timer (item 5) and the
+per-session answer boxes went when sessions became collapsible step lists; each step now
+hides its answer until tried and takes a Had it / Partly / Missed it rating instead. The
+single spaced card (16) became three open questions a day. "Animated or steppable
+diagrams" left the not-doing list at Pranav's request: every figure now has a walk-through.
