@@ -295,5 +295,5 @@ and a step's answer staying shut until you have tried now does the same job. Not
 repo: what it is, the method, and how to make it your own. `WILDCARD.md` describes loop
 pages and the current session shape, `MILESTONE-1.md` records the three Oxus design
 sessions now in weeks 2 to 4, `STUDY-LIST.md` is regenerated with each step's reading and
-guide links, and five 1st-edition DDIA chapter references in the reading became 2nd-edition
-topics.
+guide links, and of eight 1st-edition DDIA chapter references in the reading, five that
+duplicated a 2nd-edition entry were removed and three were rewritten as 2nd-edition topics.
