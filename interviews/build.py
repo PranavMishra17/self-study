@@ -108,6 +108,7 @@ def build(module_name):
         "figures": teardown_figures(L.get("teardown")), "mockHow": getattr(m, "MOCK_HOW", ""), "mocks": mocks[-2:],
         "planKicker": L.get("plan_kicker", ""), "mechTitle": L.get("mech_title", ""),
         "designLink": L.get("design_link"), "extra": L.get("extra", ""),
+        "emphasis": getattr(m, "EMPHASIS", []),
     }
     tpl = io.open(os.path.join(HERE, "template.html"), encoding="utf-8").read()
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")

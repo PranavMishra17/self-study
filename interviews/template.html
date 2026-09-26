@@ -14,6 +14,7 @@
 :root {
   --bg: #FFFFFF; --ink: #15141A; --soft: #3F3E48; --muted: #6B6A76; --rule: #E3E2E8;
   --accent: #0A5BD3; --ok: #1A7F4B; --tint: #F4F4F7;
+  --paper2: #F1F0EC; --script: #1B1A20; --script-muted: #6A6873;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", Consolas, monospace;
   --top: 56px;
@@ -21,10 +22,10 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #1C1B22; --ink: #EDEDF2; --soft: #C9C8D3; --muted: #9C9BA8; --rule: #33323C;
-  --accent: #7AB2FF; --ok: #5BC98E; --tint: #25242D; color-scheme: dark; } }
+  --accent: #7AB2FF; --ok: #5BC98E; --tint: #25242D; --paper2: #E6E4DF; --script: #1B1A20; --script-muted: #66646E; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #1C1B22; --ink: #EDEDF2; --soft: #C9C8D3; --muted: #9C9BA8; --rule: #33323C;
-  --accent: #7AB2FF; --ok: #5BC98E; --tint: #25242D; color-scheme: dark; }
+  --accent: #7AB2FF; --ok: #5BC98E; --tint: #25242D; --paper2: #E6E4DF; --script: #1B1A20; --script-muted: #66646E; color-scheme: dark; }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(var(--top) + 24px); }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.72 var(--body); -webkit-font-smoothing: antialiased; }
@@ -101,6 +102,29 @@ h4 { font-size: 19px; margin-bottom: 6px; }
 .trap { padding: 12px 0; border-bottom: 1px solid var(--rule); }
 .trap b { display: block; }
 .trap span { color: var(--soft); }
+
+/* what you say: a transcript on its own light panel, in a serif, so it never reads like the headings */
+details.item { border-bottom: 1px solid var(--rule); }
+details.item > summary { list-style: none; cursor: pointer; padding: 16px 34px 16px 0; position: relative; }
+details.item > summary::-webkit-details-marker { display: none; }
+details.item > summary::after { content: ""; position: absolute; right: 6px; top: 24px; width: 9px; height: 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .15s ease; }
+details.item[open] > summary::after { transform: rotate(-135deg); top: 28px; }
+details.item > summary:hover .qt { color: var(--accent); }
+.qt { display: block; font-weight: 700; font-size: 19px; line-height: 1.4; color: var(--ink); }
+.qm { display: block; font-size: 15px; color: var(--muted); margin-top: 3px; }
+.transcript { background: var(--paper2); color: var(--script); border-radius: 8px; padding: 22px 28px 20px; margin: 2px 0 22px;
+  font-family: Charter, "Iowan Old Style", Georgia, "Times New Roman", serif; font-size: 18.5px; line-height: 1.68; }
+.transcript .who { font-family: var(--body); font-size: 13px; letter-spacing: .02em; color: var(--script-muted); margin-bottom: 8px; }
+.transcript .beat { margin: 0 0 16px; }
+.transcript .beat:last-of-type { margin-bottom: 0; }
+.transcript .line { display: block; }
+.transcript .line + .line { padding-left: 1.4em; }
+.transcript strong { font-weight: 700; color: var(--script); }
+.transcript code { background: rgba(0,0,0,.06); color: var(--script); }
+.transcript .note { font-family: var(--body); font-size: 15px; color: var(--script-muted); margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,.1); }
+.transcript .note b { color: var(--script); }
+.bulk { display: flex; gap: 14px; margin: -8px 0 10px; font-size: 15px; }
+.bulk button { background: none; border: 0; padding: 0; color: var(--accent); }
 
 /* buttons: small and plain */
 .acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
@@ -233,6 +257,51 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
     return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   }
   function paras(host, list) { list.forEach(function (p) { host.appendChild(el("p", "", inl(p))); }); }
+
+  /* Key phrases and figures in what you say are bolded: the phrases from the loop's
+     own emphasis list, the figures wherever a number carries a unit. */
+  var PHRASES = (LOOP.emphasis || []).slice().sort(function (a, b) { return b.length - a.length; });
+  var FIG = /\b(?:\d[\d,.]*\d|\d)(?:\+|%|-plus)?(?:\s(?:to|or|down to)\s(?:\d[\d,.]*\d|\d)%?)?\s?(?:seconds?|minutes?|hours?|days?|weeks?|cases?|users?|classes|tools?|instances|practitioners|percent|MB|ms)\b|\b(?:\d[\d,.]*\d)(?:-plus|\+)(?=\s)/g;
+  function emph(html) {
+    return html.split(/(<[^>]+>)/).map(function (part, i, all) {
+      if (part.charAt(0) === "<") { return part; }
+      var inStrong = all.slice(0, i).join("").lastIndexOf("<strong>") > all.slice(0, i).join("").lastIndexOf("</strong>");
+      if (inStrong) { return part; }
+      PHRASES.forEach(function (ph) {
+        var i2 = part.toLowerCase().indexOf(ph.toLowerCase());
+        if (i2 >= 0) { part = part.slice(0, i2) + "\u0001" + part.slice(i2, i2 + ph.length) + "\u0002" + part.slice(i2 + ph.length); }
+      });
+      part = part.replace(FIG, function (m) { return "\u0001" + m + "\u0002"; });
+      return part.replace(/\u0001/g, "<strong>").replace(/\u0002/g, "</strong>");
+    }).join("");
+  }
+  /* A beat opens flush with its lead sentence; the sentences that support it are indented under it. */
+  function transcript(list, who, note) {
+    var box = el("div", "transcript");
+    if (who) { box.appendChild(el("div", "who", esc(who))); }
+    list.forEach(function (p) {
+      var beat = el("div", "beat");
+      var parts = p.split(/(?<=[.?!])\s+(?=[A-Z"'(\u2018\u201c*])/);
+      parts.forEach(function (sn) { beat.appendChild(el("span", "line", emph(inl(sn)))); });
+      box.appendChild(beat);
+    });
+    if (note) { box.appendChild(el("div", "note", note)); }
+    return box;
+  }
+  function item(id, title, meta, body) {
+    var d = el("details", "item"); if (id) { d.id = id; }
+    var sm = el("summary", "", '<span class="qt">' + inl(title) + "</span>" + (meta ? '<span class="qm">' + meta + "</span>" : ""));
+    d.appendChild(sm); d.appendChild(body);
+    return d;
+  }
+  function bulk(host) {
+    var b = el("div", "bulk");
+    var o = el("button", "", "Open all"), c = el("button", "", "Close all");
+    o.addEventListener("click", function () { host.querySelectorAll("details.item").forEach(function (d) { d.open = true; }); });
+    c.addEventListener("click", function () { host.querySelectorAll("details.item").forEach(function (d) { d.open = false; }); });
+    b.appendChild(o); b.appendChild(c);
+    host.appendChild(b);
+  }
   function el(tag, cls, html) { var n = document.createElement(tag); if (cls) { n.className = cls; } if (html != null) { n.innerHTML = html; } return n; }
   function stepKeys(s) {
     var k = s.steps.map(function (_, i) { return s.id + ":" + i; });
@@ -312,15 +381,13 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
   function tabPrep(host) {
     if (LOOP.scripts.length) {
       var s = heading(host, "say", "In the words to say it", "Say it");
+      bulk(s);
       LOOP.scripts.forEach(function (x) {
-        var c = el("article", "script"); c.id = "say-" + x.id;
-        c.appendChild(el("h3", "", esc(x.title)));
         var drill = LOOP.drills.some(function (d) { return d.id === x.id; });
-        c.appendChild(el("p", "meta", inl(x.when) + " " + esc(x.length.charAt(0).toUpperCase() + x.length.slice(1)) + "." +
-          (drill ? ' <a href="' + link("prep", "drill-" + x.id) + '">Practise it aloud</a>' : "")));
-        paras(c, x.say);
-        if (x.never && x.never.length) { c.appendChild(el("p", "avoid", x.never.map(inl).join(" "))); }
-        s.appendChild(c);
+        var meta = inl(x.when) + " " + esc(x.length.charAt(0).toUpperCase() + x.length.slice(1)) + ".";
+        var note = (x.never && x.never.length ? "<b>Avoid.</b> " + x.never.map(inl).join(" ") : "") +
+          (drill ? (x.never && x.never.length ? " " : "") + '<a href="' + link("prep", "drill-" + x.id) + '">Practise it aloud, timed</a>' : "");
+        s.appendChild(item("say-" + x.id, x.title, meta, transcript(x.say, "You", note)));
         nav.push(["say-" + x.id, x.title, true]);
       });
     }
@@ -393,23 +460,21 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
   function qa(s) {
     var f = el("input", "filter"); f.type = "search"; f.placeholder = "Filter questions, for example SQLite, queue, LangGraph";
     s.appendChild(f);
+    bulk(s);
     var items = [];
     LOOP.qa.forEach(function (g, gi) {
       var gh = el("h3", "qgroup", esc(g.group)); gh.id = "qa-" + gi; s.appendChild(gh);
       nav.push(["qa-" + gi, g.group, true]);
       g.items.forEach(function (q) {
-        var c = el("article", "qa");
-        c.appendChild(el("h3", "", esc(q.q)));
-        if (q.tests) { c.appendChild(el("p", "meta", "They are testing: " + inl(q.tests.charAt(0).toLowerCase() + q.tests.slice(1)))); }
-        paras(c, q.a);
-        if (q.land) { c.appendChild(el("p", "land", "<b>Land it.</b> " + inl(q.land))); }
+        var c = item(null, q.q, q.tests ? "They are testing: " + inl(q.tests.charAt(0).toLowerCase() + q.tests.slice(1)) : "",
+          transcript(q.a, "You", q.land ? "<b>Land it.</b> " + inl(q.land) : ""));
         s.appendChild(c);
         items.push({ node: c, text: (q.q + " " + q.a.join(" ")).toLowerCase() });
       });
     });
     f.addEventListener("input", function () {
       var v = f.value.trim().toLowerCase();
-      items.forEach(function (it) { it.node.hidden = v && it.text.indexOf(v) < 0; });
+      items.forEach(function (it) { it.node.hidden = v && it.text.indexOf(v) < 0; if (v && !it.node.hidden) { it.node.open = true; } });
     });
   }
 
@@ -677,7 +742,10 @@ dialog::backdrop { background: rgba(10, 10, 14, 0.55); }
     drawTabs(r.tab); drawSide(r.tab); progress();
     var key = r.tab + "/" + (r.tab === "sessions" ? r.anchor : "");
     var target = r.anchor && r.tab !== "sessions" ? document.getElementById(r.anchor) : null;
-    if (target) { requestAnimationFrame(function () { target.scrollIntoView({ block: "start" }); }); }
+    if (target) {
+      if (target.tagName === "DETAILS") { target.open = true; }
+      requestAnimationFrame(function () { target.scrollIntoView({ block: "start" }); });
+    }
     else if (key !== shown) { window.scrollTo(0, 0); }
     shown = key;
   }

@@ -289,3 +289,18 @@ KITARU_LEAD = ("Kitaru spawns your agent as an ordinary subprocess in your own e
                "intercepts the agent framework's tool-execution hook, answering each tool call by a SHA-256 lookup "
                "against a recorded call log. The diagrams are from your teardown; the tables are the mechanisms "
                "they will probe.")
+
+# Phrases bolded wherever they appear in what you say: the ideas the interviewer must hear.
+EMPHASIS = [
+    "frozen snapshot of the user's world", "only the call out to", "Only the provider call is swapped", "the only thing swapped",
+    "harness mode", "harness flag", "SQLite snapshot", "twelve failure types", "three out of four", "a little over a hundred cases",
+    "twenty-five real instances", "three people named Michael", "path it never took", "tool calls per completed task",
+    "multi-turn orchestration", "append-only", "ground truth", "pinning an expected answer", "freezing a world rather than a transcript",
+    "freezes the transcript", "froze the world", "fail in opposite directions", "promoted into a small queryable world",
+    "a miss is information", "static alias", "shadow", "stamped on the node", "provenance", "the agent's clock isn't",
+    "anti-fabrication", "tool-execution record", "tool-execution ledger", "at-least-once", "idempotent", "exactly-once",
+    "FOR UPDATE SKIP LOCKED", "CREATE DATABASE ... TEMPLATE", "backstop", "SECURITY DEFINER", "PUBLIC", "row-level security",
+    "fidelity", "execution truth", "a framework, a runtime for stateful agents, and the observability-and-eval product",
+    "our own tables in Supabase Postgres", "divergence", "I never instrumented it", "estimate", "5,000-plus",
+    "WheelPrice", "INFORMS Analytics+", "MockFlow-AI", "MetaRAG", "not looking to urgently leave",
+]
