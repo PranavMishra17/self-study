@@ -7068,7 +7068,7 @@
       var nxLoop = nx.wild ? loopOf(nx.s) : null;
       var start = el("button", "go-big", nxLoop ? "Open the " + nxLoop.name + " page" : "Start this session");
       start.addEventListener("click", function () {
-        if (nxLoop) { window.location.href = nxLoop.file + "#s-" + nx.s.id; return; }
+        if (nxLoop) { window.location.href = nxLoop.file + "#/sessions/" + nx.s.id; return; }
         go("session", nx.wild ? "wc" : nx.wi, nx.si);
       });
       acts.appendChild(start);

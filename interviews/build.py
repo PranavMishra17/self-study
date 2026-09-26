@@ -9,7 +9,7 @@ quiz is built from its own questions: open questions with a model answer only,
 no blanks and no one-word answers, at most eight. Past mocks live in
 <module>.mocks.json, the latest two shown.
 """
-import importlib, io, json, os, re, subprocess, sys
+import html, importlib, io, json, os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -83,7 +83,7 @@ def teardown_figures(path):
             svg = svg.replace('id="%s"' % i, 'id="f%d-%s"' % (n, i)).replace("url(#%s)" % i, "url(#f%d-%s)" % (n, i))
         svg = re.sub(r'\sstyle="min-width:\d+px"', "", svg, count=1)
         cap = re.search(r"<figcaption[^>]*>(.*?)</figcaption>", m.group(2), re.S)
-        caption = re.sub(r"<[^>]+>", "", cap.group(1)).strip() if cap else ""
+        caption = html.unescape(re.sub(r"<[^>]+>", "", cap.group(1)).strip()) if cap else ""
         figs.append({"svg": svg, "caption": re.sub(r"\s+", " ", caption)})
     return figs
 

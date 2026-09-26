@@ -46,6 +46,17 @@ h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0; letter-s
 .count { font-family: var(--display); font-size: 16px; color: var(--spark); font-weight: 700; white-space: nowrap; }
 .prog { font-size: 15px; color: var(--muted); white-space: nowrap; }
 
+.tabs { display: flex; gap: 2px; margin-left: 10px; }
+.tabs a { font-family: var(--display); font-size: 17px; font-weight: 700; color: var(--muted); text-decoration: none; padding: 18px 14px 15px; border-bottom: 3px solid transparent; }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--spark); }
+nav.side .ok { color: var(--ok); }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); }
+.pager a { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); font-family: var(--display); font-weight: 700; font-size: 19px; max-width: 48%; }
+.pager a span { font-family: var(--body); font-weight: 400; font-size: 15px; color: var(--muted); }
+.pager a.next { text-align: right; margin-left: auto; }
+.pager a:hover { color: var(--deep); }
+
 /* layout */
 .shell { max-width: 1240px; margin: 0 auto; padding: 0 24px 140px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; }
 nav.side { position: sticky; top: calc(var(--top) + 24px); align-self: start; padding-top: 34px; font-size: 16px; }
@@ -104,7 +115,7 @@ h3 { font-size: 24px; font-weight: 700; }
 .filter { width: 100%; font: inherit; font-size: 18px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); }
 
 /* Kitaru */
-figure { margin: 22px 0; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+figure { color: #141D1C; margin: 22px 0; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
 figure svg { display: block; width: 100%; height: auto; min-width: 640px; }
 figcaption { color: #414B5E; font-size: 16px; margin-top: 12px; }
 table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; font-size: 18px; background: var(--card); border-radius: 12px; overflow: hidden; }
@@ -171,7 +182,8 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
   .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
   nav.side { display: none; }
   body { font-size: 18px; }
-  .top .loopname, .prog { display: none; }
+  .top .loopname, .prog, .count { display: none; }
+  .tabs a { padding: 18px 8px 15px; font-size: 15px; }
   .trap, .ask { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
@@ -181,6 +193,7 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
 <header class="top"><div class="top-in">
   <a class="home" href="../index.html#/wild"><img src="../brand/accelerate.svg" width="28" height="28" alt="">Accelerate</a>
   <span class="loopname" id="loopname"></span>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <span class="grow"></span>
   <span class="prog" id="prog"></span>
   <span class="count" id="count"></span>
@@ -233,21 +246,33 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     return k;
   }
   function isDone(t, s) { return !!t.done[s.id]; }
+  function link(tab, anchor) { return "#/" + tab + (anchor ? "/" + anchor : ""); }
+  /* A drill's reference is either a route already or an anchor on the prep tab. */
+  function prepRef(r) { return r.indexOf("#/") === 0 ? r : link("prep", r.replace(/^#/, "")); }
 
-  /* ---------------------------------------------------------------- sections */
+  /* ---------------------------------------------------------------- tabs */
+  var TABS = [
+    { id: "overview", label: "Overview", show: function () { return true; } },
+    { id: "prep", label: "Prep", show: function () { return LOOP.scripts.length || LOOP.drills.length || LOOP.qa.length || LOOP.ask.length; } },
+    { id: "design", label: "Design", show: function () { return LOOP.tables.length || LOOP.figures.length; } },
+    { id: "sessions", label: "Sessions", show: function () { return LOOP.sessions.length; } },
+    { id: "mocks", label: "Mocks", show: function () { return !!LOOP.mockHow; } }
+  ].filter(function (t) { return t.show(); });
   var main = document.getElementById("main");
   var side = document.getElementById("side");
-  var navItems = [];
-  function section(id, kicker, title) {
+  var nav = [];            /* side links for the current tab: [anchor, label, sub] */
+
+  function heading(host, id, kicker, title, sub) {
     var s = el("section", "block"); s.id = id;
     if (kicker) { s.appendChild(el("div", "kicker", esc(kicker))); }
     if (title) { s.appendChild(el("h2", "", esc(title))); }
-    main.appendChild(s);
-    navItems.push([id, title || kicker]);
+    host.appendChild(s);
+    nav.push([id, title || kicker, !!sub]);
     return s;
   }
 
-  function renderBrief() {
+  /* ---------------------------------------------------------------- overview */
+  function tabOverview(host) {
     var s = el("section", "block"); s.id = "brief";
     s.appendChild(el("div", "kicker", esc(LOOP.subtitle)));
     s.appendChild(el("h1", "", esc(LOOP.title)));
@@ -257,12 +282,11 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     s.appendChild(dl);
     if (LOOP.bar) { s.appendChild(el("div", "bar", "<b>The bar.</b> " + inl(LOOP.bar))); }
     if (LOOP.extra) { s.appendChild(el("div", "lead", LOOP.extra)); }
-    main.appendChild(s);
-    navItems.push(["brief", "The brief"]);
-  }
+    host.appendChild(s);
+    nav.push(["brief", "The brief"]);
+    if (!LOOP.sessions.length) { return; }
 
-  function renderPlan() {
-    var s = section("plan", LOOP.planKicker || "", "The plan");
+    var p = heading(host, "plan", LOOP.planKicker || "", "The plan");
     var t = tracker();
     var days = {}, order = [];
     LOOP.sessions.forEach(function (x) {
@@ -275,47 +299,63 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
       box.appendChild(el("h3", "", esc(d)));
       days[d].forEach(function (x) {
         var a = el("a", "srow" + (isDone(t, x) ? " done" : ""));
-        a.href = "#s-" + x.id;
+        a.href = link("sessions", x.id);
         a.innerHTML = '<span class="dot">' + (isDone(t, x) ? "&#10003;" : "") + '</span><span><span class="nm">' + esc(x.name) +
           '</span><span class="bl">' + esc(x.blurb.replace(/^(Friday|Saturday|Sunday)[^.]*\.\s*/, "")) + '</span></span><span class="hrs">' + esc(x.len) + "</span>";
         box.appendChild(a);
       });
       wrap.appendChild(box);
     });
-    s.appendChild(wrap);
-  }
-
-  function renderScripts() {
-    var s = section("say", "In the words to say it", "Say it");
-    LOOP.scripts.forEach(function (x) {
-      var c = el("div", "script"); c.id = "say-" + x.id;
-      c.appendChild(el("header", "", "<h3>" + esc(x.title) + '</h3><span class="len">' + esc(x.length) + "</span>"));
-      c.appendChild(el("p", "when", esc(x.when)));
-      var say = el("div", "say");
-      x.say.forEach(function (p) { say.appendChild(el("p", "", inl(p))); });
-      c.appendChild(say);
-      if (x.never && x.never.length) {
-        var ul = el("ul", "never");
-        x.never.forEach(function (n) { ul.appendChild(el("li", "", inl(n))); });
-        c.appendChild(ul);
-      }
-      var acts = el("div", "acts");
-      var go = el("button", "btn", "Say it aloud, timed");
-      go.addEventListener("click", function () { var d = document.getElementById("drill-" + x.id); if (d) { d.scrollIntoView(); } });
-      if (document.getElementById || true) { acts.appendChild(go); }
-      c.appendChild(acts);
-      s.appendChild(c);
+    p.appendChild(wrap);
+    var go = el("div", "acts");
+    TABS.filter(function (x) { return x.id !== "overview"; }).forEach(function (x) {
+      var a = el("a", "btn", esc(x.label)); a.href = link(x.id); go.appendChild(a);
     });
+    p.appendChild(go);
   }
 
-  function renderDrills() {
-    var s = section("practise", "One question, out loud", "Practise aloud");
-    s.appendChild(el("p", "lead", "Pick one. Start the timer, answer out loud with Win+H dictating into the box, stop, save. Then read the script above and say what you missed. The page keeps your last three attempts for each."));
-    var o = own();
+  /* ---------------------------------------------------------------- prep */
+  function tabPrep(host) {
+    if (LOOP.scripts.length) {
+      var s = heading(host, "say", "In the words to say it", "Say it");
+      LOOP.scripts.forEach(function (x) {
+        var c = el("div", "script"); c.id = "say-" + x.id;
+        c.appendChild(el("header", "", "<h3>" + esc(x.title) + '</h3><span class="len">' + esc(x.length) + "</span>"));
+        c.appendChild(el("p", "when", esc(x.when)));
+        var say = el("div", "say");
+        x.say.forEach(function (pp) { say.appendChild(el("p", "", inl(pp))); });
+        c.appendChild(say);
+        if (x.never && x.never.length) {
+          var ul = el("ul", "never");
+          x.never.forEach(function (n) { ul.appendChild(el("li", "", inl(n))); });
+          c.appendChild(ul);
+        }
+        if (LOOP.drills.some(function (d) { return d.id === x.id; })) {
+          var acts = el("div", "acts");
+          var go = el("a", "btn", "Say it aloud, timed"); go.href = link("prep", "drill-" + x.id);
+          acts.appendChild(go); c.appendChild(acts);
+        }
+        s.appendChild(c);
+        nav.push(["say-" + x.id, x.title, true]);
+      });
+    }
+    if (LOOP.drills.length) { drills(heading(host, "practise", "One question, out loud", "Practise aloud")); }
+    if (LOOP.qa.length) { qa(heading(host, "qa", "Where a technical round goes down", "Technical questions")); }
+    if (LOOP.ask.length) {
+      var a = heading(host, "ask", "One at a time, then wait", "Questions to ask");
+      LOOP.ask.forEach(function (x) { a.appendChild(el("div", "ask", '<span class="to">' + esc(x.to) + "</span><span>" + inl(x.q) + "</span>")); });
+    }
+    if (LOOP.traps.length) {
+      var t = heading(host, "traps", "What cost points last time", "Traps");
+      LOOP.traps.forEach(function (x) { t.appendChild(el("div", "trap", "<b>" + esc(x[0]) + "</b><span>" + inl(x[1]) + "</span>")); });
+    }
+  }
+
+  function drills(s) {
+    s.appendChild(el("p", "lead", "Pick one. Start the timer, answer out loud with Win+H dictating into the box, stop, save. Then read the script and say what you missed. The page keeps your last three attempts for each."));
     LOOP.drills.forEach(function (d) {
       var c = el("div", "drill"); c.id = "drill-" + d.id;
-      var head = el("div", "acts");
-      head.style.marginTop = "0";
+      var head = el("div", "acts"); head.style.marginTop = "0";
       head.appendChild(el("span", "", '<span class="p">' + esc(d.prompt) + '</span><br><span class="t">Aim for ' + esc(d.target) + "</span>"));
       var timer = el("span", "timer", "0:00");
       head.appendChild(timer);
@@ -326,8 +366,7 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
       var acts = el("div", "acts");
       var start = el("button", "btn primary", "Start timer");
       var save = el("button", "btn", "Save attempt");
-      var see = el("a", "btn", "Read the script");
-      see.href = d.ref;
+      var see = el("a", "btn", "Read the script"); see.href = prepRef(d.ref);
       acts.appendChild(start); acts.appendChild(save); acts.appendChild(see);
       c.appendChild(acts);
       var list = el("div", "attempts");
@@ -345,10 +384,9 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
         ta.focus();
       });
       function draw() {
-        var mine = (own().drills[d.id] || []);
         list.innerHTML = "";
-        mine.slice().reverse().forEach(function (a) {
-          list.appendChild(el("div", "at", "<small>" + esc(a.at) + (a.secs ? ", " + fmt(a.secs) : "") + "</small>" + esc(a.text)));
+        (own().drills[d.id] || []).slice().reverse().forEach(function (at) {
+          list.appendChild(el("div", "at", "<small>" + esc(at.at) + (at.secs ? ", " + fmt(at.secs) : "") + "</small>" + esc(at.text)));
         });
       }
       save.addEventListener("click", function () {
@@ -367,34 +405,13 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     });
   }
 
-  function renderMocks() {
-    var s = section("mock", "Run in chat", "Mock interviews");
-    s.appendChild(el("p", "lead", inl(LOOP.mockHow)));
-    if (!LOOP.mocks.length) {
-      s.appendChild(el("div", "mock", "<b>None yet.</b> After a mock in chat, its transcript and critique are added here. Only the latest two are kept."));
-    }
-    LOOP.mocks.slice(-2).reverse().forEach(function (m) {
-      var c = el("div", "mock");
-      c.appendChild(el("h3", "", esc(m.title)));
-      c.appendChild(el("p", "when", esc(m.when)));
-      c.appendChild(el("pre", "", esc(m.critique)));
-      if (m.transcript) {
-        var det = el("details");
-        det.appendChild(el("summary", "", "Transcript"));
-        det.appendChild(el("pre", "", esc(m.transcript)));
-        c.appendChild(det);
-      }
-      s.appendChild(c);
-    });
-  }
-
-  function renderQA() {
-    var s = section("qa", "Where a technical round goes down", "Technical questions");
+  function qa(s) {
     var f = el("input", "filter"); f.type = "search"; f.placeholder = "Filter questions, for example SQLite, queue, LangGraph";
     s.appendChild(f);
     var items = [];
-    LOOP.qa.forEach(function (g) {
-      var gh = el("h3", "qgroup", esc(g.group)); s.appendChild(gh);
+    LOOP.qa.forEach(function (g, gi) {
+      var gh = el("h3", "qgroup", esc(g.group)); gh.id = "qa-" + gi; s.appendChild(gh);
+      nav.push(["qa-" + gi, g.group, true]);
       g.items.forEach(function (q) {
         var c = el("div", "qa");
         c.appendChild(el("div", "q", esc(q.q)));
@@ -404,7 +421,7 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
         c.appendChild(say);
         if (q.land) { c.appendChild(el("div", "land", "<b>Land:</b> " + inl(q.land))); }
         s.appendChild(c);
-        items.push({ node: c, group: gh, text: (q.q + " " + q.a.join(" ")).toLowerCase() });
+        items.push({ node: c, text: (q.q + " " + q.a.join(" ")).toLowerCase() });
       });
     });
     f.addEventListener("input", function () {
@@ -413,64 +430,79 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     });
   }
 
-  function renderKitaru() {
-    var s = section("mech", "Read from source", LOOP.mechTitle || "Mechanisms");
-    s.appendChild(el("p", "lead", inl(LOOP.kitaruLead)));
-    LOOP.figures.forEach(function (fg) {
-      var f = el("figure"); f.innerHTML = fg.svg + (fg.caption ? "<figcaption>" + inl(fg.caption) + "</figcaption>" : "");
-      s.appendChild(f);
-    });
-    LOOP.tables.forEach(function (t) {
-      s.appendChild(el("h3", "", esc(t.title)));
-      var tb = el("table");
-      tb.innerHTML = "<thead><tr>" + t.head.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead><tbody>" +
-        t.rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + inl(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>";
-      s.appendChild(tb);
-      s.appendChild(el("p", "tnote", inl(t.note || "")));
-    });
-    if (LOOP.admire) { s.appendChild(el("div", "bar", "<b>Admire first.</b> " + inl(LOOP.admire))); }
+  /* ---------------------------------------------------------------- design */
+  function tabDesign(host) {
+    var s = heading(host, "mech", "Read from source", LOOP.mechTitle || "Mechanisms");
+    if (LOOP.kitaruLead) { s.appendChild(el("p", "lead", inl(LOOP.kitaruLead))); }
     if (LOOP.designLink) {
       var more = el("p", "lead");
       more.innerHTML = esc(LOOP.designLink.text) + ' <a href="' + esc(LOOP.designLink.href) + '" target="_blank" rel="noopener">' + esc(LOOP.designLink.label) + "</a>.";
       s.appendChild(more);
     }
+    if (LOOP.figures.length) {
+      var d = heading(host, "diagrams", "The system, drawn", "Diagrams");
+      LOOP.figures.forEach(function (fg, i) {
+        var f = el("figure"); f.id = "fig-" + i;
+        f.innerHTML = fg.svg + (fg.caption ? "<figcaption>" + inl(fg.caption) + "</figcaption>" : "");
+        d.appendChild(f);
+      });
+    }
+    if (LOOP.tables.length) {
+      var t = heading(host, "tables", "What they will probe", "Mechanisms, as tables");
+      LOOP.tables.forEach(function (tb, i) {
+        var h = el("h3", "", esc(tb.title)); h.id = "tb-" + i; t.appendChild(h);
+        nav.push(["tb-" + i, tb.title, true]);
+        var table = el("table");
+        table.innerHTML = "<thead><tr>" + tb.head.map(function (x) { return "<th>" + esc(x) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+          tb.rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + inl(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody>";
+        t.appendChild(table);
+        t.appendChild(el("p", "tnote", inl(tb.note || "")));
+      });
+    }
+    if (LOOP.admire) { host.appendChild(el("div", "bar", "<b>Admire first.</b> " + inl(LOOP.admire))); }
   }
 
-  function renderAsk() {
-    var s = section("ask", "One at a time, then wait", "Questions to ask");
-    LOOP.ask.forEach(function (a) { s.appendChild(el("div", "ask", '<span class="to">' + esc(a.to) + "</span><span>" + inl(a.q) + "</span>")); });
-    if (!LOOP.traps.length) { return; }
-    var t = section("traps", "What cost points last time", "Traps");
-    LOOP.traps.forEach(function (x) { t.appendChild(el("div", "trap", "<b>" + esc(x[0]) + "</b><span>" + inl(x[1]) + "</span>")); });
-  }
-
-  /* ---------------------------------------------------------------- sessions */
-  function renderSessions() {
-    var s = section("sessions", "Everything, readable in place", "The sessions");
+  /* ---------------------------------------------------------------- sessions, one at a time */
+  function tabSessions(host, which) {
     var t = tracker();
-    LOOP.sessions.forEach(function (x) {
-      var box = el("div", "session"); box.id = "s-" + x.id;
-      box.appendChild(el("h3", "", esc(x.name)));
-      var meta = el("div", "meta");
-      meta.innerHTML = '<span class="chip">' + esc(x.day) + "</span><span>" + esc(x.len) + "</span>" +
-        (isDone(t, x) ? '<span class="chip done">Done ' + esc(t.done[x.id]) + "</span>" : "");
-      box.appendChild(meta);
-      if (x.intro) { box.appendChild(el("p", "intro", inl(x.intro))); }
-      x.steps.forEach(function (st, i) { box.appendChild(stepNode(x, x.id + ":" + i, st.t, st.d, st.ans, null)); });
-      (x.study || []).forEach(function (it, i) { box.appendChild(stepNode(x, x.id + ":s" + i, it.t, it.say, null, it)); });
-      var end = el("div", "session-end");
+    var idx = 0;
+    LOOP.sessions.forEach(function (x, i) { if (x.id === which) { idx = i; } });
+    if (!which) {
+      var firstOpen = LOOP.sessions.findIndex(function (x) { return !isDone(t, x); });
+      idx = firstOpen < 0 ? 0 : firstOpen;
+    }
+    LOOP.sessions.forEach(function (x, i) {
+      nav.push(["s-" + x.id, x.name, false, link("sessions", x.id), i === idx, isDone(t, x)]);
+    });
+    var x = LOOP.sessions[idx];
+    var box = el("div", "session"); box.id = "s-" + x.id;
+    box.appendChild(el("div", "kicker", esc(x.day) + ", session " + (idx + 1) + " of " + LOOP.sessions.length));
+    box.appendChild(el("h2", "", esc(x.name)));
+    var meta = el("div", "meta");
+    meta.innerHTML = "<span>" + esc(x.len) + "</span>" + (isDone(t, x) ? '<span class="chip done">Done ' + esc(t.done[x.id]) + "</span>" : "");
+    box.appendChild(meta);
+    if (x.intro) { box.appendChild(el("p", "intro", inl(x.intro))); }
+    x.steps.forEach(function (st, i) { box.appendChild(stepNode(x.id + ":" + i, st.t, st.d, st.ans, null)); });
+    (x.study || []).forEach(function (it, i) { box.appendChild(stepNode(x.id + ":s" + i, it.t, it.say, null, it)); });
+    var end = el("div", "session-end");
+    if (x.quiz.length) {
       var q = el("button", "btn primary", "Quiz this session, " + x.quiz.length + " questions");
       q.addEventListener("click", function () { openQuiz(x); });
-      var d = el("button", "btn", isDone(t, x) ? "Mark not done" : "Mark the whole session done");
-      d.addEventListener("click", function () { toggleSession(x); });
-      if (x.quiz.length) { end.appendChild(q); }
-      end.appendChild(d);
-      box.appendChild(end);
-      s.appendChild(box);
-    });
+      end.appendChild(q);
+    }
+    var d = el("button", "btn", isDone(t, x) ? "Mark not done" : "Mark the whole session done");
+    d.addEventListener("click", function () { toggleSession(x); });
+    end.appendChild(d);
+    box.appendChild(end);
+    var pager = el("div", "pager");
+    var prev = LOOP.sessions[idx - 1], next = LOOP.sessions[idx + 1];
+    pager.innerHTML = (prev ? '<a href="' + link("sessions", prev.id) + '"><span>Previous</span>' + esc(prev.name) + "</a>" : '<a href="' + link("overview", "plan") + '"><span>Back to</span>The plan</a>') +
+      (next ? '<a class="next" href="' + link("sessions", next.id) + '"><span>Next</span>' + esc(next.name) + "</a>" : '<a class="next" href="' + link("mocks") + '"><span>Then</span>A mock interview</a>');
+    box.appendChild(pager);
+    host.appendChild(box);
   }
 
-  function stepNode(x, key, title, detail, ans, study) {
+  function stepNode(key, title, detail, ans, study) {
     var t = tracker();
     var row = el("div", "step");
     var tick = el("button", "tick" + (t.steps[key] ? " on" : ""), t.steps[key] ? "&#10003;" : "");
@@ -521,7 +553,29 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
       t.done[x.id] = stamp();
     }
     writeJSON(TRACKER, t);
-    rerender();
+    route();
+  }
+
+  /* ---------------------------------------------------------------- mocks */
+  function tabMocks(host) {
+    var s = heading(host, "mock", "Run in chat", "Mock interviews");
+    s.appendChild(el("p", "lead", inl(LOOP.mockHow)));
+    if (!LOOP.mocks.length) {
+      s.appendChild(el("div", "mock", "<b>None yet.</b> After a mock in chat, its transcript and critique are added here. Only the latest two are kept."));
+    }
+    LOOP.mocks.slice(-2).reverse().forEach(function (m) {
+      var c = el("div", "mock");
+      c.appendChild(el("h3", "", esc(m.title)));
+      c.appendChild(el("p", "when", esc(m.when)));
+      c.appendChild(el("pre", "", esc(m.critique)));
+      if (m.transcript) {
+        var det = el("details");
+        det.appendChild(el("summary", "", "Transcript"));
+        det.appendChild(el("pre", "", esc(m.transcript)));
+        c.appendChild(det);
+      }
+      s.appendChild(c);
+    });
   }
 
   /* ---------------------------------------------------------------- quiz, one question at a time */
@@ -588,11 +642,68 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     try { dlg.showModal(); } catch (err) { dlg.setAttribute("open", ""); }
   }
 
+  /* ---------------------------------------------------------------- routing: #/<tab>[/<anchor>] */
+  var spy = null;
+  function parse() {
+    var p = (location.hash || "").replace(/^#\/?/, "").split("/").filter(Boolean);
+    var tab = TABS.some(function (t) { return t.id === p[0]; }) ? p[0] : "overview";
+    return { tab: tab, anchor: p[1] || null };
+  }
+  function drawTabs(current) {
+    var bar = document.getElementById("tabs");
+    bar.innerHTML = "";
+    TABS.forEach(function (t) {
+      var a = el("a", "", esc(t.label)); a.href = link(t.id);
+      if (t.id === current) { a.setAttribute("aria-current", "page"); }
+      bar.appendChild(a);
+    });
+  }
+  function drawSide(tab) {
+    side.innerHTML = "";
+    nav.forEach(function (n) {
+      var a = el("a", (n[2] ? "sub" : "") + (n[4] ? " on" : ""), (n[5] ? '<span class="ok">&#10003;</span> ' : "") + esc(n[1]));
+      a.href = n[3] || link(tab, n[0]);
+      a.dataset.id = n[0];
+      side.appendChild(a);
+    });
+    if (spy) { spy.disconnect(); spy = null; }
+    if (tab === "sessions" || !("IntersectionObserver" in window)) { return; }
+    var links = side.querySelectorAll("a");
+    spy = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) { return; }
+        links.forEach(function (a) { a.classList.toggle("on", a.dataset.id === e.target.id); });
+      });
+    }, { rootMargin: "-15% 0px -75% 0px" });
+    nav.forEach(function (n) { var s = document.getElementById(n[0]); if (s) { spy.observe(s); } });
+  }
+  var shown = null;
+  function route() {
+    var r = parse();
+    try {
+      main.innerHTML = ""; nav = [];
+      if (r.tab === "overview") { tabOverview(main); }
+      else if (r.tab === "prep") { tabPrep(main); }
+      else if (r.tab === "design") { tabDesign(main); }
+      else if (r.tab === "sessions") { tabSessions(main, r.anchor); }
+      else if (r.tab === "mocks") { tabMocks(main); }
+    } catch (err) {
+      console.error("Could not draw the page", err);
+      main.appendChild(el("p", "", "This page could not be drawn. The console has the details."));
+    }
+    drawTabs(r.tab); drawSide(r.tab); progress();
+    var key = r.tab + "/" + (r.tab === "sessions" ? r.anchor : "");
+    var target = r.anchor && r.tab !== "sessions" ? document.getElementById(r.anchor) : null;
+    if (target) { requestAnimationFrame(function () { target.scrollIntoView({ block: "start" }); }); }
+    else if (key !== shown) { window.scrollTo(0, 0); }
+    shown = key;
+  }
+
   /* ---------------------------------------------------------------- chrome */
   function progress() {
     var t = tracker();
     var n = LOOP.sessions.filter(function (x) { return isDone(t, x); }).length;
-    document.getElementById("prog").textContent = n + " of " + LOOP.sessions.length + " sessions done";
+    document.getElementById("prog").textContent = LOOP.sessions.length ? n + " of " + LOOP.sessions.length + " sessions done" : "";
   }
   function countdown() {
     var ms = new Date(LOOP.when_iso).getTime() - Date.now();
@@ -601,45 +712,12 @@ dialog::backdrop { background: rgba(8, 12, 24, 0.62); }
     var h = Math.floor(ms / 36e5), d = Math.floor(h / 24);
     c.textContent = (d ? d + "d " : "") + (h % 24) + "h to the call";
   }
-  function buildNav() {
-    side.innerHTML = "";
-    navItems.forEach(function (n) {
-      var a = el("a", "", esc(n[1])); a.href = "#" + n[0]; a.dataset.id = n[0];
-      side.appendChild(a);
-    });
-    if (!("IntersectionObserver" in window)) { return; }
-    var links = side.querySelectorAll("a");
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) { return; }
-        links.forEach(function (a) { a.classList.toggle("on", a.dataset.id === e.target.id); });
-      });
-    }, { rootMargin: "-20% 0px -70% 0px" });
-    navItems.forEach(function (n) { var s = document.getElementById(n[0]); if (s) { io.observe(s); } });
-  }
-  function rerender() {
-    var y = window.scrollY;
-    main.innerHTML = ""; navItems = [];
-    try {
-      renderBrief();
-      if (LOOP.sessions.length) { renderPlan(); }
-      if (LOOP.scripts.length) { renderScripts(); }
-      if (LOOP.drills.length) { renderDrills(); }
-      if (LOOP.mockHow) { renderMocks(); }
-      if (LOOP.qa.length) { renderQA(); }
-      if (LOOP.tables.length || LOOP.figures.length) { renderKitaru(); }
-      if (LOOP.ask.length || LOOP.traps.length) { renderAsk(); }
-      if (LOOP.sessions.length) { renderSessions(); }
-    } catch (err) { console.error("Could not draw the page", err); main.appendChild(el("p", "", "This page could not be drawn. The console has the details.")); }
-    buildNav(); progress();
-    window.scrollTo(0, y);
-  }
 
-  document.getElementById("loopname").textContent = LOOP.title + ", " + LOOP.when;
+  document.getElementById("loopname").textContent = LOOP.title;
   document.title = LOOP.title;
-  rerender(); countdown(); setInterval(countdown, 60000);
+  window.addEventListener("hashchange", route);
   window.addEventListener("storage", function (e) { if (e.key === TRACKER) { progress(); } });
-  if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) { setTimeout(function () { t.scrollIntoView(); }, 50); } }
+  route(); countdown(); setInterval(countdown, 60000);
 }());
 </script>
 </body>
